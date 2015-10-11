@@ -55,6 +55,10 @@ class _DecoratorMock(object):
     def check_str_against_tuple(self, something):
         pass
 
+    @accepts((Bob()))
+    def check_for_type_error_on_accepted_args_object_instance(self, bar):
+        pass
+
 """
 End stub classes
 """
@@ -100,3 +104,6 @@ class TestAcceptsDecorator(TestCase):
         with self.assertRaises(TypeError):
             self._mock.check_for_type_exception()
 
+    def test_for_type_error_if_accepted_args_is_already_an_object_instance(self):
+        with self.assertRaises(TypeError):
+            self._mock.check_for_type_error_on_accepted_args_object_instance(Bar())

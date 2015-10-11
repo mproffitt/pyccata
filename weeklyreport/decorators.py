@@ -16,9 +16,12 @@ def __ordinal(num):
 def __validate_against_tuple(argument, inheritance):
     valid = False
     for arg_type in inheritance:
-        if argument is arg_type or isinstance(argument, arg_type) or issubclass(type(argument), arg_type):
-            valid = True
-            break
+        try:
+            if argument is arg_type or isinstance(argument, arg_type) or issubclass(type(argument), arg_type):
+                valid = True
+                break
+        except TypeError:
+            pass
     return valid
 
 
