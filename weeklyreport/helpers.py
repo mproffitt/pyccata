@@ -10,10 +10,7 @@ def class_exists(namespace, module, class_name):
         module = importlib.import_module(namespace + '.' + module + '.' + class_name.lower())
     except ImportError:
         return False
-    name = getattr(module, class_name.capitalize())
-    if not issubclass(name, ManagerInterface):
-        raise ImportError('{0} must implement \'ManagerInterface\''.format(class_name))
-    return True
+    return hasattr(module, class_name.capitalize())
 
 def read_file(text_url):
     """

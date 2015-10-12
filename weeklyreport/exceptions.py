@@ -42,3 +42,41 @@ class InvalidClassError(ValueError):
 
     def __str__(self):
         return self.error
+
+class InvalidModuleError(ValueError):
+    """
+    Raised when trying to load a module dynamically
+    """
+    def __init__(self, module, namespace):
+        self.error = '{0} does not exist in {1}'.format(module, namespace)
+
+    def __str__(self):
+        return self.error
+
+class InvalidConnectionError(Exception):
+    """
+    Raised whilst trying to set up a connection to a 3rd party service
+    """
+    def __init__(self, code, server, message, headers=None):
+        self._code    = code
+        self._error   = message
+        self._server  = server
+        self._headers = headers
+
+    def __str__(self):
+        message = "Recieved HTTP/{code} whilst establishing connection to {server}\n\n".format(
+            code = self._code,
+            server = self._server
+        )
+        message += 'Message was: \'{message}\''.format(message = self._error)
+        return message
+
+class InvalidQueryError(ValueError):
+    """
+    Raised when a search query fails
+    """
+    def __init__(self, message):
+        self.error = message
+
+    def __str__(self):
+        return self.error

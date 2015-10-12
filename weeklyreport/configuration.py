@@ -49,6 +49,11 @@ class Configuration(object):
         self._filename = filename
         self._load()
 
+    def __getattr__(self, name):
+        if hasattr(self._configuration, name):
+            return getattr(self._configuration, name)
+        raise AttributeError('Configuration object has no attribute \'{0}\''.format(name))
+
     def _load(self):
         """
         Attempts to load the configuration file from JSON
@@ -92,4 +97,12 @@ class Configuration(object):
             if hasattr(self, element):
                 setattr(self, element, getattr(self._configuration, element))
         return True
+
+    def __new__(cls, *args, **kwargs):
+        """
+        Override for __new__ to check if config has already been loaded.
+        """
+        if cls._instance is None:
+            cls._instance = super(Configuration, cls).__new__(cls)
+        return Configuration._instance
 

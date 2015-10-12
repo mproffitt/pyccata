@@ -103,11 +103,11 @@ class TestConfiguration(TestCase):
 
     @patch('weeklyreport.configuration.Configuration._load')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def test_configuration_raises_invalid_class_error_if_manager_config_is_not_found(self, mock_config_list, mock_load):
-        key = 'jira'
-        Config = namedtuple('Config', 'manager jira server port')
-        Jira   = Config(manager = None, jira = None, server = 'http://jira.local', port = '8080')
-        mock_config = Config(manager = key, jira = Jira, server = None, port = None)
+    def test_configuration_raises_invalid_class_error_if_manager_class_does_not_exist(self, mock_config_list, mock_load):
+        key = 'iwillneverbeamanager'
+        Config = namedtuple('Config', 'manager iwillneverbeamanager server port')
+        Jira   = Config(manager = None, iwillneverbeamanager = None, server = 'http://jira.local', port = '8080')
+        mock_config = Config(manager = key, iwillneverbeamanager = Jira, server = None, port = None)
         mock_load.return_value = None
         self.tearDown()
 
@@ -115,26 +115,6 @@ class TestConfiguration(TestCase):
         Configuration._configuration = mock_config
 
         with self.assertRaises(InvalidClassError):
-            config = Configuration(filename='config_sections.json')
-            required_elements = Configuration._required_root_elements
-            config._validate_config(required_elements)
-        mock_load.assert_called_once_with()
-
-    @patch('weeklyreport.configuration.Configuration._load')
-    @patch('weeklyreport.configuration.Configuration._get_locations')
-    def test_confguration_raises_import_error_if_manager_doesnt_implement_manager_interface(self, mock_config_list, mock_load):
-        key = 'agilemanager'
-        Config = namedtuple('Config', 'manager agilemanager server port')
-        Jira   = Config(manager = None, agilemanager = None, server = 'http://jira.local', port = '8080')
-        mock_config = Config(manager = key, agilemanager = Jira, server = None, port = None)
-        mock_load.return_value = None
-        self.tearDown()
-
-        mock_config_list.return_value = [self._path]
-        Configuration._configuration = mock_config
-        Configuration.NAMESPACE = 'tests.mocks'
-
-        with self.assertRaises(ImportError):
             config = Configuration(filename='config_sections.json')
             required_elements = Configuration._required_root_elements
             config._validate_config(required_elements)
@@ -159,4 +139,27 @@ class TestConfiguration(TestCase):
         config._validate_config(required_elements)
         mock_load.assert_called_once_with()
         self.assertEquals('jira', config.manager)
+
+    @patch('weeklyreport.configuration.Configuration._load')
+    @patch('weeklyreport.configuration.Configuration._get_locations')
+    def test_manager_getattr_method(self, mock_config_list, mock_load):
+        key = 'jira'
+        Config = namedtuple('Config', 'manager jira server port')
+        Jira   = Config(manager = None, jira = None, server = 'http://jira.local', port = '8080')
+        mock_config = Config(manager = key, jira = Jira, server = None, port = None)
+        mock_load.return_value = None
+        self.tearDown()
+
+        mock_config_list.return_value = [self._path]
+        Configuration._configuration = mock_config
+        Configuration.NAMESPACE = 'tests.mocks'
+
+        config = Configuration(filename='config_sections.json')
+        config.check = True
+        required_elements = Configuration._required_root_elements
+        config._validate_config(required_elements)
+        mock_load.assert_called_once_with()
+        self.assertTrue(config.check)
+        with self.assertRaises(AttributeError):
+            config.iamnothere
 
