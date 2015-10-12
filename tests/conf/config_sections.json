@@ -1,0 +1,73 @@
+{
+  "projectmanager": "jira",
+  "jira": {
+    "username": "",
+    "password": "",
+    "server"  : "",
+    "port"    : "",
+    "report": {
+      "path": "ess_weekly_report",
+      "title": "ESS Development Department status",
+      "subtitle": "Week 41",
+      "abstract": "This document provides the overall and per-project breakdown of where we currently stand as a department.\n\nEach section starts with a status bar showing what is in todo, what is in progress and what has been completed.\n\nSubsequent to this, a more detailed breakdown is provided where relevant.",
+      "sections": [
+        {
+          "title": "hello world",
+          "abstract":  "This is a test paragraph",
+          "structure": [
+            {
+              "type": "paragraph",
+              "content": "some text"
+            },
+            {
+              "type": "status",
+              "content": {
+                "filename": "demo",
+                "todo": "status in ('Open', 'Triage')",
+                "inprogress": "status in ('In Progress', 'Development', 'In Review', 'Test')",
+                "done": "status in ('Done', 'Reject', 'Closed')"
+              }
+            },
+            {
+                "type": "graph",
+                "content": {
+                    "layout": "bar",
+                    "width" : 30,
+                    "title" : "Issues by priority",
+                    "labels": ["p1", "p2", "p3", "p4", "p5"],
+                    "collate": "priority",
+                    "queries": [
+                      {
+                        "name": "Bugs",
+                        "query": "issuetype in ('Bug') and fixVersion is EMPTY and status not in ('Done', 'Reject', 'Closed')"
+                      },
+                      {
+                        "name": "Enhancements",
+                        "query": "issuetype in ('Improvement', 'Story', 'New Feature') and fixVersion is EMPTY and status not in ('Done', 'Reject', 'Closed')"
+                      }
+                    ]
+                }
+            }
+          ]
+        },
+        {
+          "title": "This has sub-sections",
+          "abstract": "There might be some text here",
+          "structure": [
+            {
+              "type": "section",
+              "title": "this is sub section 1",
+              "abstract": "this is text for sub section 1",
+              "structure": []
+            }
+          ]
+        },
+        {
+          "title": "This section uses a file path for it's text",
+          "abstract": "tests/test_content/report_content/section_3.txt",
+          "structure": []
+        }
+      ]
+    }
+  }
+}

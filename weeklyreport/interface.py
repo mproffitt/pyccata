@@ -19,3 +19,8 @@ class ViewWindowInterface(metaclass=ABCMeta):
     def readline(self):
         raise NotImplementedError(_not_implemented)
 
+class ManagerInterface(metaclass=ABCMeta):
+    """
+    Interface class for extending the project managers
+    """
+    pass

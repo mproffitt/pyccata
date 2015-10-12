@@ -22,3 +22,23 @@ class InvalidArgumentNumberError(ValueError):
     def __str__(self):
         return self.error
 
+class RequiredKeyError(ValueError):
+    """
+    Raised when a required configuration key has not been provided
+    within the config file
+    """
+    def __init__(self, key):
+        self.error = 'Invalid key. \'{0}\' cannot be found'.format(key)
+
+    def __str__(self):
+        return self.error
+
+class InvalidClassError(ValueError):
+    """
+    Raised when trying to load a class dynamically
+    """
+    def __init__(self, class_name, namespace):
+        self.error = '{0} does not exist in {1}'.format(class_name, namespace)
+
+    def __str__(self):
+        return self.error
