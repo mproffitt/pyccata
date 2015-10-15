@@ -80,7 +80,7 @@ class ObservableInterface(metaclass=ABCMeta):
         """
         raise NotImplementedError('Method must be implemented by a child')
 
-    def notify(self, results=False):
+    def notify(self, results):
         """
         Iterates over the observables and notifies them of the results.
 

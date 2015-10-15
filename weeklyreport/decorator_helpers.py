@@ -56,7 +56,7 @@ def validate_positional_args(real_args, aargs, func):
         if isinstance(accepted_arg_type, tuple):
             if not validate_against_tuple(actual_arg, accepted_arg_type):
                 raise ArgumentValidationError(ord_num, func.__name__, accepted_arg_type, actual_arg)
-        elif not isinstance(actual_arg, accepted_arg_type) or not implements(actual_arg, accepted_arg_type):
+        elif (not isinstance(actual_arg, accepted_arg_type)) and (not implements(actual_arg, accepted_arg_type)):
             raise ArgumentValidationError(ord_num, func.__name__, accepted_arg_type, actual_arg)
     return True
 

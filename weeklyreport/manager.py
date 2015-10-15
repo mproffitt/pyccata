@@ -57,8 +57,8 @@ class ProjectManager(object):
         """
         return self._client.projects()
 
-    @accepts(search_query=str, max_results=(bool, int), fields=list)
-    def search_issues(self, search_query='', max_results=0, fields=list):
+    @accepts(search_query=str, max_results=(bool, int), fields=(None, list))
+    def search_issues(self, search_query='', max_results=0, fields=None):
         """
         Search for issues
 
