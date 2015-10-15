@@ -39,5 +39,5 @@ class TestProjectManager(TestCase):
         with patch('weeklyreport.configuration.Configuration.manager', new_callable=PropertyMock) as mock_manager:
             mock_manager.return_value = key
             with self.assertRaises(ImportError):
-                ProjectManager()
+                a = ProjectManager()
 

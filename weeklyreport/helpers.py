@@ -1,16 +1,45 @@
+"""
+Helper methods for the weeklyreport package
+"""
 import os
-import sys
 import importlib
-from collections            import namedtuple
-from weeklyreport.log       import Logger
-from weeklyreport.interface import ManagerInterface
 
 def class_exists(namespace, module, class_name):
+    """
+    Test to see if the given class exists
+
+    @param namespace  string
+    @param module     string
+    @param class_name string
+
+    @return bool
+    """
     try:
         module = importlib.import_module(namespace + '.' + module + '.' + class_name.lower())
     except ImportError:
         return False
     return hasattr(module, class_name.capitalize())
+
+def implements(obj, interface):
+    """
+    Test to see if interface is defined by the given object
+
+    @param obj       object
+    @param interface Interface
+
+    @return bool
+
+    This test is carried out by first looking at the objects __implements__
+    tuple. If ``__implements__`` is not defined, the check looks to see
+    if ``obj`` extends ``interface``
+
+    If neither of these checks succeed, False is returned
+    """
+    try:
+        return interface in obj.__implements__
+    except AttributeError:
+        pass
+    return issubclass(type(obj), interface)
 
 def read_file(text_url):
     """
@@ -20,10 +49,14 @@ def read_file(text_url):
 
     Easiest is to pass the whole lot through to file
     and if a file doesn't exist with the content as name,
-    return the text...
+    return the text.
+
+    @param text_url string
+
+    @return string
     """
     if os.access(text_url, os.R_OK):
-        with open(text_url) as fp:
-            return fp.read()
+        with open(text_url) as file_pointer:
+            return file_pointer.read()
     return text_url
 

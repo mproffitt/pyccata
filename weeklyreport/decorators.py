@@ -1,31 +1,10 @@
+"""
+Contains decorators in use within the application
+"""
 import inspect
-from functools               import wraps
-from weeklyreport.exceptions import InvalidArgumentNumberError, ArgumentValidationError
-
-def __ordinal(num):
-    '''
-    Returns the ordinal number of a given integer, as a string.
-    eg. 1 -> 1st, 2 -> 2nd, 3 -> 3rd, etc.
-    '''
-    if 10 <= num % 100 < 20:
-        return '{0}th'.format(num)
-    else:
-        ord = {1 : 'st', 2 : 'nd', 3 : 'rd'}.get(num % 10, 'th')
-        return '{0}{1}'.format(num, ord)
-
-def __validate_against_tuple(argument, inheritance):
-    valid = False
-    for arg_type in inheritance:
-        try:
-            if argument is arg_type or isinstance(argument, arg_type) or issubclass(type(argument), arg_type):
-                valid = True
-                break
-        except TypeError:
-            pass
-    return valid
-
-
-
+from functools import wraps
+from weeklyreport.decorator_helpers import validate_positional_args
+from weeklyreport.decorator_helpers import validate_keyword_args
 
 def accepts(*aargs, **akwargs):
     """
@@ -63,43 +42,24 @@ def accepts(*aargs, **akwargs):
         correct before `func` is called.
     """
     def accepted(func):
+        """ Decorator """
         @wraps(func)
         def wrapper(*args, **kwargs):
+            """ decorator wrapper """
             # if this is a bound method, drop the first argument which will be `self`
             bound = hasattr(args[0], func.__name__)
             real_args = args if not bound else args[1:]
-            if len(real_args) != len(aargs):
-                raise InvalidArgumentNumberError(func.__name__)
-            for arg_num, (actual_arg, accepted_arg_type) in enumerate(zip(real_args, aargs)):
-                ord_num = __ordinal(arg_num + 1)
-                if isinstance(accepted_arg_type, tuple):
-                    if not __validate_against_tuple(actual_arg, accepted_arg_type):
-                        raise ArgumentValidationError(ord_num, func.__name__, accepted_arg_type, actual_arg)
-                elif not isinstance(actual_arg, accepted_arg_type):
-                    raise ArgumentValidationError(ord_num, func.__name__, accepted_arg_type, actual_arg)
+            validate_positional_args(real_args, aargs, func)
 
             valid_args = inspect.getargspec(func).args
             for arg in akwargs:
                 if not arg in valid_args:
                     raise TypeError(
                         'Invalid argument \'{a}\' provided to accepts decorator for \'{f}\''.format(
-                            a=arg, f = func.__name__
+                            a=arg, f=func.__name__
                         )
                     )
-
-            for k in kwargs:
-                if not akwargs.__contains__(k):
-                    continue
-                if isinstance(akwargs[k], tuple):
-                    if not __validate_against_tuple(kwargs[k], akwargs[k]):
-                        raise TypeError(
-                            'Invalid argument \'{a}\' provided to \'{f}\'. Must be one of \'{v}\''.format(
-                                a=k, f=func.__name__, v=akwargs[k]
-                            )
-                        )
-                elif not isinstance(kwargs[k], akwargs[k]):
-                    raise ArgumentValidationError(k, func.__name__, akwargs[k], kwargs[k])
-
+            validate_keyword_args(kwargs, akwargs, func)
             return func(*args, **kwargs)
         return wrapper
     return accepted

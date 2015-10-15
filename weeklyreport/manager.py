@@ -1,36 +1,81 @@
-import importlib
-from weeklyreport.interface     import ManagerInterface
-from weeklyreport.decorators    import accepts
-from weeklyreport.configuration import Configuration
-from weeklyreport.exceptions    import InvalidModuleError, InvalidClassError
+"""
+Defines the manager used by the application.
 
-class ProjectManager(ManagerInterface):
+* ProjectManager - loads a project manager api from the managers directory
+* QueryManager
+* ThreadManager
+"""
+import importlib
+from weeklyreport.interface import ManagerInterface
+from weeklyreport.decorators import accepts
+from weeklyreport.configuration import Configuration
+from weeklyreport.exceptions import InvalidModuleError
+from weeklyreport.exceptions import InvalidClassError
+from weeklyreport.helpers import implements
+
+class ProjectManager(object):
+    """
+    The ProjectManager class acts as a wrapper class to
+    load a pluggable back-end interfacing against various
+    different agile tracking boards.
+
+    Drivers loaded by this application must implement the
+    ManagerInterface interface and be stored in the
+    weeklyreport.managers package.
+    """
+    __implements__ = (ManagerInterface,)
     _configuration = None
-    _client        = None
+    _client = None
 
     def __init__(self):
+        """
+        Initialise the object and call _load
+        """
         namespace = self.configuration.NAMESPACE
         self._load(namespace, self.configuration.manager)
 
     @property
     def client(self):
+        """
+        Get the loaded manager client
+        """
         return self._client
 
     @property
     def configuration(self):
+        """
+        Get the cofiguration object
+            - load on demand
+        """
         if self._configuration is None:
             self._configuration = Configuration()
         return self._configuration
 
     def projects(self):
+        """
+        Get a list of projects defined in the agile project manager
+        """
         return self._client.projects()
 
     @accepts(search_query=str, max_results=(bool, int), fields=list)
-    def search_issues(self, search_query= '', max_results = 0, fields = []):
+    def search_issues(self, search_query='', max_results=0, fields=list):
+        """
+        Search for issues
+
+        @param search_query string     What to search for. When using the default manager, accepts queries in JQL
+        @max_results        bool | int If False will load all issues in batches of 50
+        @fields             list       A list of fields to retrieve as part of the query results
+        """
         return self._client.search_issues(search_query=search_query, max_results=max_results, fields=fields)
 
     @accepts(str, str)
     def _load(self, namespace, manager):
+        """
+        Load the requested manager
+
+        @param namespace string The namespace containing the managers ('weeklyreport')
+        @param manager   string The name of the manager to load
+        """
         try:
             module = importlib.import_module(namespace + '.managers.' + manager.lower())
         except ImportError:
@@ -39,7 +84,24 @@ class ProjectManager(ManagerInterface):
             name = getattr(module, manager.capitalize())
         except AttributeError:
             raise InvalidClassError(manager.capitalize(), namespace + '.managers.' + manager.lower())
-        if not issubclass(name, ManagerInterface):
+
+        if not implements(name, ManagerInterface):
             raise ImportError('{0} must implement \'ManagerInterface\''.format(manager.capitalize()))
         self._client = name()
 
+class QueryManager(list):
+    """
+    The QueryManager accepts filters as they are loaded
+    and stores them in a list.
+
+    As new queries come in, the manager scans the list to
+    see if an existing query has already been provided which
+    matches its criteria.
+
+    If it has, the query is appended to the observers of the
+    earlier query which assigns its results via the notify.
+
+    Filters provided to the QueryManager must implement
+    Observable for this manager to understand.
+    """
+    pass

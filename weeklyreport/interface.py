@@ -1,7 +1,8 @@
-from abc       import ABCMeta, abstractmethod
-from threading import Thread
-
-_not_implemented = 'Method must be implemented by a child'
+"""
+Defines the interfaces used by the weeklyreport package
+"""
+from abc       import ABCMeta
+from abc       import abstractmethod
 
 class ViewWindowInterface(metaclass=ABCMeta):
     """
@@ -14,14 +15,14 @@ class ViewWindowInterface(metaclass=ABCMeta):
 
         @param message string
         """
-        raise NotImplementedError(_not_implemented)
+        raise NotImplementedError('Method must be implemented by a child')
 
     @abstractmethod
     def flush(self):
         """
         Flush output to the log window
         """
-        raise NotImplementedError(_not_implemented)
+        raise NotImplementedError('Method must be implemented by a child')
 
     @abstractmethod
     def readline(self):
@@ -32,14 +33,14 @@ class ViewWindowInterface(metaclass=ABCMeta):
 
         @return string
         """
-        raise NotImplementedError(_not_implemented)
+        raise NotImplementedError('Method must be implemented by a child')
 
 class ManagerInterface(metaclass=ABCMeta):
     """
     Interface class for extending the project managers
     """
     @abstractmethod
-    def search_issues(self, search_filter, max_results = False):
+    def search_issues(self, search_filter, max_results=False, fields=list):
         """
         Search for issues within the defined management interface
 
@@ -48,7 +49,7 @@ class ManagerInterface(metaclass=ABCMeta):
 
         @return list
         """
-        raise NotImplementedError(_not_implemented)
+        raise NotImplementedError('Method must be implemented by a child')
 
     @abstractmethod
     def projects(self):
@@ -57,11 +58,36 @@ class ManagerInterface(metaclass=ABCMeta):
 
         @return list
         """
-        raise NotImplementedError(_not_implemented)
+        raise NotImplementedError('Method must be implemented by a child')
 
     @abstractmethod
     def configuration(self):
         """
         Returns a singleton reference to the configuration object
         """
-        raise NotImplementedError(_not_implemented)
+        raise NotImplementedError('Method must be implemented by a child')
+
+class ObservableInterface(metaclass=ABCMeta):
+    """
+    Interface for Observable objects
+    """
+
+    def append(self, observer):
+        """
+        Adds an observer to the list of objects observing this one.
+
+        @param observer Observable
+        """
+        raise NotImplementedError('Method must be implemented by a child')
+
+    def notify(self, results=False):
+        """
+        Iterates over the observables and notifies them of the results.
+
+        @param results [False|ResultSet] If a ResultSet is provided, the current
+                                         objects results are updated. If False (default),
+                                         calls notify on all observing objects
+        """
+        raise NotImplementedError('Method must be implemented by a child')
+
+

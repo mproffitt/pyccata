@@ -36,7 +36,7 @@ class TestConfiguration(TestCase):
             Configuration()
 
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    @patch('weeklyreport.configuration.Configuration._validate_config')
+    @patch('weeklyreport.configuration.Configuration.validate_config')
     def test_configuration_calls_validation_once_config_is_loaded(self, mock_validate, mock_config_list):
         mock_config_list.return_value = [self._path]
         mock_validate.return_value = True
@@ -52,7 +52,6 @@ class TestConfiguration(TestCase):
         mock_load.return_value = None
         config = Configuration(filename='')
         self.assertEquals(5, len(config._get_locations()))
-
 
     @patch('weeklyreport.configuration.Configuration._get_locations')
     def test_configuration_raises_requried_key_error_if_required_value_is_not_defined(self, mock_config_list):
@@ -79,7 +78,7 @@ class TestConfiguration(TestCase):
         mock_load.assert_called_once_with()
         with patch('weeklyreport.configuration.Configuration.manager', new_callable=PropertyMock) as mock_manager:
             mock_manager.return_value = object()
-            self.assertTrue(config._validate_config(required_elements))
+            self.assertTrue(config.validate_config(required_elements))
             mock_manager.assert_called_with('jira')
 
     @patch('weeklyreport.configuration.Configuration._load')
@@ -98,7 +97,7 @@ class TestConfiguration(TestCase):
         with self.assertRaisesRegexp(RequiredKeyError, '.*\'<root>[./]?{0}\'.*'.format(key)):
             config = Configuration(filename='config_sections.json')
             required_elements = Configuration._required_root_elements
-            config._validate_config(required_elements)
+            config.validate_config(required_elements)
         mock_load.assert_called_once_with()
 
     @patch('weeklyreport.configuration.Configuration._load')
@@ -117,7 +116,7 @@ class TestConfiguration(TestCase):
         with self.assertRaises(InvalidClassError):
             config = Configuration(filename='config_sections.json')
             required_elements = Configuration._required_root_elements
-            config._validate_config(required_elements)
+            config.validate_config(required_elements)
         mock_load.assert_called_once_with()
 
     @patch('weeklyreport.configuration.Configuration._load')
@@ -136,7 +135,7 @@ class TestConfiguration(TestCase):
 
         config = Configuration(filename='config_sections.json')
         required_elements = Configuration._required_root_elements
-        config._validate_config(required_elements)
+        config.validate_config(required_elements)
         mock_load.assert_called_once_with()
         self.assertEquals('jira', config.manager)
 
@@ -157,7 +156,7 @@ class TestConfiguration(TestCase):
         config = Configuration(filename='config_sections.json')
         config.check = True
         required_elements = Configuration._required_root_elements
-        config._validate_config(required_elements)
+        config.validate_config(required_elements)
         mock_load.assert_called_once_with()
         self.assertTrue(config.check)
         with self.assertRaises(AttributeError):
