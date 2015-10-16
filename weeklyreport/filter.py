@@ -17,7 +17,9 @@ class Filter(Threadable):
     The Filter object provides a base class for all filters
     requested by the application.
     """
-    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-instance-attributes,too-many-public-methods
+    # It is understood that this class requires a number of attributes and
+    # accessor methods.
     __implements__ = (ObservableInterface,)
 
     _query = None
@@ -39,12 +41,27 @@ class Filter(Threadable):
         self._projectmanager = manager
 
     @property
+    def query(self):
+        """ Get the query defined within this object """
+        return self._query
+
+    @property
+    def fields(self):
+        """ Get a list of fields to restrict the search to """
+        return self._fields
+
+    @property
+    def max_results(self):
+        """ Get the max results returned by this filter """
+        return self._max_results
+
+    @property
     def results(self):
         """ Get the results of the filter search """
         return self._results
 
-    @accepts(str, max_results=(bool, int), fields=list)
-    def setup(self, query, max_results=0, fields=list):
+    @accepts(str, max_results=(bool, int), fields=(None, list))
+    def setup(self, query, max_results=0, fields=None):
         """
         Initialise the filter
 
@@ -90,13 +107,55 @@ class Filter(Threadable):
             assert self.projectmanager is not None
             if not self._complete:
                 self._results = self.projectmanager.search_issues(
-                    search_query=self._query,
-                    max_results=self._max_results,
-                    fields=self._fields
+                    search_query=self.query,
+                    max_results=self.max_results,
+                    fields=self.fields
                 )
 
             self.notify(False)
             self._complete = True
         except (AssertionError, InvalidQueryError) as exception:
             self.failure = exception
+
+class QueryManager(list):
+    """
+    The QueryManager accepts filters as they are loaded
+    and stores them in a list.
+
+    As new queries come in, the manager scans the list to
+    see if an existing query has already been provided which
+    matches its criteria.
+
+    If it has, the query is appended to the observers of the
+    earlier query which assigns its results via the notify.
+
+    Filters provided to the QueryManager must implement
+    Observable for this manager to understand.
+
+    TODO:
+      * Implement remove methods.
+        At present when an item is removed from the queue, any
+        observing items are also removed. This can be dangerous
+        and instead, when an item is removed, any observing items
+        should be returned to the bottom of the queue with
+        subsequent items monitoring the first observer to be removed.
+    """
+
+    @accepts(Filter)
+    def append(self, item):
+        """
+        Append a Filter item to the Query queue.
+
+        The query manager only deals with Filter items.
+        """
+        observed = False
+        for query in self:
+            if (query.query == item.query
+                    and query.max_results == item.max_results
+                    and query.fields == item.fields):
+                query.append(item)
+                observed = True
+                break
+        if not observed:
+            super().append(item)
 

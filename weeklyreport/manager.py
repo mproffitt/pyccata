@@ -89,19 +89,4 @@ class ProjectManager(object):
             raise ImportError('{0} must implement \'ManagerInterface\''.format(manager.capitalize()))
         self._client = name()
 
-class QueryManager(list):
-    """
-    The QueryManager accepts filters as they are loaded
-    and stores them in a list.
 
-    As new queries come in, the manager scans the list to
-    see if an existing query has already been provided which
-    matches its criteria.
-
-    If it has, the query is appended to the observers of the
-    earlier query which assigns its results via the notify.
-
-    Filters provided to the QueryManager must implement
-    Observable for this manager to understand.
-    """
-    pass

@@ -41,3 +41,4 @@ class TestProjectManager(TestCase):
             with self.assertRaises(ImportError):
                 a = ProjectManager()
 
+
