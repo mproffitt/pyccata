@@ -2,8 +2,9 @@ from unittest import TestCase
 from mock     import patch, PropertyMock
 
 from weeklyreport.configuration import Configuration
-from weeklyreport.manager       import ProjectManager
-from weeklyreport.exceptions    import InvalidModuleError, InvalidClassError
+from weeklyreport.managers.project import ProjectManager
+from weeklyreport.exceptions import InvalidModuleError
+from weeklyreport.exceptions import InvalidClassError
 
 class TestProjectManager(TestCase):
 
@@ -13,7 +14,7 @@ class TestProjectManager(TestCase):
     def tearDown(self):
         if Configuration._instance is not None:
             Configuration._instance = None
-        Configuration.NAMESPACE = 'weeklyreport'
+        Configuration.NAMESPACE = 'weeklyreport.managers'
 
     @patch('weeklyreport.configuration.Configuration._load')
     def test_manager_raises_invalid_module_error_if_manager_module_does_not_exist(self, mock_load):
@@ -40,5 +41,4 @@ class TestProjectManager(TestCase):
             mock_manager.return_value = key
             with self.assertRaises(ImportError):
                 a = ProjectManager()
-
 

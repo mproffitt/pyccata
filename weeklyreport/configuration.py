@@ -18,7 +18,7 @@ class Configuration(object):
 
     """
     CONFIG_DIRECTORY_NAME = 'releaseessentials'
-    NAMESPACE = 'weeklyreport'
+    NAMESPACE = 'weeklyreport.managers'
     _instance = None
     _configuration = None
     _manager = None
@@ -64,8 +64,8 @@ class Configuration(object):
         if not hasattr(self._configuration, manager):
             raise RequiredKeyError('\'<root>/{0}'.format(manager))
 
-        class_path = '{0}.managers.{1}'.format(self.NAMESPACE, manager)
-        if not class_exists(self.NAMESPACE, 'managers', manager):
+        class_path = '{0}.subjects.{1}'.format(self.NAMESPACE, manager)
+        if not class_exists(self.NAMESPACE, 'subjects', manager):
             raise InvalidClassError(manager, class_path)
         self._manager = manager
 

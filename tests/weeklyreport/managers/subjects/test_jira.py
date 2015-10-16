@@ -3,10 +3,10 @@ from mock import patch, PropertyMock
 
 from collections import namedtuple
 from weeklyreport.configuration import Configuration
-from weeklyreport.manager import ProjectManager
+from weeklyreport.managers.project import ProjectManager
 from weeklyreport.exceptions import InvalidConnectionError, InvalidQueryError
 from weeklyreport.interface import ManagerInterface
-from weeklyreport.managers.jira import Jira
+from weeklyreport.managers.subjects.jira import Jira
 from tests.mocks.dataproviders import DataProviders
 from jira.client import JIRA, JIRAError
 
@@ -31,7 +31,7 @@ class TestJira(TestCase):
                 self.assertRegexpMatches(str(e), 'Recieved HTTP\/\d+ whilst establishing connection to .*')
 
 
-    @patch('weeklyreport.managers.jira.Jira._client')
+    @patch('weeklyreport.managers.subjects.jira.Jira._client')
     @patch('weeklyreport.configuration.Configuration._load')
     def test_manager_loads_client_on_success(self, mock_load, mock_jira_client):
         key = 'jira'

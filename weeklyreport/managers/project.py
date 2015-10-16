@@ -1,7 +1,7 @@
 """
 Defines the manager used by the application.
 
-* ProjectManager - loads a project manager api from the managers directory
+* ProjectManager - loads a project manager api from the managers/subjects directory
 * QueryManager
 * ThreadManager
 """
@@ -12,6 +12,7 @@ from weeklyreport.configuration import Configuration
 from weeklyreport.exceptions import InvalidModuleError
 from weeklyreport.exceptions import InvalidClassError
 from weeklyreport.helpers import implements
+from weeklyreport.threading import Threadable
 
 class ProjectManager(object):
     """
@@ -21,7 +22,7 @@ class ProjectManager(object):
 
     Drivers loaded by this application must implement the
     ManagerInterface interface and be stored in the
-    weeklyreport.managers package.
+    weeklyreport.managers.subjects package.
     """
     __implements__ = (ManagerInterface,)
     _configuration = None
@@ -77,16 +78,15 @@ class ProjectManager(object):
         @param manager   string The name of the manager to load
         """
         try:
-            module = importlib.import_module(namespace + '.managers.' + manager.lower())
+            module = importlib.import_module(namespace + '.subjects.' + manager.lower())
         except ImportError:
             raise InvalidModuleError(manager, namespace)
         try:
             name = getattr(module, manager.capitalize())
         except AttributeError:
-            raise InvalidClassError(manager.capitalize(), namespace + '.managers.' + manager.lower())
+            raise InvalidClassError(manager.capitalize(), namespace + '.subjects.' + manager.lower())
 
         if not implements(name, ManagerInterface):
             raise ImportError('{0} must implement \'ManagerInterface\''.format(manager.capitalize()))
         self._client = name()
-
 

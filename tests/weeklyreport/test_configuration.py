@@ -19,7 +19,7 @@ class TestConfiguration(TestCase):
         self._path = os.path.join(path, os.path.join('tests', 'conf'))
 
     def tearDown(self):
-        Configuration.NAMESPACE = 'weeklyreport'
+        Configuration.NAMESPACE = 'weeklyreport.managers'
         if Configuration._instance is not None:
             Configuration._instance = None
         if Configuration._configuration is not None:
