@@ -1,9 +1,10 @@
 """ Wrapper class onto python-jira """
+import re
 from weeklyreport.decorators import accepts
 from weeklyreport.interface import ManagerInterface
 from weeklyreport.configuration import Configuration
 from jira.client import JIRA
-from jira.client import JIRAError
+from jira.exceptions import JIRAError
 from weeklyreport.log import Logger
 from weeklyreport.exceptions import InvalidConnectionError
 from weeklyreport.exceptions import InvalidQueryError
@@ -88,7 +89,15 @@ class Jira(object):
             results = self.client.search_issues(search_query, maxResults=max_results, fields=fields)
             return Jira._convert_results(results)
         except JIRAError as exception:
-            raise InvalidQueryError(str(exception))
+            expression = '.*Error in the JQL Query.*'
+            if exception.status_code == 400 and re.match(expression, exception.text):
+                raise InvalidQueryError(str(exception))
+            raise InvalidConnectionError(
+                exception.status_code,
+                self._options['server'],
+                exception.text,
+                exception.headers
+            )
 
     def projects(self):
         """ Get a list of all projects defined in Jira """

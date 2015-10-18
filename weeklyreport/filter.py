@@ -10,7 +10,6 @@ from weeklyreport.decorators import accepts
 from weeklyreport.threading import Threadable
 from weeklyreport.managers.project import ProjectManager
 from weeklyreport.resources import ResultList
-from weeklyreport.exceptions import InvalidQueryError
 
 class Filter(Threadable):
     """
@@ -28,6 +27,7 @@ class Filter(Threadable):
     _observers = None
     _max_results = None
     _projectmanager = None
+    _observing = False
 
     @property
     def projectmanager(self):
@@ -60,6 +60,27 @@ class Filter(Threadable):
         """ Get the results of the filter search """
         return self._results
 
+    @property
+    def hasobservers(self):
+        """ returns True if the number of items observing this one is > 0 """
+        return len(self._observers) > 0
+
+    @property
+    def observing(self):
+        """ Is this item being observed? """
+        return self._observing
+
+    @observing.setter
+    @accepts(bool)
+    def observing(self, value):
+        """ Tell the item that it is being observed """
+        self._observing = value
+
+    @property
+    def observers(self):
+        """ get the list of observers to this object """
+        return self._observers
+
     @accepts(str, max_results=(bool, int), fields=(None, list))
     def setup(self, query, max_results=0, fields=None):
         """
@@ -84,6 +105,7 @@ class Filter(Threadable):
     @accepts(ObservableInterface)
     def append(self, item):
         """ Append an observer to the list of observables """
+        item.observing = True
         self._observers.append(item)
 
     @accepts((bool, ResultList))
@@ -114,6 +136,6 @@ class Filter(Threadable):
 
             self.notify(False)
             self._complete = True
-        except (AssertionError, InvalidQueryError) as exception:
+        except Exception as exception:
             self.failure = exception
 

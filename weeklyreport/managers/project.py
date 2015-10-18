@@ -12,7 +12,6 @@ from weeklyreport.configuration import Configuration
 from weeklyreport.exceptions import InvalidModuleError
 from weeklyreport.exceptions import InvalidClassError
 from weeklyreport.helpers import implements
-from weeklyreport.threading import Threadable
 
 class ProjectManager(object):
     """

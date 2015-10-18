@@ -14,6 +14,7 @@ class Threadable(Thread):
 
     _complete = False
     _failure = None
+    _retrycount = 0
 
     @property
     def failed(self):
@@ -35,6 +36,11 @@ class Threadable(Thread):
     def complete(self):
         """ Has the current thread completed its run? """
         return self._complete
+
+    @property
+    def ready(self):
+        """ Is the thread ready to start? """
+        return not self.isAlive() and not (self.complete or self.failed)
 
     @abstractmethod
     def setup(self, *args, **kwargs):

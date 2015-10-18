@@ -8,7 +8,8 @@ from weeklyreport.exceptions import InvalidConnectionError, InvalidQueryError
 from weeklyreport.interface import ManagerInterface
 from weeklyreport.managers.subjects.jira import Jira
 from tests.mocks.dataproviders import DataProviders
-from jira.client import JIRA, JIRAError
+from jira.client import JIRA
+from jira.exceptions import JIRAError
 
 class TestJira(TestCase):
     @patch('jira.client.JIRA.__init__')
@@ -82,10 +83,10 @@ class TestJira(TestCase):
     @patch('jira.client.JIRA.__init__')
     @patch('jira.client.JIRA.search_issues')
     @patch('weeklyreport.configuration.Configuration._load')
-    def test_manager_raises_exception_if_search_query_fails(self, mock_load, mock_search, mock_jira_client):
+    def test_manager_raises_invalid_query_exception_if_search_query_fails(self, mock_load, mock_search, mock_jira_client):
         key = 'jira'
         mock_jira_client.return_value = None
-        mock_search.side_effect = JIRAError(text = 'Query is invalid')
+        mock_search.side_effect = JIRAError(status_code=400, text = 'Error in the JQL Query. Unknown field \'bob\'')
 
         data = DataProviders._test_data_for_search_results()
         with patch('weeklyreport.configuration.Configuration.manager', new_callable=PropertyMock) as mock_manager:
@@ -94,6 +95,24 @@ class TestJira(TestCase):
                 mock_manager.return_value = key
                 manager = ProjectManager()
                 self.assertIsInstance(manager.client.client, JIRA)
-                with self.assertRaisesRegexp(InvalidQueryError, 'Query is invalid'):
+                with self.assertRaisesRegexp(InvalidQueryError, '.*Error in the JQL Query.*'):
+                    manager.search_issues(search_query='assignee = "bob123"', max_results=2, fields=[])
+
+    @patch('jira.client.JIRA.__init__')
+    @patch('jira.client.JIRA.search_issues')
+    @patch('weeklyreport.configuration.Configuration._load')
+    def test_manager_raises_invalid_connection_exception_if_search_query_fails(self, mock_load, mock_search, mock_jira_client):
+        key = 'jira'
+        mock_jira_client.return_value = None
+        mock_search.side_effect = JIRAError(status_code=500, text = 'Server Error')
+
+        data = DataProviders._test_data_for_search_results()
+        with patch('weeklyreport.configuration.Configuration.manager', new_callable=PropertyMock) as mock_manager:
+            with patch('weeklyreport.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
+                mock_config.return_value = DataProviders._get_config_for_test()
+                mock_manager.return_value = key
+                manager = ProjectManager()
+                self.assertIsInstance(manager.client.client, JIRA)
+                with self.assertRaisesRegexp(InvalidConnectionError, 'Recieved HTTP/500 whilst establishing.*'):
                     manager.search_issues(search_query='assignee = "bob123"', max_results=2, fields=[])
 

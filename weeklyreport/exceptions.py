@@ -97,3 +97,11 @@ class InvalidQueryError(ValueError):
 
     def __str__(self):
         return self.error
+
+class PoolEmptyError(RuntimeError):
+    """ Called when the threadpool has been drained """
+    pass
+
+class ThreadFailedError(RuntimeError):
+    """ Called when a thread has failed for an unknown reason """
+    pass

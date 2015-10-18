@@ -56,9 +56,10 @@ class Configuration(object):
         Example module structure:
             weeklyreport
             |-- managers
-                |-- jira.py
-                    class Jira(ManagerInterface):
-                        ___implements__ = (ManagerInterface,)
+                |-- subjects
+                    |-- jira.py
+                        class Jira(ManagerInterface):
+                            ___implements__ = (ManagerInterface,)
         """
         Logger().info('Loading manager class \'{0}\''.format(manager))
         if not hasattr(self._configuration, manager):

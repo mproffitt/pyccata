@@ -71,27 +71,3 @@ class TestFilter(TestCase):
                 self.assertEqual(len(mock_filter.results), len(DataProviders._test_data_for_search_results()))
                 self.assertEqual(mock_filter._results, another_filter._results)
 
-class TestQueryManager(TestCase):
-    def setUp(self):
-        self._manager = QueryManager()
-
-    def tearDown(self):
-        self._manager = None
-
-    def test_append_updates_existing_items_observers_when_queries_match(self):
-        mock_filter = Filter('assignee = "Bob"')
-        another_filter = Filter('assignee = "Bob"')
-
-        self._manager.append(mock_filter)
-        self._manager.append(another_filter)
-        self.assertEquals(1, len(self._manager))
-        self.assertEquals(1, len(self._manager[0]._observers))
-
-    def test_append_updates_self_items_observers_when_queries_match(self):
-        mock_filter = Filter('assignee = "Foo"')
-        another_filter = Filter('assignee = "Bar"')
-
-        self._manager.append(mock_filter)
-        self._manager.append(another_filter)
-        self.assertEquals(2, len(self._manager))
-

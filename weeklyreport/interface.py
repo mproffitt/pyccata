@@ -90,4 +90,3 @@ class ObservableInterface(metaclass=ABCMeta):
         """
         raise NotImplementedError('Method must be implemented by a child')
 
-
