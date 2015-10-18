@@ -7,6 +7,9 @@ from weeklyreport.log import Logger
 from weeklyreport.exceptions import InvalidQueryError
 from weeklyreport.exceptions import InvalidConnectionError
 from weeklyreport.filter import Filter
+from weeklyreport.manager import Manager
+from weeklyreport.interface import ManagerInterface
+from weeklyreport.interface import ReportingInterface
 
 class TestObservableThread(Threadable):
     __implements__ = (ObservableInterface,)
@@ -50,6 +53,16 @@ class BrokenConnectionFilter(Filter):
     def run(self):
         Logger().info('Starting broken filter thread \'{0}\''.format(self._name))
         self.failure = InvalidConnectionError(500, 'http://jira.local:8080', 'Recieved HTTP/500 whilst establishing a connection to jira.local.')
+
+class InvalidRequires(Manager):
+    def __init__(self):
+        namespace = self.configuration.NAMESPACE
+        self._load(namespace, self.configuration.manager, must_implement=ManagerInterface)
+
+class InvalidReportRequires(Manager):
+    def __init__(self):
+        namespace = self.configuration.NAMESPACE
+        self._load(namespace, self.configuration.reporting, must_implement=ReportingInterface)
 
 class DataProviders(object):
 
@@ -122,23 +135,92 @@ class DataProviders(object):
         return data
 
     @staticmethod
-    def _get_config_for_test(port='8080'):
-        key = 'jira'
-        Config = namedtuple('Config', 'manager jira server port username password')
+    def _get_config_for_test(port='8080', manager='jira', reporting='docx'):
+        ReportType = namedtuple('Report', 'title subtitle abstract path sections')
+        Config = namedtuple('Config', 'manager reporting report jira server port username password')
+        Report = ReportType(
+            title='hello world',
+            subtitle='sub title test',
+            path='/path/to',
+            sections=[None],
+            abstract='An abstract block of text.\n\nSpanning two paragraphs...'
+        )
         Jira   = Config(
             manager  = None,
+            reporting= None,
+            report   = None,
             jira     = None,
             server   = 'http://jira.local',
             port     = port,
             username = 'test',
             password = 'letmein'
         )
+
         return Config(
-            manager  = key,
+            manager  = manager,
+            reporting= reporting,
+            jira     = Jira,
+            report   = Report,
+            server   = None,
+            port     = None,
+            username = None,
+            password = None
+        )
+
+    @staticmethod
+    def _get_config_for_test_without_report(port='8080', manager='jira', reporting='docx'):
+        Config = namedtuple('Config', 'manager reporting jira server port username password')
+        Jira   = Config(
+            manager  = None,
+            reporting= None,
+            jira     = None,
+            server   = 'http://jira.local',
+            port     = port,
+            username = 'test',
+            password = 'letmein'
+        )
+
+        return Config(
+            manager  = manager,
+            reporting= reporting,
             jira     = Jira,
             server   = None,
             port     = None,
             username = None,
             password = None
         )
+
+    @staticmethod
+    def _get_config_for_test_with_invalid_classes():
+        ReportType = namedtuple('Report', 'title subtitle abstract path sections')
+        Config = namedtuple('Config', 'manager reporting report iwillneverbeamanager server port username password')
+        Report = ReportType(
+            title='hello world',
+            subtitle='sub title test',
+            path='/path/to',
+            sections=[None],
+            abstract='An abstract block of text.\n\nSpanning two paragraphs...'
+        )
+        Jira   = Config(
+            manager  = None,
+            reporting= None,
+            report   = None,
+            iwillneverbeamanager  = None,
+            server   = 'http://jira.local',
+            port     = '8080',
+            username = 'test',
+            password = 'letmein'
+        )
+
+        return Config(
+            manager  = 'iwillneverbeamanager',
+            reporting= 'idonotexist',
+            iwillneverbeamanager = Jira,
+            report   = Report,
+            server   = None,
+            port     = None,
+            username = None,
+            password = None
+        )
+
 

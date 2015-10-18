@@ -1,20 +1,22 @@
 {
-  "projectmanager": "jira",
-  "jira": {
-    "username": "",
-    "password": "",
-    "server"  : "",
-    "port"    : "",
+    "projectmanager": "jira",
+    "reporting": "docx",
+    "jira": {
+        "username": "",
+        "password": "",
+        "server"  : "",
+        "port"    : ""
+    },
     "report": {
-      "path": "ess_weekly_report",
-      "title": "ESS Development Department status",
-      "subtitle": "Week 41",
-      "abstract": "This document provides the overall and per-project breakdown of where we currently stand as a department.\n\nEach section starts with a status bar showing what is in todo, what is in progress and what has been completed.\n\nSubsequent to this, a more detailed breakdown is provided where relevant.",
-      "sections": [
-        {
-          "title": "hello world",
-          "abstract":  "This is a test paragraph",
-          "structure": [
+        "path": "ess_weekly_report",
+        "title": "ESS Development Department status",
+        "subtitle": "Week 41",
+        "abstract": "This document provides the overall and per-project breakdown of where we currently stand as a department.\n\nEach section starts with a status bar showing what is in todo, what is in progress and what has been completed.\n\nSubsequent to this, a more detailed breakdown is provided where relevant.",
+        "sections": [
+            {
+                "title": "hello world",
+                "abstract":  "This is a test paragraph",
+                "structure": [
             {
               "type": "paragraph",
               "content": "some text"
@@ -69,5 +71,4 @@
         }
       ]
     }
-  }
 }

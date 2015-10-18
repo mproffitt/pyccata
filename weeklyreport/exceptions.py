@@ -27,8 +27,8 @@ class InvalidArgumentNumberError(ValueError):
     call is incorrect, it is possible to have a valid function where this
     will report a false validation.
     """
-    def __init__(self, func_name):
-        self.error = 'Invalid number of arguments for {0}()'.format(func_name)
+    def __init__(self, func_name, real, expected):
+        self.error = 'Invalid number of arguments for {0}() (got {1}, expected {2})'.format(func_name, real, expected)
         super().__init__(self.error)
 
     def __str__(self):

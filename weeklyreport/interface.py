@@ -1,8 +1,8 @@
 """
 Defines the interfaces used by the weeklyreport package
 """
-from abc       import ABCMeta
-from abc       import abstractmethod
+from abc import ABCMeta
+from abc import abstractmethod
 
 class ViewWindowInterface(metaclass=ABCMeta):
     """
@@ -89,4 +89,55 @@ class ObservableInterface(metaclass=ABCMeta):
                                          calls notify on all observing objects
         """
         raise NotImplementedError('Method must be implemented by a child')
+
+class ReportingInterface(metaclass=ABCMeta):
+    """
+    Interface for implementing Report rendering types
+    """
+    @abstractmethod
+    def add_paragraph(self, text):
+        """
+        Add a paragraph of text to the report
+
+        @param text string
+        """
+        raise NotImplementedError('Method must be implemented by a child')
+
+    @abstractmethod
+    def add_heading(self, heading, level):
+        """
+        Add a heading to the report
+
+        @param heading string
+        @param level   int
+        """
+        raise NotImplementedError('Method must be implemented by a child')
+
+    @abstractmethod
+    def add_table(self, headings=None, data=None, style=''):
+        """
+        Add a table to the report
+
+        @param rows  int
+        @param cols  int
+        @param style string
+        @param data  list
+        """
+        raise NotImplementedError('Method must be implemented by a child')
+
+    @abstractmethod
+    def add_picture(self, filename, width=0):
+        """
+        Add a picture to the report
+
+        @param filename string
+        @param width    int
+        """
+        raise NotImplementedError('Method must be implemented by a child')
+
+    @abstractmethod
+    def add_page_break(self):
+        """ Adds a page break to the report """
+        raise NotImplementedError('Method must be implemented by a child')
+
 

@@ -136,6 +136,10 @@ class Filter(Threadable):
 
             self.notify(False)
             self._complete = True
+        # pylint: disable=broad-except
+        # It is necessary to have a broad exception case here
+        # as we need to set the failure state of the thread
+        # regardless of what type of exception is thrown
         except Exception as exception:
             self.failure = exception
 

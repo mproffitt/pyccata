@@ -19,12 +19,18 @@ class Configuration(object):
     """
     CONFIG_DIRECTORY_NAME = 'releaseessentials'
     NAMESPACE = 'weeklyreport.managers'
+    REPORTING_TYPES = [
+        'pdf', 'docx', 'html', 'latex'
+    ]
+
     _instance = None
     _configuration = None
     _manager = None
+    _reporting = None
 
     _required_root_elements = [
-        'manager'
+        'manager',
+        'reporting'
     ]
 
     @staticmethod
@@ -70,6 +76,43 @@ class Configuration(object):
             raise InvalidClassError(manager, class_path)
         self._manager = manager
 
+    @property
+    def reporting(self):
+        """ Get the configured reporting interface """
+        return self._reporting
+
+    @reporting.setter
+    def reporting(self, reporting):
+        """
+        Verify the reporting class exists and set its name if true
+
+        @raise RequiredKeyError  if a root element of the same name as manager is not defined.
+        @raise InvalidClassError if the required class does not exist under NAMESPACE.module
+
+        Example configuration:
+            {
+                "reporting": "docx",
+                "report": " {
+                    ...
+                }
+            }
+
+        Example module structure:
+            weeklyreport
+            |-- managers
+                |-- subjects
+                    |-- docx.py
+                        class Docx(ReportingInterface):
+                            ___implements__ = (ReportingInterface,)
+        """
+        Logger().info('Loading reporting class \'{0}\''.format(reporting))
+        if not hasattr(self._configuration, 'report'):
+            raise RequiredKeyError('\'<root>/report')
+
+        class_path = '{0}.subjects.{1}'.format(self.NAMESPACE, reporting)
+        if not class_exists(self.NAMESPACE, 'subjects', reporting):
+            raise InvalidClassError(reporting, class_path)
+        self._reporting = reporting
 
     def __init__(self, filename='configuration.json'):
         """ Initialise the Configuration """
@@ -95,6 +138,8 @@ class Configuration(object):
             Logger().debug('Checking for config file in \'{0}\''.format(location))
             path = os.path.join(str(location), self._filename)
             try:
+                # pylint: disable=star-args
+                # star-args are required for mapping to named tuple
                 with open(path) as configuration_file:
                     self._configuration = json.load(
                         configuration_file,
@@ -132,7 +177,6 @@ class Configuration(object):
         """
         for element in required_elements:
             if not hasattr(self._configuration, element):
-                Logger().debug('checking for \'<root>/{0}\''.format(element))
                 raise RequiredKeyError('<root>/{0}'.format(element))
             if hasattr(self, element):
                 setattr(self, element, getattr(self._configuration, element))

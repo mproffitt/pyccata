@@ -8,6 +8,7 @@ from ddt                        import ddt, data, unpack
 from collections                import namedtuple
 from weeklyreport.configuration import Configuration
 from weeklyreport.exceptions    import RequiredKeyError, InvalidClassError
+from tests.mocks.dataproviders import DataProviders
 
 @ddt
 class TestConfiguration(TestCase):
@@ -65,48 +66,55 @@ class TestConfiguration(TestCase):
 
     @patch('weeklyreport.configuration.Configuration._load')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def test_configuration_calls_validation_once_config_is_loaded(self, mock_config_list, mock_load):
-        Config = namedtuple('Config', 'manager jira server port')
-        Jira   = Config(manager = None, jira = None, server = 'http://jira.local', port = '8080')
-        mock_config = Config(manager = 'jira', jira = Jira, server = None, port = None)
+    @data(
+        ['manager', 'jira'],
+        ['reporting', 'docx']
+    )
+    @unpack
+    def test_configuration_calls_validation_once_config_is_loaded(self, data_key, data_driver, mock_config_list, mock_load):
+        mock_config = DataProviders._get_config_for_test()
         mock_config_list.return_value = [self._path]
         mock_load.return_value = None
         self.tearDown()
         Configuration._configuration = mock_config
-        required_elements = Configuration._required_root_elements
+        required_elements = [data_key]
         config = Configuration(filename='config_sections.json')
         mock_load.assert_called_once_with()
-        with patch('weeklyreport.configuration.Configuration.manager', new_callable=PropertyMock) as mock_manager:
+        with patch(
+            'weeklyreport.configuration.Configuration.{0}'.format(data_key),
+            new_callable=PropertyMock
+        ) as mock_manager:
             mock_manager.return_value = object()
             self.assertTrue(config.validate_config(required_elements))
-            mock_manager.assert_called_with('jira')
+            mock_manager.assert_called_with(data_driver)
 
     @patch('weeklyreport.configuration.Configuration._load')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def test_configuration_raises_requried_key_error_if_manager_config_is_not_found(self, mock_config_list, mock_load):
-        key = 'agilemanager'
-        Config = namedtuple('Config', 'manager jira server port')
-        Jira   = Config(manager = None, jira = None, server = 'http://jira.local', port = '8080')
-        mock_config = Config(manager = key, jira = Jira, server = None, port = None)
-        mock_load.return_value = None
-        self.tearDown()
-
+    @data(
+        ['manager', 'agilemanager'],
+        ['reporting', 'pdf']
+    )
+    @unpack
+    def test_configuration_raises_requried_key_error_if_required_config_is_not_found(self, data_key, data_driver, mock_config_list, mock_load):
+        mock_config = DataProviders._get_config_for_test_without_report(manager=data_driver, reporting=data_driver)
         mock_config_list.return_value = [self._path]
         Configuration._configuration = mock_config
 
-        with self.assertRaisesRegexp(RequiredKeyError, '.*\'<root>[./]?{0}\'.*'.format(key)):
-            config = Configuration(filename='config_sections.json')
-            required_elements = Configuration._required_root_elements
-            config.validate_config(required_elements)
+        driver = data_driver if data_key != 'reporting' else 'report'
+        with self.assertRaisesRegexp(RequiredKeyError, '.*\'<root>[./]?{0}\'.*'.format(driver)):
+            config = Configuration(filename='config_missing.json')
+            config.validate_config([data_key])
         mock_load.assert_called_once_with()
 
     @patch('weeklyreport.configuration.Configuration._load')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def test_configuration_raises_invalid_class_error_if_manager_class_does_not_exist(self, mock_config_list, mock_load):
-        key = 'iwillneverbeamanager'
-        Config = namedtuple('Config', 'manager iwillneverbeamanager server port')
-        Jira   = Config(manager = None, iwillneverbeamanager = None, server = 'http://jira.local', port = '8080')
-        mock_config = Config(manager = key, iwillneverbeamanager = Jira, server = None, port = None)
+    @data(
+        ['manager', 'willneverbeamanager'],
+        ['reporting', 'iwillneverexist']
+    )
+    @unpack
+    def test_configuration_raises_invalid_class_error_if_required_class_does_not_exist(self, data_key, data_driver, mock_config_list, mock_load):
+        mock_config = DataProviders._get_config_for_test_with_invalid_classes()
         mock_load.return_value = None
         self.tearDown()
 
@@ -115,17 +123,18 @@ class TestConfiguration(TestCase):
 
         with self.assertRaises(InvalidClassError):
             config = Configuration(filename='config_sections.json')
-            required_elements = Configuration._required_root_elements
-            config.validate_config(required_elements)
+            config.validate_config([data_key])
         mock_load.assert_called_once_with()
 
     @patch('weeklyreport.configuration.Configuration._load')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def test_manager_loading_returns_true_if_manager_is_valid(self, mock_config_list, mock_load):
-        key = 'jira'
-        Config = namedtuple('Config', 'manager jira server port')
-        Jira   = Config(manager = None, jira = None, server = 'http://jira.local', port = '8080')
-        mock_config = Config(manager = key, jira = Jira, server = None, port = None)
+    @data(
+        ['manager', 'jira'],
+        ['reporting', 'docx']
+    )
+    @unpack
+    def test_manager_loading_returns_true_if_required_is_valid(self, data_key, data_driver, mock_config_list, mock_load):
+        mock_config = DataProviders._get_config_for_test(manager=data_driver, reporting=data_driver)
         mock_load.return_value = None
         self.tearDown()
 
@@ -134,18 +143,19 @@ class TestConfiguration(TestCase):
         Configuration.NAMESPACE = 'tests.mocks'
 
         config = Configuration(filename='config_sections.json')
-        required_elements = Configuration._required_root_elements
-        config.validate_config(required_elements)
+        config.validate_config([data_key])
         mock_load.assert_called_once_with()
-        self.assertEquals('jira', config.manager)
+        self.assertEquals(data_driver, getattr(config, data_key))
 
     @patch('weeklyreport.configuration.Configuration._load')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def test_manager_getattr_method(self, mock_config_list, mock_load):
-        key = 'jira'
-        Config = namedtuple('Config', 'manager jira server port')
-        Jira   = Config(manager = None, jira = None, server = 'http://jira.local', port = '8080')
-        mock_config = Config(manager = key, jira = Jira, server = None, port = None)
+    @data(
+        ['manager', 'jira'],
+        ['reporting', 'docx']
+    )
+    @unpack
+    def test_config_getattr_method(self, data_key, data_driver, mock_config_list, mock_load):
+        mock_config = DataProviders._get_config_for_test(manager=data_driver, reporting=data_driver)
         mock_load.return_value = None
         self.tearDown()
 
@@ -155,7 +165,7 @@ class TestConfiguration(TestCase):
 
         config = Configuration(filename='config_sections.json')
         config.check = True
-        required_elements = Configuration._required_root_elements
+        required_elements = [data_key]
         config.validate_config(required_elements)
         mock_load.assert_called_once_with()
         self.assertTrue(config.check)

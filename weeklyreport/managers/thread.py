@@ -103,6 +103,9 @@ class ThreadManager(list):
                 if not thread.isAlive():
                     self._pool.remove(thread)
 
+                if thread.complete:
+                    thread.join()
+
                 if thread.failed:
                     raise thread.failure
             except InvalidQueryError:

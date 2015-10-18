@@ -5,15 +5,11 @@ Defines the manager used by the application.
 * QueryManager
 * ThreadManager
 """
-import importlib
 from weeklyreport.interface import ManagerInterface
+from weeklyreport.manager import Manager
 from weeklyreport.decorators import accepts
-from weeklyreport.configuration import Configuration
-from weeklyreport.exceptions import InvalidModuleError
-from weeklyreport.exceptions import InvalidClassError
-from weeklyreport.helpers import implements
 
-class ProjectManager(object):
+class ProjectManager(Manager):
     """
     The ProjectManager class acts as a wrapper class to
     load a pluggable back-end interfacing against various
@@ -24,38 +20,26 @@ class ProjectManager(object):
     weeklyreport.managers.subjects package.
     """
     __implements__ = (ManagerInterface,)
-    _configuration = None
-    _client = None
+
+    REQUIRED = [
+        'server',
+        'port',
+        'username',
+        'password'
+    ]
 
     def __init__(self):
         """
         Initialise the object and call _load
         """
         namespace = self.configuration.NAMESPACE
-        self._load(namespace, self.configuration.manager)
-
-    @property
-    def client(self):
-        """
-        Get the loaded manager client
-        """
-        return self._client
-
-    @property
-    def configuration(self):
-        """
-        Get the cofiguration object
-            - load on demand
-        """
-        if self._configuration is None:
-            self._configuration = Configuration()
-        return self._configuration
+        self._load(namespace, self.configuration.manager, must_implement=ManagerInterface)
 
     def projects(self):
         """
         Get a list of projects defined in the agile project manager
         """
-        return self._client.projects()
+        return self.client.projects()
 
     @accepts(search_query=str, max_results=(bool, int), fields=(None, list))
     def search_issues(self, search_query='', max_results=0, fields=None):
@@ -66,26 +50,5 @@ class ProjectManager(object):
         @max_results        bool | int If False will load all issues in batches of 50
         @fields             list       A list of fields to retrieve as part of the query results
         """
-        return self._client.search_issues(search_query=search_query, max_results=max_results, fields=fields)
-
-    @accepts(str, str)
-    def _load(self, namespace, manager):
-        """
-        Load the requested manager
-
-        @param namespace string The namespace containing the managers ('weeklyreport')
-        @param manager   string The name of the manager to load
-        """
-        try:
-            module = importlib.import_module(namespace + '.subjects.' + manager.lower())
-        except ImportError:
-            raise InvalidModuleError(manager, namespace)
-        try:
-            name = getattr(module, manager.capitalize())
-        except AttributeError:
-            raise InvalidClassError(manager.capitalize(), namespace + '.subjects.' + manager.lower())
-
-        if not implements(name, ManagerInterface):
-            raise ImportError('{0} must implement \'ManagerInterface\''.format(manager.capitalize()))
-        self._client = name()
+        return self.client.search_issues(search_query=search_query, max_results=max_results, fields=fields)
 

@@ -50,7 +50,7 @@ def validate_positional_args(real_args, aargs, func):
     @raise ArgumentValidationError    if the argument fails to validate
     """
     if len(real_args) != len(aargs):
-        raise InvalidArgumentNumberError(func.__name__)
+        raise InvalidArgumentNumberError(func.__name__, len(real_args), len(aargs))
     for arg_num, (actual_arg, accepted_arg_type) in enumerate(zip(real_args, aargs)):
         ord_num = ordinal(arg_num + 1)
         if isinstance(accepted_arg_type, tuple):
