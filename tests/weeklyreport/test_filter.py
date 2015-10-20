@@ -7,10 +7,15 @@ from weeklyreport.managers.query import QueryManager
 from weeklyreport.exceptions import InvalidQueryError
 from weeklyreport.managers.project import ProjectManager
 from tests.mocks.dataproviders import DataProviders
+from weeklyreport.log import Logger
 
 class TestFilter(TestCase):
-    def setUp(self):
-        pass
+
+    @patch('weeklyreport.log.Logger.log')
+    def setUp(self, mock_log):
+        mock_log.return_value = None
+        Logger._instance = mock_log
+
 
     def tearDown(self):
         pass

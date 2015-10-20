@@ -9,18 +9,22 @@ from collections                import namedtuple
 from weeklyreport.configuration import Configuration
 from weeklyreport.exceptions    import RequiredKeyError, InvalidClassError
 from tests.mocks.dataproviders import DataProviders
+from weeklyreport.log import Logger
 
 @ddt
 class TestConfiguration(TestCase):
     _test_configuration_path = ''
     _required_root_elements = Configuration._required_root_elements
 
-    def setUp(self):
+    @patch('weeklyreport.log.Logger.log')
+    def setUp(self, mock_log):
+        mock_log.return_value = None
         path = os.path.dirname(os.path.realpath(__file__ + '../../../'))
         self._path = os.path.join(path, os.path.join('tests', 'conf'))
+        self._mock_log = mock_log
 
     def tearDown(self):
-        Configuration.NAMESPACE = 'weeklyreport.managers'
+        Configuration.NAMESPACE = 'weeklyreport'
         if Configuration._instance is not None:
             Configuration._instance = None
         if Configuration._configuration is not None:

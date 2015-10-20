@@ -5,6 +5,7 @@ Defines the Reporting manager used by the application
 from weeklyreport.manager import Manager
 from weeklyreport.decorators import accepts
 from weeklyreport.interface import ReportingInterface
+from weeklyreport.helpers import read_file
 
 class ReportManager(Manager):
     """
@@ -22,6 +23,7 @@ class ReportManager(Manager):
 
     REQUIRED = [
         'path',
+        'datapath',
         'title',
         'subtitle',
         'abstract',
@@ -35,11 +37,21 @@ class ReportManager(Manager):
         namespace = self.configuration.NAMESPACE
         self._load(namespace, self.configuration.reporting, must_implement=ReportingInterface)
         self._maxwidth = self.client.MAXWIDTH
+        self.create_title_page()
 
     @property
     def maxwidth(self):
         """ Get the maximum width of the document """
         return self._maxwidth
+
+    def create_title_page(self):
+        """ Creates a title page for the report using settings from configuration """
+        self.add_heading(self.configuration.report.title, 0)
+        self.add_heading(self.configuration.report.subtitle, 1)
+        for paragraph in read_file(self.configuration.report.abstract).split("\n"):
+            self.add_paragraph(paragraph)
+
+
 
     @accepts(str)
     def add_paragraph(self, text):

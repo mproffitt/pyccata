@@ -4,10 +4,15 @@ Defines the interfaces used by the weeklyreport package
 from abc import ABCMeta
 from abc import abstractmethod
 
+# Disabled because these are all pure interfaces
+# and not abstract classes. Pylint is incorrectly
+# reading these as being abstract base classes.
+
 class ViewWindowInterface(metaclass=ABCMeta):
     """
     Interface for creating a view window
     """
+
     @abstractmethod
     def write(self, message):
         """
@@ -39,6 +44,7 @@ class ManagerInterface(metaclass=ABCMeta):
     """
     Interface class for extending the project managers
     """
+
     @abstractmethod
     def search_issues(self, search_filter, max_results=False, fields=list):
         """
@@ -72,6 +78,7 @@ class ObservableInterface(metaclass=ABCMeta):
     Interface for Observable objects
     """
 
+    @abstractmethod
     def append(self, observer):
         """
         Adds an observer to the list of objects observing this one.
@@ -80,6 +87,7 @@ class ObservableInterface(metaclass=ABCMeta):
         """
         raise NotImplementedError('Method must be implemented by a child')
 
+    @abstractmethod
     def notify(self, results):
         """
         Iterates over the observables and notifies them of the results.
@@ -94,6 +102,7 @@ class ReportingInterface(metaclass=ABCMeta):
     """
     Interface for implementing Report rendering types
     """
+
     @abstractmethod
     def add_paragraph(self, text):
         """
@@ -139,5 +148,4 @@ class ReportingInterface(metaclass=ABCMeta):
     def add_page_break(self):
         """ Adds a page break to the report """
         raise NotImplementedError('Method must be implemented by a child')
-
 

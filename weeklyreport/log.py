@@ -29,6 +29,7 @@ class Logger(object):
     _view = None
     _input = None
     _requires_newline = False
+    _is_loaded = False
 
     @property
     def suppress(self):
@@ -78,9 +79,11 @@ class Logger(object):
         @param view [sys.stdout, sys.stderr, ViewWindowInterface] (default sys.stderr)
         @param view [sys.stdin, ViewWindowInterface] (default sys.stdin)
         """
-
+        if self._is_loaded:
+            return
         self.stdout = view
         self.stdin = stdin
+        self._is_loaded = True
 
     def log(self, level, message):
         """
@@ -170,10 +173,9 @@ class Logger(object):
         self._requires_newline = True
 
     _instance = None
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         """ Set up a singleton instance of the Logger """
         if Logger._instance is None:
-            Logger._instance = object.__new__(cls)
+            Logger._instance = object.__new__(cls, *args, **kwargs)
         return Logger._instance
-
 

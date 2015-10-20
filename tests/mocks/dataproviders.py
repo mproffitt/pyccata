@@ -10,16 +10,18 @@ from weeklyreport.filter import Filter
 from weeklyreport.manager import Manager
 from weeklyreport.interface import ManagerInterface
 from weeklyreport.interface import ReportingInterface
+from weeklyreport.parts.paragraph import Paragraph
 
 class TestObservableThread(Threadable):
     __implements__ = (ObservableInterface,)
-
+    PRIORITY = 9
     def setup(self):
         pass
     def run(self):
         pass
 
 class ViableTestThread(Threadable):
+    PRIORITY = 104
     def setup(self):
         pass
 
@@ -30,6 +32,7 @@ class ViableTestThread(Threadable):
         self._complete = True
 
 class ExplodingQueryThread(Threadable):
+    PRIORITY = 2
     def setup(self):
         pass
 
@@ -38,6 +41,7 @@ class ExplodingQueryThread(Threadable):
         self.failure = InvalidQueryError('Error in the JQL Query. Unknown field \'bob\'')
 
 class BrokenConnectionThread(Threadable):
+    PRIORITY = 4
     def setup(self):
         pass
 
@@ -50,6 +54,7 @@ class BrokenConnectionThread(Threadable):
         self.failure = InvalidConnectionError(500, 'http://jira.local:8080', 'Recieved HTTP/500 whilst establishing a connection to jira.local.')
 
 class BrokenConnectionFilter(Filter):
+    PRIORITY = 1000
     def run(self):
         Logger().info('Starting broken filter thread \'{0}\''.format(self._name))
         self.failure = InvalidConnectionError(500, 'http://jira.local:8080', 'Recieved HTTP/500 whilst establishing a connection to jira.local.')
@@ -63,6 +68,15 @@ class InvalidReportRequires(Manager):
     def __init__(self):
         namespace = self.configuration.NAMESPACE
         self._load(namespace, self.configuration.reporting, must_implement=ReportingInterface)
+
+class InvalidPriority(Paragraph):
+    PRIORITY = 110
+    def setup(self, text=''):
+        self._content = text
+
+    def run(self):
+        self._complete = True
+
 
 class DataProviders(object):
 
@@ -136,12 +150,13 @@ class DataProviders(object):
 
     @staticmethod
     def _get_config_for_test(port='8080', manager='jira', reporting='docx'):
-        ReportType = namedtuple('Report', 'title subtitle abstract path sections')
+        ReportType = namedtuple('Report', 'title subtitle abstract path datapath sections')
         Config = namedtuple('Config', 'manager reporting report jira server port username password')
         Report = ReportType(
             title='hello world',
             subtitle='sub title test',
             path='/path/to',
+            datapath='tests/weeklyreport/data',
             sections=[None],
             abstract='An abstract block of text.\n\nSpanning two paragraphs...'
         )
@@ -192,12 +207,13 @@ class DataProviders(object):
 
     @staticmethod
     def _get_config_for_test_with_invalid_classes():
-        ReportType = namedtuple('Report', 'title subtitle abstract path sections')
+        ReportType = namedtuple('Report', 'title subtitle abstract path datapath sections')
         Config = namedtuple('Config', 'manager reporting report iwillneverbeamanager server port username password')
         Report = ReportType(
             title='hello world',
             subtitle='sub title test',
             path='/path/to',
+            datapath='weeklyreport/data',
             sections=[None],
             abstract='An abstract block of text.\n\nSpanning two paragraphs...'
         )
@@ -221,6 +237,25 @@ class DataProviders(object):
             port     = None,
             username = None,
             password = None
+        )
+
+    @staticmethod
+    def get_paragraph_config_for_section():
+        InvalidText = namedtuple('InvalidText', 'content')
+        Text = namedtuple('Text', 'text')
+        Paragraph = namedtuple('Paragraph', 'type content')
+        Section = namedtuple('Section', 'title abstract level structure')
+        return Section(
+            title='Hello world',
+            abstract='This is a test abstract paragraph',
+            level=0,
+            structure=[
+                Paragraph(type='paragraph', content=Text(text='This is paragraph number 1')),
+                Paragraph(type='paragraph', content=InvalidText(content='This is paragraph number 2')),
+                Paragraph(type='paragraph', content=Text(text='This is paragraph number 3')),
+                Paragraph(type='paragraph', content=Text(text='This is paragraph number 4')),
+                Paragraph(type='paragraph', content=Text(text='This is paragraph number 5'))
+            ]
         )
 
 

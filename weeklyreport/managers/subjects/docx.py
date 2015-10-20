@@ -3,8 +3,6 @@ from docx import Document
 from weeklyreport.interface import ReportingInterface
 from weeklyreport.decorators import accepts
 from weeklyreport.log import Logger
-from weeklyreport.helpers import read_file
-from weeklyreport.configuration import Configuration
 
 class Docx(object):
     """ Class for creating reports in Microsoft Word format """
@@ -17,7 +15,6 @@ class Docx(object):
     def __init__(self):
         """ Load the driver and create title page """
         Logger().info('Initialising Microsoft Word format driver')
-        self.create_title_page()
 
     @property
     def client(self):
@@ -25,20 +22,6 @@ class Docx(object):
         if self._client is None:
             self._client = Document()
         return self._client
-
-    @property
-    def configuration(self):
-        """ Load the configuration object """
-        if self._configuration is None:
-            self._configuration = Configuration()
-        return self._configuration
-
-    def create_title_page(self):
-        """ Creates a title page for the report using settings from configuration """
-        self.add_heading(self.configuration.report.title, 0)
-        self.add_heading(self.configuration.report.subtitle, 1)
-        for paragraph in read_file(self.configuration.report.abstract).split("\n"):
-            self.add_paragraph(paragraph)
 
     @accepts(str)
     def add_paragraph(self, text):
@@ -69,7 +52,6 @@ class Docx(object):
         @param style    string
         """
         table = self.client.add_table(rows=1, cols=len(headings), style=style)
-        print(table)
         header_cells = table.rows[0].cells
         for i, heading in enumerate(headings):
             header_cells[i].text = str(heading)

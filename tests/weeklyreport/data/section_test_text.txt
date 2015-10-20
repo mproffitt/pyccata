@@ -1,0 +1,11 @@
+The size of a unit is equivelant to the smallest cohesive section of code which can be executed without
+changing the overall structure system in a manner which breaks subsequent tests.
+
+Elements from within the unit which rely on external attributes, not subject to the test, must be mocked
+away. These may constitute configurations, databases, third party services, and classes, modules or libraries
+which support the unit either through providing data to the unit or providing access to storage or services
+whose code we do not care about as part of the situation under test. (Black box testing)
+
+For each path through the code there must exist a minimum of two tests. One which tests the "happy path" scenarios
+and another which tests the unhappy path (or failure) scenarios. If your unit contains multiple failure points,
+these must be tested seperately, one for each failure.

@@ -1,0 +1,37 @@
+{
+    "manager": "jira",
+    "reporting": "docx",
+    "jira": {
+        "username": "",
+        "password": "",
+        "server"  : "",
+        "port"    : ""
+    },
+    "report": {
+        "path": "ess_weekly_report",
+        "datapath" : "",
+        "title": "ESS Development Department status",
+        "subtitle": "Week 41",
+        "abstract": "",
+        "level": 0,
+        "sections": [
+            {
+                "title": "hello world",
+                "abstract":  "This is a test paragraph",
+                "level": 1,
+                "structure": [
+                    {
+                      "type": "iaminvalid",
+                      "content": "some text"
+                    }
+                ]
+            },
+            {
+                "title": "Bar",
+                "abstract": "foo",
+                "level": 1,
+                "sections": []
+            }
+        ]
+    }
+}

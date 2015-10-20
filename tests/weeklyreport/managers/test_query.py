@@ -1,10 +1,16 @@
 from unittest import TestCase
+from mock import patch
 
 from weeklyreport.filter import Filter
 from weeklyreport.managers.query import QueryManager
+from weeklyreport.log import Logger
 
 class TestQueryManager(TestCase):
-    def setUp(self):
+
+    @patch('weeklyreport.log.Logger.log')
+    def setUp(self, mock_log):
+        mock_log.return_value = None
+        Logger._instance = mock_log
         self._manager = QueryManager()
 
     def tearDown(self):

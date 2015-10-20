@@ -47,14 +47,15 @@ class Manager(object):
         @param namespace string The namespace containing the managers ('weeklyreport')
         @param manager   string The name of the manager to load
         """
+        namespace = namespace + '.managers.subjects.'
         try:
-            module = importlib.import_module(namespace + '.subjects.' + manager.lower())
+            module = importlib.import_module(namespace + manager.lower())
         except ImportError:
             raise InvalidModuleError(manager, namespace)
         try:
             name = getattr(module, manager.capitalize())
         except AttributeError:
-            raise InvalidClassError(manager.capitalize(), namespace + '.subjects.' + manager.lower())
+            raise InvalidClassError(manager.capitalize(), namespace + manager.lower())
 
         if must_implement is not None and not implements(name, must_implement):
             raise ImportError('{0} must implement \'{1}\''.format(manager.capitalize(), must_implement))
@@ -76,3 +77,4 @@ class Manager(object):
             if not hasattr(configuration, element):
                 raise RequiredKeyError('{0}/{1}'.format(config_label, element))
         return True
+

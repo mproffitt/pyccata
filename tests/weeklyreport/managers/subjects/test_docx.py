@@ -7,12 +7,17 @@ from weeklyreport.configuration import Configuration
 from weeklyreport.managers.report import ReportManager
 from weeklyreport.managers.subjects.docx import Docx
 from tests.mocks.dataproviders import DataProviders
+from weeklyreport.log import Logger
 
 from docx import Document
 
 class TestDocx(TestCase):
     _document = None
-    def setUp(self):
+
+    @patch('weeklyreport.log.Logger.log')
+    def setUp(self, mock_log):
+        mock_log.return_value = None
+        Logger._instance = mock_log
         self._document = Document()
 
     def tearDown(self):

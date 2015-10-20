@@ -41,7 +41,7 @@ def implements(obj, interface):
         pass
     return issubclass(type(obj), interface)
 
-def read_file(text_url):
+def read_file(text_url, report_path=''):
     """
     When reading from a config file, the text may be
     specified as either a block of text or a url to a
@@ -55,8 +55,10 @@ def read_file(text_url):
 
     @return string
     """
-    if os.access(text_url, os.R_OK):
-        with open(text_url) as file_pointer:
+    path = os.path.join(report_path, text_url) + '.txt'
+
+    if os.access(path, os.R_OK):
+        with open(path) as file_pointer:
             return file_pointer.read()
     return text_url
 

@@ -2,7 +2,7 @@
 Base classes for any items which need to be run in their own thread.
 """
 
-from abc       import abstractmethod
+from abc import abstractmethod
 from threading import Thread
 from weeklyreport.decorators import accepts
 
@@ -10,7 +10,9 @@ class Threadable(Thread):
     """
     Base class for threadable objects
     """
+
     THREAD_SLEEP = 0.01
+    PRIORITY = 0
 
     _complete = False
     _failure = None
@@ -65,18 +67,4 @@ class Threadable(Thread):
         """
         raise NotImplementedError('Method must be implemented by a child')
 
-class ThreadableDocument(Threadable):
-    """
-    Any objects which need to be renderable must
-    implement this class
-    """
-
-    @abstractmethod
-    def render(self, report):
-        """
-        Renders the current object into the report
-
-        @param report ReportDocument
-        """
-        raise NotImplementedError('Method must be implemented by a child')
 

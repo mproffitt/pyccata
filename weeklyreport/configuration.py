@@ -18,11 +18,12 @@ class Configuration(object):
 
     """
     CONFIG_DIRECTORY_NAME = 'releaseessentials'
-    NAMESPACE = 'weeklyreport.managers'
+    NAMESPACE = 'weeklyreport'
     REPORTING_TYPES = [
         'pdf', 'docx', 'html', 'latex'
     ]
 
+    _is_loaded = False
     _instance = None
     _configuration = None
     _manager = None
@@ -71,8 +72,8 @@ class Configuration(object):
         if not hasattr(self._configuration, manager):
             raise RequiredKeyError('\'<root>/{0}'.format(manager))
 
-        class_path = '{0}.subjects.{1}'.format(self.NAMESPACE, manager)
-        if not class_exists(self.NAMESPACE, 'subjects', manager):
+        class_path = '{0}.managers.subjects.{1}'.format(self.NAMESPACE, manager)
+        if not class_exists(self.NAMESPACE, 'managers.subjects', manager):
             raise InvalidClassError(manager, class_path)
         self._manager = manager
 
@@ -110,12 +111,14 @@ class Configuration(object):
             raise RequiredKeyError('\'<root>/report')
 
         class_path = '{0}.subjects.{1}'.format(self.NAMESPACE, reporting)
-        if not class_exists(self.NAMESPACE, 'subjects', reporting):
+        if not class_exists(self.NAMESPACE, 'managers.subjects', reporting):
             raise InvalidClassError(reporting, class_path)
         self._reporting = reporting
 
     def __init__(self, filename='configuration.json'):
         """ Initialise the Configuration """
+        if self._is_loaded:
+            return
         self._filename = filename
         self._load()
 
@@ -151,8 +154,9 @@ class Configuration(object):
             except IOError:
                 pass
         if not self._configuration:
-            raise IOError('Invalid configuration file or path not provided (got \'{0}\''.format(self._filename))
+            raise IOError('Invalid configuration file or path not provided (got \'{0}\')'.format(self._filename))
         self.validate_config(self._required_root_elements)
+        self._is_loaded = True
 
     def _get_locations(self):
         """
@@ -184,10 +188,12 @@ class Configuration(object):
 
     def __new__(cls, filename='configuration.json'):
         """
-        Override for __new__ to check if config has already been loaded.
+        Override for __new__ to check if Configuration has already been loaded.
         """
+        Logger().debug(cls._instance)
         if cls._instance is None:
             Logger().debug('Loading singleton configuration with filename {0}'.format(filename))
+            cls._is_loaded = False
             cls._instance = super(Configuration, cls).__new__(cls)
-        return Configuration._instance
+        return cls._instance
 

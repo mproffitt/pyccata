@@ -2,6 +2,19 @@
 Application package exceptions
 
 """
+class ArgumentMismatchError(ValueError):
+    """
+    Raised when loading ThreadableDocument if init kwargs to not match setup kwargs
+    """
+    def __init__(self, func_name, setup_args, actual_args):
+        self.error = 'Invalid arguments provided to {0}. Got {1}, expected {2}'.format(
+            func_name, setup_args, actual_args
+        )
+        super().__init__(self.error)
+
+    def __str__(self):
+        return self.error
+
 class ArgumentValidationError(ValueError):
     """
     Raised when the type of an argument to a function is not what it should be.

@@ -10,8 +10,15 @@ from weeklyreport.managers.subjects.jira import Jira
 from tests.mocks.dataproviders import DataProviders
 from jira.client import JIRA
 from jira.exceptions import JIRAError
+from weeklyreport.log import Logger
 
 class TestJira(TestCase):
+
+    @patch('weeklyreport.log.Logger.log')
+    def setUp(self, mock_log):
+        mock_log.return_value = None
+        Logger._instance = mock_log
+
     @patch('jira.client.JIRA.__init__')
     @patch('weeklyreport.configuration.Configuration._load')
     def test_manager_raises_exception_on_client_initialisation_failure(self, mock_load, mock_jira_client):

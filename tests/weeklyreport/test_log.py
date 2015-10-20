@@ -4,6 +4,7 @@ from ddt import data, ddt, unpack
 
 from weeklyreport.log        import Logger
 from weeklyreport.exceptions import ArgumentValidationError
+import sys
 
 @ddt
 class TestLogger(TestCase):
@@ -12,6 +13,7 @@ class TestLogger(TestCase):
         pass
 
     def setUp(self):
+        Logger._instance = None
         self.logger = Logger()
 
     def tearDown(self):
@@ -103,3 +105,7 @@ class TestLogger(TestCase):
         self.logger._view = mock_write
         self.logger.append('.')
         mock_write.write.assert_called_with('.')
+
+    def test_logger_doesnt_reinit_when_called_again(self):
+        log = Logger(view=sys.stdout)
+        self.assertEquals(sys.stderr, log._view)

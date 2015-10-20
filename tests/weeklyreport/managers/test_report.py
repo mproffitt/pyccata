@@ -9,16 +9,19 @@ from weeklyreport.exceptions import InvalidClassError
 from weeklyreport.exceptions import RequiredKeyError
 from weeklyreport.managers.report import ReportManager
 from tests.mocks.dataproviders import InvalidReportRequires
+from weeklyreport.log import Logger
 
 class TestReportManager(TestCase):
 
-    def setUp(self):
-        pass
+    @patch('weeklyreport.log.Logger.log')
+    def setUp(self, mock_log):
+        mock_log.return_value = None
+        self._mock_log = mock_log
 
     def tearDown(self):
         if Configuration._instance is not None:
             Configuration._instance = None
-        Configuration.NAMESPACE = 'weeklyreport.managers'
+        Configuration.NAMESPACE = 'weeklyreport'
 
     @patch('weeklyreport.configuration.Configuration._load')
     def test_report_raises_invalid_module_error_if_report_module_does_not_exist(self, mock_load):

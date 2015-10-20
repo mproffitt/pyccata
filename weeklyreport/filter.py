@@ -20,6 +20,7 @@ class Filter(Threadable):
     # It is understood that this class requires a number of attributes and
     # accessor methods.
     __implements__ = (ObservableInterface,)
+    PRIORITY = 1000
 
     _query = None
     _fields = None

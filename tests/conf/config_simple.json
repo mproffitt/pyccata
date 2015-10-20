@@ -1,0 +1,102 @@
+{
+    "manager": "jira",
+    "reporting": "docx",
+    "jira": {
+        "username": "",
+        "password": "",
+        "server"  : "",
+        "port"    : ""
+    },
+    "report": {
+        "path": "ess_weekly_report",
+        "datapath": "weeklyreport/data",
+        "title": "Test document structure for WeeklyReport/Helicopter view",
+        "subtitle": "Week 41",
+        "abstract": "This document provides the overall breakdown of stuff which may or may not exist in Jira\n\nEach section starts with a status bar showing what is in todo, what is in progress and what has been completed.\n\nSubsequent to this, a more detailed breakdown is provided where relevant.",
+        "sections": [
+            {
+                "title": "hello world",
+                "abstract":  "This is a test abstract paragraph",
+                "level": 1,
+                "structure": [
+                    {
+                        "type": "paragraph",
+                        "content": {
+                            "text": "some text for paragraph 1"
+                        }
+                    },
+                    {
+                        "type": "paragraph",
+                        "content": {
+                            "text": "some text for paragraph 2"
+                        }
+                    },
+                    {
+                        "type": "paragraph",
+                        "content": {
+                            "text": "some text for paragraph 3"
+                        }
+                    }
+
+                ]
+            },
+            {
+                "title": "This has sub-sections",
+                "abstract": "There might be some text here",
+                "level": 1,
+                "structure": [
+                    {
+                        "type": "section",
+                        "content": {
+                            "title": "this is sub section 1",
+                            "abstract": "this is text for sub section 1",
+                            "level": 2,
+                            "structure": [
+                                {
+                                    "type": "paragraph",
+                                    "content": {
+                                        "text": "this is section 2 subsection 1 paragraph 1"
+                                    }
+                                  },
+                                  {
+                                      "type": "paragraph",
+                                      "content": {
+                                          "text": "this is section 2 subsection 1 paragraph 2"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "content": {
+                            "title": "this is sub section 2",
+                            "abstract": "this is text for sub section 2",
+                            "level": 2,
+                            "structure": [
+                                {
+                                    "type": "paragraph",
+                                    "content": {
+                                        "text": "this is section 2 subsection 2 paragraph 1"
+                                    }
+                                },
+                                {
+                                    "type": "paragraph",
+                                    "content": {
+                                        "text": "this is section 2 subsection 2 paragraph 2"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "This section uses a file path for its text",
+                "abstract": "section_test_text",
+                "level": 1,
+                "structure": []
+            }
+        ]
+    }
+}

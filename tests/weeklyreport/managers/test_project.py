@@ -8,16 +8,19 @@ from weeklyreport.exceptions import InvalidClassError
 from weeklyreport.exceptions import RequiredKeyError
 from weeklyreport.managers.project import ProjectManager
 from tests.mocks.dataproviders import InvalidRequires
+from weeklyreport.log import Logger
 
 class TestProjectManager(TestCase):
 
-    def setUp(self):
-        pass
+    @patch('weeklyreport.log.Logger.log')
+    def setUp(self, mock_log):
+        mock_log.return_value = None
+        Logger._instance = mock_log
 
     def tearDown(self):
         if Configuration._instance is not None:
             Configuration._instance = None
-        Configuration.NAMESPACE = 'weeklyreport.managers'
+        Configuration.NAMESPACE = 'weeklyreport'
 
     @patch('weeklyreport.configuration.Configuration._load')
     def test_manager_raises_invalid_module_error_if_manager_module_does_not_exist(self, mock_load):

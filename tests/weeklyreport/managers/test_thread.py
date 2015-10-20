@@ -9,18 +9,25 @@ from tests.mocks.dataproviders import BrokenConnectionFilter
 from weeklyreport.configuration import Configuration
 from weeklyreport.managers.project import ProjectManager
 from weeklyreport.managers.thread import ThreadManager
+from weeklyreport.managers.query import QueryManager
 from weeklyreport.exceptions import InvalidModuleError
 from weeklyreport.exceptions import ArgumentValidationError
 from weeklyreport.exceptions import InvalidClassError
 from weeklyreport.filter import Filter
+from weeklyreport.log import Logger
 
 class TestThreadManager(TestCase):
 
-    def setUp(self):
-        pass
+    @patch('weeklyreport.log.Logger.log')
+    def setUp(self, mock_log):
+        mock_log.return_value = None
+        Logger._instance = mock_log
 
     def tearDown(self):
-        pass
+        if Configuration._instance is not None:
+            Configuration._instance = None
+        if ThreadManager._instance is not None:
+            ThreadManager._instance = None
 
     @patch('weeklyreport.managers.subjects.jira.Jira._client')
     @patch('weeklyreport.configuration.Configuration._load')
@@ -39,6 +46,9 @@ class TestThreadManager(TestCase):
                 mock_config.return_value = DataProviders._get_config_for_test()
                 mock_manager.return_value = 'jira'
                 manager = ThreadManager()
+                self.assertIsInstance(manager.projectmanager, ProjectManager)
+                self.assertIsInstance(manager.querymanager, QueryManager)
+                self.assertIsInstance(manager.configuration, Configuration)
                 mock_filter = Filter('assignee = "Foo"')
                 manager.append(mock_filter)
                 self.assertIsInstance(mock_filter.projectmanager, ProjectManager)
