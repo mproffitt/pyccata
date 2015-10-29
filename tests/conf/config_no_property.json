@@ -1,0 +1,10 @@
+{
+    "manager": "jira",
+    "iamrequiredandexistinconfigbutdonothaveaproperty": "docx",
+    "jira": {
+        "username": "",
+        "password": "",
+        "server"  : "",
+        "port"    : ""
+    }
+}

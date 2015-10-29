@@ -4,6 +4,7 @@ Document controller module
 from weeklyreport.exceptions import InvalidClassError
 from weeklyreport.exceptions import InvalidModuleError
 from weeklyreport.exceptions import RequiredKeyError
+from weeklyreport.exceptions import ThreadFailedError
 from weeklyreport.configuration import Configuration
 from weeklyreport.managers.thread import ThreadManager
 from weeklyreport.managers.report import ReportManager
@@ -73,11 +74,15 @@ class DocumentController(object):
         for section in self.configuration.report.sections:
             self._sections.append(self.partfactory.section(self.threadmanager, section))
 
+        # main build of document data
         self.threadmanager.start()
-        if self.threadmanager.completed:
-            self.reportmanager.create_title_page()
-            for section in self._sections:
-                section.render(self._report_manager)
+
+        if not self.threadmanager.completed:
+            raise ThreadFailedError('Failed to build document due to invalid or incomplete threads')
+
+        self.reportmanager.create_title_page()
+        for section in self._sections:
+            section.render(self._report_manager)
 
     @accepts(str)
     def save(self, filename):

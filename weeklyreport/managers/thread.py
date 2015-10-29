@@ -193,8 +193,7 @@ class ThreadManager(list):
                 # skip if thread has already been started
                 except RuntimeError:
                     pass
-            if i < len(self):
-                i += 1
+            i += 1
 
     def __new__(cls):
         """

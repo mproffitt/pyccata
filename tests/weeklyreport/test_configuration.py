@@ -92,6 +92,16 @@ class TestConfiguration(TestCase):
             self.assertTrue(config.validate_config(required_elements))
             mock_manager.assert_called_with(data_driver)
 
+    @patch('weeklyreport.configuration.Configuration._get_locations')
+    def test_configuration_doesnt_assign_required_if_property_doesnt_exist(self, mock_config_list):
+        mock_config = DataProviders._get_config_for_test()
+        mock_config_list.return_value = [self._path]
+        required_elements = ['manager', 'iamrequiredandexistinconfigbutdonothaveaproperty']
+        self.tearDown()
+        Configuration._configuration = mock_config
+        Configuration._required_root_elements = required_elements
+        config = Configuration(filename='config_no_property.json')
+
     @patch('weeklyreport.configuration.Configuration._load')
     @patch('weeklyreport.configuration.Configuration._get_locations')
     @data(

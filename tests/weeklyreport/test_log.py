@@ -2,7 +2,8 @@ from unittest import TestCase
 from mock import patch
 from ddt import data, ddt, unpack
 
-from weeklyreport.log        import Logger
+from weeklyreport.interface import ViewWindowInterface
+from weeklyreport.log import Logger
 from weeklyreport.exceptions import ArgumentValidationError
 import sys
 
@@ -11,6 +12,19 @@ class TestLogger(TestCase):
 
     class _TestView(object):
         pass
+
+    class _ValidView(object):
+        __implements__ = (ViewWindowInterface,)
+
+        def write(self, message):
+            sys.stdout.write(message)
+
+        def flush(self):
+            sys.stdout.flush()
+
+        def readline(self):
+            return sys.stdin.readline().strip()
+
 
     def setUp(self):
         Logger._instance = None
@@ -27,8 +41,6 @@ class TestLogger(TestCase):
     def test_logger_stdout_raises_exception_if_stdin_is_invalid(self):
         with self.assertRaises(ArgumentValidationError):
             self.logger.stdin = TestLogger._TestView()
-
-
 
     @patch('sys.stderr')
     @data(
@@ -109,3 +121,16 @@ class TestLogger(TestCase):
     def test_logger_doesnt_reinit_when_called_again(self):
         log = Logger(view=sys.stdout)
         self.assertEquals(sys.stderr, log._view)
+
+    @patch('sys.stdin')
+    @patch('sys.stdout')
+    def test_input_with_custom_vids(self, mock_write, mock_input):
+        mock_input.readline.return_value = "5\n"
+        self.tearDown()
+        self.logger = Logger(view=TestLogger._ValidView(), stdin=TestLogger._ValidView())
+
+        value = self.logger.input('please enter a number')
+        mock_write.write.assert_called_with(Logger.INFO + 'please enter a number > ')
+        self.assertEquals(value, '5')
+
+

@@ -8,6 +8,7 @@ from ddt import ddt, data, unpack
 from weeklyreport.exceptions import InvalidClassError
 from weeklyreport.exceptions import InvalidModuleError
 from weeklyreport.exceptions import RequiredKeyError
+from weeklyreport.exceptions import ThreadFailedError
 from weeklyreport.log import Logger
 from weeklyreport.configuration import Configuration
 from weeklyreport.managers.thread import ThreadManager
@@ -127,6 +128,18 @@ class TestDocumentController(TestCase):
         mock_threadmanager.side_effect = AttributeError('Invalid attribute \'foo\' for manager ThreadManager')
         with self.assertRaises(AttributeError):
             DocumentController()
+
+    @patch('weeklyreport.configuration.Configuration._get_locations')
+    def test_document_raises_thread_failed_error_if_threadmanager_execute_returns_false(self, mock_config):
+        mock_config.return_value = [self._path]
+        Configuration('config_simple.json')
+        document = DocumentController()
+        with patch('weeklyreport.managers.thread.ThreadManager.execute') as mock_thread:
+            mock_thread.return_value = False
+            with self.assertRaises(ThreadFailedError):
+                document.build()
+
+
 
     @patch('weeklyreport.configuration.Configuration._get_locations')
     def test_thread_manager_builds_simple_configuration(self, mock_config):

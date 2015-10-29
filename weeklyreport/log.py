@@ -174,8 +174,10 @@ class Logger(object):
 
     _instance = None
     def __new__(cls, *args, **kwargs):
+        # pylint: disable=unused-argument
+        # handled by call to parent
         """ Set up a singleton instance of the Logger """
         if Logger._instance is None:
-            Logger._instance = object.__new__(cls, *args, **kwargs)
+            Logger._instance = super(Logger, cls).__new__(cls)
         return Logger._instance
 

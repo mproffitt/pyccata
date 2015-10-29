@@ -148,9 +148,8 @@ class Configuration(object):
                         configuration_file,
                         object_hook=lambda x: namedtuple('Config', x.keys())(*x.values())
                     )
-                    if self._configuration is not None:
-                        Logger().debug('Using configuration from \'{0}\'.'.format(path))
-                        break
+                    Logger().debug('Using configuration from \'{0}\'.'.format(path))
+                    break
             except IOError:
                 pass
         if not self._configuration:
@@ -182,8 +181,7 @@ class Configuration(object):
         for element in required_elements:
             if not hasattr(self._configuration, element):
                 raise RequiredKeyError('<root>/{0}'.format(element))
-            if hasattr(self, element):
-                setattr(self, element, getattr(self._configuration, element))
+            setattr(self, element, getattr(self._configuration, element))
         return True
 
     def __new__(cls, filename='configuration.json'):

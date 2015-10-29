@@ -62,7 +62,7 @@ class Docx(object):
                 cells[i].text = str(col)
 
 
-    @accepts(str, width=int)
+    @accepts(str, width=(int, float))
     def add_picture(self, filename, width=0):
         """
         Add a picture to the report

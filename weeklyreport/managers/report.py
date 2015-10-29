@@ -84,7 +84,7 @@ class ReportManager(Manager):
         """
         self.client.add_table(headings=headings, data=data, style=style)
 
-    @accepts(str, width=int)
+    @accepts(str, width=(int, float))
     def add_picture(self, filename, width=0):
         """
         Add a picture to the report

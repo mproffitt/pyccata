@@ -34,8 +34,6 @@ class ViewWindowInterface(metaclass=ABCMeta):
         """
         Get a line of text from the user
 
-        @param message string
-
         @return string
         """
         raise NotImplementedError('Method must be implemented by a child')
