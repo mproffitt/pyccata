@@ -1,3 +1,4 @@
+import copy
 from time import sleep
 from random import shuffle
 from collections import namedtuple
@@ -11,6 +12,7 @@ from weeklyreport.manager import Manager
 from weeklyreport.interface import ManagerInterface
 from weeklyreport.interface import ReportingInterface
 from weeklyreport.parts.paragraph import Paragraph
+from weeklyreport.resources import *
 
 class TestObservableThread(Threadable):
     __implements__ = (ObservableInterface,)
@@ -258,4 +260,64 @@ class DataProviders(object):
             ]
         )
 
+    @staticmethod
+    def get_results_for_list_init_with_list_of_queries_in_config():
+        result_list = []
+
+        for i in range(3):
+            results = ResultList()
+            issue = Issue()
+            issue.description = 'This is test item ' + str((i+1))
+            results.append(issue)
+            result_list.append(copy.deepcopy(results))
+            results = None
+
+        return result_list
+
+    @staticmethod
+    def get_results_for_list_init_with_list_of_queries_and_strings_in_config():
+        result_list = []
+
+        for i in range(3):
+            results = ResultList()
+            issue = Issue()
+            issue.description = 'This is test item ' + str((i+1))
+            results.append(issue)
+            result_list.append(copy.deepcopy(results))
+            results = None
+            if i == 0:
+                result_list.append("This is a string entry"),
+            elif i == 2:
+                result_list.append("This is another string entry"),
+
+        return result_list
+
+    @staticmethod
+    def get_results_for_list_init_with_list_of_queries_and_strings_continues():
+        result_list = []
+
+        for i in range(3):
+            results = ResultList()
+            issue = Issue()
+            issue.description = 'This is test item ' + str((i+1))
+            results.append(issue)
+            result_list.append(copy.deepcopy(results))
+            results = None
+            if i == 0:
+                result_list.append("This is a string entry"),
+            elif i == 2:
+                result_list.append("This is another string entry"),
+
+        return result_list
+
+
+    @staticmethod
+    def get_results_for_list_init_with_single_query_in_config():
+        result_list = ResultList()
+        for i in range(5):
+            issue = Issue()
+            issue.description = 'This is test item ' + str((i+1))
+            result_list.append(issue)
+
+        return result_list
 

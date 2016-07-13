@@ -7,6 +7,8 @@ class Paragraph(ThreadableDocument):
     """ Create a new Paragraph object """
     PRIORITY = 10
     _content = ''
+
+    @accepts(text=str)
     def setup(self, text=''):
         """ Setup the paragraph """
         # pylint: disable=arguments-differ

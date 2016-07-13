@@ -23,9 +23,12 @@ class DocumentController(object):
     _configuration = None
     _thread_manager = None
     _report_manager = None
+    _configuration_file = ''
 
-    def __init__(self):
+    def __init__(self, configuration_file='configuration.json'):
         """ Initialise the document """
+        self._configuration_file = configuration_file
+
         self._configuration = self.configuration
         self._thread_manager = self.threadmanager
         self._report_manager = self.reportmanager
@@ -37,7 +40,7 @@ class DocumentController(object):
         """ Load the configuration from file """
         try:
             if self._configuration is None:
-                return Configuration()
+                return Configuration(filename=self._configuration_file)
         except (InvalidClassError, InvalidModuleError, RequiredKeyError, AttributeError, IOError) as exception:
             self._raise_and_terminate('Configuration object', exception)
         return self._configuration

@@ -8,6 +8,7 @@ from weeklyreport.log        import Logger
 from weeklyreport.decorators import accepts
 from weeklyreport.helpers    import class_exists
 from weeklyreport.exceptions import RequiredKeyError, InvalidClassError
+
 class Configuration(object):
     """
         Configuration is loaded from JSON format and parsed into
@@ -188,7 +189,6 @@ class Configuration(object):
         """
         Override for __new__ to check if Configuration has already been loaded.
         """
-        Logger().debug(cls._instance)
         if cls._instance is None:
             Logger().debug('Loading singleton configuration with filename {0}'.format(filename))
             cls._is_loaded = False

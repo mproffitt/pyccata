@@ -112,6 +112,7 @@ class ThreadManager(list):
         """
         # fill up the pool
         self._fill_pool()
+        Logger().info('Starting pool for ' + str(len(self._pool)) + ' threads')
 
         while len(self._pool) > 0:
             self.monitor()
@@ -195,12 +196,19 @@ class ThreadManager(list):
                     pass
             i += 1
 
+    def flush(self):
+        """
+        Empty the current thread collection
+        """
+        self._querymanager.flush()
+        self.__init__()
+
     def __new__(cls):
         """
         Override for __new__ to check if ThreadManager has already been loaded.
         """
         if cls._instance is None:
-            Logger().debug('Loading singleton ThreadManager')
+            Logger().info('Loading thread manager')
             cls._is_loaded = False
             cls._instance = super(ThreadManager, cls).__new__(cls)
         return cls._instance

@@ -48,7 +48,13 @@ class Section(ThreadableDocument):
         self._level = level
 
     def run(self):
-        """ Execute the thread """
+        """
+        Execute the thread
+
+        [DISABLED]
+        Although Sections are threadable, generally we wouldn't require them to thread.
+        Instead, section components are threaded.
+        """
         pass
 
     @accepts(ReportManager)

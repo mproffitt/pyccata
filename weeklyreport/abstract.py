@@ -12,8 +12,7 @@ from weeklyreport.threading import Threadable
 
 class ThreadableDocument(Threadable):
     """
-    Any objects which need to be renderable must
-    implement this class
+    Any objects which need to be renderable must implement this class
     """
     MAX_DOCUMENT_PRIORITY = 100
     PRIORITY = 0
@@ -36,6 +35,7 @@ class ThreadableDocument(Threadable):
 
         config_keys = [key for key in config._asdict()]
         setup_keys = [key for key in setup_args.parameters]
+
         if sorted(config_keys) != sorted(setup_keys):
             raise ArgumentMismatchError(
                 self.__class__.__name__ + '.' + self.setup.__name__,
