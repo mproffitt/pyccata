@@ -6,6 +6,7 @@ from weeklyreport.manager import Manager
 from weeklyreport.decorators import accepts
 from weeklyreport.interface import ReportingInterface
 from weeklyreport.helpers import read_file
+from weeklyreport.resources  import Replacements
 
 class ReportManager(Manager):
     """
@@ -37,7 +38,6 @@ class ReportManager(Manager):
         namespace = self.configuration.NAMESPACE
         self._load(namespace, self.configuration.reporting, must_implement=ReportingInterface)
         self._maxwidth = self.client.MAXWIDTH
-        self.create_title_page()
 
     @property
     def maxwidth(self):
@@ -46,21 +46,43 @@ class ReportManager(Manager):
 
     def create_title_page(self):
         """ Creates a title page for the report using settings from configuration """
-        self.add_heading(self.configuration.report.title, 0)
-        self.add_heading(self.configuration.report.subtitle, 1)
+        self.add_heading(Replacements().replace(self.configuration.report.title), 0)
+        self.add_heading(Replacements().replace(self.configuration.report.subtitle), 1)
         for paragraph in read_file(self.configuration.report.abstract).split("\n"):
-            self.add_paragraph(paragraph)
+            self.add_paragraph(Replacements().replace(paragraph))
 
 
 
-    @accepts(str)
-    def add_paragraph(self, text):
+    @accepts(str, style=(None, str))
+    def add_paragraph(self, text, style=None):
         """
         Add a paragraph of text to the report
 
         @param text string
+        @param style string [ListBullet, ListNumber]
         """
-        self.client.add_paragraph(text)
+        self.client.add_paragraph(text, style=style)
+
+
+    @accepts(str, style=(None, str))
+    def add_run(self, text, style=None):
+        """
+        Adds a text run to the current active paragraph
+
+        @param text string
+        @param style string
+        """
+        self.client.add_run(text, style=style)
+
+    @accepts(str, style=(None, str))
+    def add_list(self, text, style=None):
+        """
+        Adds an item as a list item in the report
+
+        @param text  string
+        @param style string [ListBullet, ListNumber]
+        """
+        self._client.add_list(text, style=style)
 
     @accepts(str, int)
     def add_heading(self, heading, level):
@@ -98,6 +120,13 @@ class ReportManager(Manager):
         """ Adds a page break to the report """
         self._client.add_page_break()
 
+    def format_for_email(self):
+        """
+        Adds the document contents to a single table cell for display in email
+        """
+        self._client.format_for_email()
+
+
     @accepts(str)
     def save(self, filename):
         """
@@ -106,4 +135,3 @@ class ReportManager(Manager):
         @param filename string
         """
         self.client.save(filename)
-

@@ -13,9 +13,11 @@ from weeklyreport.log import Logger
 
 class TestReportManager(TestCase):
 
+    @patch('argparse.ArgumentParser.parse_args')
     @patch('weeklyreport.log.Logger.log')
-    def setUp(self, mock_log):
+    def setUp(self, mock_log, mock_parser):
         mock_log.return_value = None
+        mock_parser.return_value = None
         self._mock_log = mock_log
 
     def tearDown(self):

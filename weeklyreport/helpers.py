@@ -61,4 +61,3 @@ def read_file(text_url, report_path=''):
         with open(path) as file_pointer:
             return file_pointer.read()
     return text_url
-

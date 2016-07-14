@@ -6,6 +6,9 @@ from weeklyreport.abstract import ThreadableDocument
 from weeklyreport.decorators import accepts
 from weeklyreport.factory import DocumentPartFactory
 from weeklyreport.log import Logger
+from weeklyreport.resources  import Replacements
+from weeklyreport.parts.table import Table
+from weeklyreport.filter import Filter
 
 class Section(ThreadableDocument):
     """ Create a new section for the document """
@@ -60,7 +63,17 @@ class Section(ThreadableDocument):
     @accepts(ReportManager)
     def render(self, report):
         """ render the current object """
-        report.add_heading(self._title, self.level)
+        if len(self._structure) > 0:
+            using_tables = len(self._structure)
+            for item in self._structure:
+                if isinstance(item, Table) and isinstance(item.rows, Filter):
+                    using_tables = using_tables - 1 if item.rows.results.total == 0 else using_tables
+
+            if using_tables == 0:
+                # we probably have nothing to render
+                return
+
+        report.add_heading(str(Replacements().replace(self._title)), self.level)
         self._abstract.render(report)
         for part in self._structure:
             part.render(report)
@@ -78,15 +91,19 @@ class Section(ThreadableDocument):
             for item in config:
                 name = getattr(self._factory, item.type)
                 args = item.content
+                title = getattr(item, 'title') if hasattr(item, 'title') else None
 
                 # pylint: disable=broad-except
                 # anything can go wrong when adding a new item.
                 # we need to record what did go wrong and move on
                 try:
-                    structure.append(name(self.threadmanager, args))
+                    component = name(self.threadmanager, args)
+                    if title is not None:
+                        component.title = title
+                    structure.append(component)
                 except Exception as exception:
                     Logger().warning('Failed to add item of type \'{0}\''.format(item.type))
                     Logger().warning('Reason was:')
                     Logger().warning(exception)
+                    Logger().warning(args)
         return structure
-

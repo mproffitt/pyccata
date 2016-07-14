@@ -1,0 +1,410 @@
+{
+    "manager": "jira",
+    "reporting": "docx",
+
+    "modules":[
+        "jira",
+        "jenkins",
+        "git"
+    ],
+    "jira":{
+        "username":"",
+        "password":"",
+        "server":"",
+        "port":""
+    },
+    "replacements": [
+        {
+            "name": "RELEASE_DATE",
+            "type": "release_date",
+            "value": "%A, %d %B %Y",
+            "overridable": false
+        },
+        {
+            "name": "FIX_VERSION",
+            "type": "fix_version",
+            "value": "%d/%b/%Y",
+            "overridable": false
+        },
+        {
+            "name": "AFFECTED_SYSTEMS",
+            "type": "csv",
+            "value": "MSS Classic Portal, MSS New Portal, Service Desk, GrUD, Vigilance, Service Manager",
+            "overridable": {
+                "flag": "--affected-systems",
+                "abbrev": "-as",
+                "required": false
+            }
+        },
+        {
+            "name": "AFFECTED_REGIONS",
+            "type": "csv",
+            "value": "AMS,APJ,EMEA",
+            "overridable": {
+                "flag": "--affected-regions",
+                "abbrev": "-ar",
+                "required": false
+            }
+        },
+        {
+            "name": "LENGTH",
+            "type": "string",
+            "value": "2 hours",
+            "overridable": {
+                "flag": "--release-duration",
+                "abbrev": "-rd",
+                "required": false
+            }
+        }
+    ],
+    "report":{
+        "path":"releasenote",
+        "template": "templates/HPTemplate.docx",
+        "datapath": "weeklyreport/data",
+        "title": "MSS Platform Release Notification {RELEASE_DATE}",
+        "subtitle":"HP Restricted – For Internal Use Only",
+        "abstract": "An MSS Platform release will occur on {RELEASE_DATE} with deployment commencing at 07:30am BST.",
+        "board_id":"118",
+        "sections":[
+            {
+                "title": "Important Notes",
+                "abstract": "",
+                "level": 2,
+                "structure": [
+                    {
+                        "type": "list",
+                        "content": {
+                            "style": "ordered",
+                            "field": "",
+                            "content": [
+                                "This release focuses on bug fixes and enhancements across the {AFFECTED_SYSTEMS} systems",
+                                "This release will require approximately {LENGTH} hours to fully deploy and rollout to the {AFFECTED_REGIONS} regions.\nThe deployment process to each region is done separately, taking approximately 20 minutes per region.",
+                                "Any changes to the Service Manager product currently affect the AMS region only"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Disruption Notices",
+                "abstract": "",
+                "level": 2,
+                "structure": [
+                    {
+                        "type": "table",
+                        "content": {
+                            "style": "List Table 4 Accent 6",
+                            "columns": [
+                                "",
+                                ""
+                            ],
+                            "rows": [
+                                [
+                                    "Service Desk",
+                                    "No Expected Disruption"
+                                ],
+                                [
+                                    "MSS Portal",
+                                    "No Expected Disruption"
+                                ],
+                                [
+                                    "GrUD",
+                                    "No Expected Disruption"
+                                ],
+                                [
+                                    "Vigilance",
+                                    "No Expected Disruption"
+                                ],
+                                [
+                                    "Service Manager",
+                                    "No Expected Disruption"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Release Contents",
+                "level": 1,
+                "abstract": "Please read carefully to familiarise yourself with the forthcoming system changes contained in this release.",
+                "structure": []
+            },
+            {
+                "title": "MSS Portal",
+                "abstract": "",
+                "level": 2,
+                "structure": [
+                    {
+                        "type": "table",
+                        "title": "Bugs",
+                        "content": {
+                            "style": "Light Shading Accent 6",
+                            "columns": [
+                                "JIRA Reference",
+                                "Description",
+                                "Business Representative"
+                            ],
+                            "rows": {
+                                "query": "project=mssportal and fixVersion = '{FIX_VERSION}' and issuetype=Bug and 'Release text' is not empty and status= Done and resolution = Fixed",
+                                "fields": [
+                                    "key",
+                                    "Release text",
+                                    "Business Representative"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "type": "table",
+                        "title": "Enhancements",
+                        "content": {
+                            "style": "Light Shading Accent 6",
+                            "columns": [
+                                "JIRA Reference",
+                                "Description",
+                                "Business Representative"
+                            ],
+                            "rows": {
+                                "query": "project=mssportal and fixVersion = '{FIX_VERSION}' and issuetype=Improvement and 'Release text' is not empty and status= Done and resolution = Fixed",
+                                "fields": [
+                                    "key",
+                                    "Release text",
+                                    "Business Representative"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Service Desk",
+                "abstract": "",
+                "level": 2,
+                "structure": [
+                    {
+                        "type": "table",
+                        "title": "Bugs",
+                        "content": {
+                            "style": "Light Shading Accent 6",
+                            "columns": [
+                                "JIRA Reference",
+                                "Description",
+                                "Business Representative"
+                            ],
+                            "rows": {
+                                "query": "project=svcdesk and fixVersion = '{FIX_VERSION}' and issuetype=Bug and 'Release text' is not empty and status= Done and resolution = Fixed",
+                                "fields": [
+                                    "key",
+                                    "Release text",
+                                    "Business Representative"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "type": "table",
+                        "title": "Enhancements",
+                        "content": {
+                            "style": "Light Shading Accent 6",
+                            "columns": [
+                                "JIRA Reference",
+                                "Description",
+                                "Business Representative"
+                            ],
+                            "rows": {
+                                "query": "project=svcdesk and fixVersion = '{FIX_VERSION}' and issuetype=Improvement and 'Release text' is not empty and status= Done and resolution = Fixed",
+                                "fields": [
+                                    "key",
+                                    "Release text",
+                                    "Business Representative"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "GrUD",
+                "abstract": "",
+                "level": 2,
+                "structure": [
+                    {
+                        "type": "table",
+                        "title": "Bugs",
+                        "content": {
+                            "style": "Light Shading Accent 6",
+                            "columns": [
+                                "JIRA Reference",
+                                "Description",
+                                "Business Representative"
+                            ],
+                            "rows": {
+                                "query": "project=grud and fixVersion = '{FIX_VERSION}' and issuetype=Bug and 'Release text' is not empty and status= Done and resolution = Fixed",
+                                "fields": [
+                                    "key",
+                                    "Release text",
+                                    "Business Representative"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "type": "table",
+                        "title": "Enhancements",
+                        "content": {
+                            "style": "Light Shading Accent 6",
+                            "columns": [
+                                "JIRA Reference",
+                                "Description",
+                                "Business Representative"
+                            ],
+                            "rows": {
+                                "query": "project=grud and fixVersion = '{FIX_VERSION}' and issuetype=Improvement and 'Release text' is not empty and status= Done and resolution = Fixed",
+                                "fields": [
+                                    "key",
+                                    "Release text",
+                                    "Business Representative"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Vigilance",
+                "abstract": "",
+                "level": 2,
+                "structure": [
+                    {
+                        "type": "table",
+                        "title": "Bugs",
+                        "content": {
+                            "style": "Light Shading Accent 6",
+                            "columns": [
+                                "JIRA Reference",
+                                "Description",
+                                "Business Representative"
+                            ],
+                            "rows": {
+                                "query": "project=vigilance and fixVersion = '{FIX_VERSION}' and issuetype=Bug and 'Release text' is not empty and status= Done and resolution = Fixed",
+                                "fields": [
+                                    "key",
+                                    "Release text",
+                                    "Business Representative"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "type": "table",
+                        "title": "Enhancements",
+                        "content": {
+                            "style": "Light Shading Accent 6",
+                            "columns": [
+                                "JIRA Reference",
+                                "Description",
+                                "Business Representative"
+                            ],
+                            "rows": {
+                                "query": "project=vigilance and fixVersion = '{FIX_VERSION}' and issuetype=Improvement and 'Release text' is not empty and status= Done and resolution = Fixed",
+                                "fields": [
+                                    "key",
+                                    "Release text",
+                                    "Business Representative"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Service Manager",
+                "abstract": "",
+                "level": 2,
+                "structure": [
+                    {
+                        "type": "table",
+                        "title": "Bugs",
+                        "content": {
+                            "style": "Light Shading Accent 6",
+                            "columns": [
+                                "JIRA Reference",
+                                "Description",
+                                "Business Representative"
+                            ],
+                            "rows": {
+                                "query": "project=bub and fixVersion = '{FIX_VERSION}' and issuetype=Bug and 'Release text' is not empty and status= Done and resolution = Fixed",
+                                "fields": [
+                                    "key",
+                                    "Release text",
+                                    "Business Representative"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "type": "table",
+                        "title": "Enhancements",
+                        "content": {
+                            "style": "Light Shading Accent 6",
+                            "columns": [
+                                "JIRA Reference",
+                                "Description",
+                                "Business Representative"
+                            ],
+                            "rows": {
+                                "query": "project=bub and fixVersion = '{FIX_VERSION}' and issuetype=Improvement and 'Release text' is not empty and status= Done and resolution = Fixed",
+                                "fields": [
+                                    "key",
+                                    "Release text",
+                                    "Business Representative"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "MSS Product User Guides",
+                "abstract": "",
+                "level": 1,
+                "structure": [
+                    {
+                        "type": "paragraph",
+                        "content": {
+                            "text": [
+                                "The latest product user guides for the MSS Platform applications can be viewed and downloaded from: https://ent301.sharepoint.hp.com/teams/mssglobaldocs/_layouts/15/start.aspx#/SitePages/Home.aspx?RootFolder=%2Fteams%2Fmssglobaldocs%2FShared%20Documents%2FTechnical%20Information%2FUser%20Guides&FolderCTID=0x012000DAFA4C999DC0A344A14012D09DBF45E7&View=%7B419F65C4%2D2677%2D4821%2D87EB%2D978C23DA5757%7D"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Business Representatives",
+                "abstract": "",
+                "level": 1,
+                "structure": [
+                    {
+                        "type": "table",
+                        "content": {
+                            "style": "List Table 4 Accent 6",
+                            "columns": [
+                                "Name",
+                                "Region",
+                                "Business Function"
+                            ],
+                            "rows": [
+                                ["Jillian Barrett", "EMEA/AMS/APJ", "Service Management"],
+                                ["Gareth Williams", "EMEA", "Security Incident & Response"],
+                                ["Ross Webb", "EMEA", "Operational Support"],
+                                ["Daniel Hayes", "APJ", "Operational Support"],
+                                ["Davy Rhule", "AMS", "Operational Support"]
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

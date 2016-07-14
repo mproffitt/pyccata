@@ -3,13 +3,14 @@ import re
 from weeklyreport.decorators import accepts
 from weeklyreport.interface import ManagerInterface
 from weeklyreport.configuration import Configuration
-from jira.client import JIRA
-from jira.exceptions import JIRAError
 from weeklyreport.log import Logger
 from weeklyreport.exceptions import InvalidConnectionError
 from weeklyreport.exceptions import InvalidQueryError
 from weeklyreport.resources import ResultList
 from weeklyreport.resources import Issue
+
+from jira.client import JIRA
+from jira.exceptions import JIRAError
 
 class Jira(object):
     """ Jira management and searching class """
@@ -25,6 +26,9 @@ class Jira(object):
             self._options['server'] = self.configuration.jira.server + ':' + self.configuration.jira.port
         else:
             self._options['server'] = self.configuration.jira.server
+
+        # explicitly turn error log files off
+        JIRAError.log_to_tempfile = False
 
     @property
     def client(self):
@@ -83,7 +87,7 @@ class Jira(object):
         @return ResultSet
         """
         try:
-            if type(fields) is list:
+            if isinstance(fields, list):
                 fields = ','.join(fields)
             max_results = max_results if max_results != 0 else False
             results = self.client.search_issues(search_query, maxResults=max_results, fields=fields)
@@ -132,5 +136,15 @@ class Jira(object):
             ) if hasattr(issue.fields, 'resolutiondate') else None
             item.creator = getattr(issue.fields, 'creator') if hasattr(issue.fields, 'creator') else None
             item.assignee = getattr(issue.fields, 'assignee') if hasattr(issue.fields, 'assignee') else None
+            item.release_text = getattr(
+                issue.fields, 'customfield_10600'
+            ) if hasattr(
+                issue.fields, 'customfield_10600'
+            ) else None
+            item.business_representative = getattr(
+                issue.fields, 'customfield_10700'
+            ) if hasattr(
+                issue.fields, 'customfield_10700'
+            ) else None
             result_set.append(item)
         return result_set

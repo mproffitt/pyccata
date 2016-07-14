@@ -51,6 +51,9 @@ def accepts(*aargs, **akwargs):
             real_args = args if not bound else args[1:]
             validate_positional_args(real_args, aargs, func)
 
+            #pylint: disable=deprecated-method
+            # inspect.getargspec is not actually deprecated or likely to be removed:
+            # @see https://bugs.python.org/issue25486
             valid_args = inspect.getargspec(func).args
             for arg in akwargs:
                 if not arg in valid_args:
@@ -63,4 +66,3 @@ def accepts(*aargs, **akwargs):
             return func(*args, **kwargs)
         return wrapper
     return accepted
-

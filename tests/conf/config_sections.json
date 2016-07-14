@@ -51,6 +51,19 @@
                                 }
                             ]
                         }
+                    },
+                    {
+                        "type": "list",
+                        "title": "Test title",
+                        "content": {
+                            "style": "ordered",
+                            "field": "",
+                            "content": [
+                                "This release focuses on bug fixes and enhancements across the {AFFECTED_SYSTEMS} systems",
+                                "This release will require approximately {LENGTH} hours to fully deploy and rollout to the {AFFECTED_REGIONS} regions.\nThe deployment process to each region is done separately, taking approximately 20 minutes per region.",
+                                "Any changes to the Service Manager product currently affect the AMS region only"
+                            ]
+                        }
                     }
                 ]
             },
@@ -63,6 +76,14 @@
                         "title": "this is sub section 1",
                         "abstract": "this is text for sub section 1",
                         "structure": []
+                    },
+                    {
+                        "type": "table",
+                        "title": "This is a test title",
+                        "content": {
+                            "rows": [],
+                            "cols": []
+                        }
                     }
                 ]
             },

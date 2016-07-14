@@ -102,13 +102,23 @@ class ReportingInterface(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def add_paragraph(self, text):
+    def add_paragraph(self, text, style=None):
         """
         Add a paragraph of text to the report
 
         @param text string
         """
         raise NotImplementedError('Method must be implemented by a child')
+
+    @abstractmethod
+    def add_list(self, text, style=None):
+        """
+        Add a list item to the report
+
+        @param text string
+        """
+        raise NotImplementedError('Method must be implemented by a child')
+
 
     @abstractmethod
     def add_heading(self, heading, level):
@@ -146,4 +156,3 @@ class ReportingInterface(metaclass=ABCMeta):
     def add_page_break(self):
         """ Adds a page break to the report """
         raise NotImplementedError('Method must be implemented by a child')
-

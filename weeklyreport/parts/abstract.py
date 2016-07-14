@@ -3,6 +3,7 @@ from weeklyreport.helpers import read_file
 from weeklyreport.decorators import accepts
 from weeklyreport.managers.report import ReportManager
 from weeklyreport.configuration import Configuration
+from weeklyreport.resources  import Replacements
 
 class Abstract(object):
     """ class to parse the abstract """
@@ -26,5 +27,4 @@ class Abstract(object):
         @param document ReportManager
         """
         for paragraph in self._content:
-            document.add_paragraph(paragraph)
-
+            document.add_paragraph(Replacements().replace(paragraph))

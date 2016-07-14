@@ -4,10 +4,13 @@ Configuration module
 import os
 import json
 from collections             import namedtuple
+from argparse                import ArgumentParser
 from weeklyreport.log        import Logger
 from weeklyreport.decorators import accepts
 from weeklyreport.helpers    import class_exists
-from weeklyreport.exceptions import RequiredKeyError, InvalidClassError
+from weeklyreport.exceptions import RequiredKeyError
+from weeklyreport.exceptions import InvalidClassError
+from weeklyreport.resources  import Replacements
 
 class Configuration(object):
     """
@@ -29,6 +32,8 @@ class Configuration(object):
     _configuration = None
     _manager = None
     _reporting = None
+    _replacements = None
+    _parser = None
 
     _required_root_elements = [
         'manager',
@@ -116,6 +121,14 @@ class Configuration(object):
             raise InvalidClassError(reporting, class_path)
         self._reporting = reporting
 
+    @property
+    def replacements(self):
+        """
+        Handles all replacements provided in the configuration
+        """
+        return self._replacements
+
+
     def __init__(self, filename='configuration.json'):
         """ Initialise the Configuration """
         if self._is_loaded:
@@ -142,8 +155,6 @@ class Configuration(object):
             Logger().debug('Checking for config file in \'{0}\''.format(location))
             path = os.path.join(str(location), self._filename)
             try:
-                # pylint: disable=star-args
-                # star-args are required for mapping to named tuple
                 with open(path) as configuration_file:
                     self._configuration = json.load(
                         configuration_file,
@@ -156,6 +167,9 @@ class Configuration(object):
         if not self._configuration:
             raise IOError('Invalid configuration file or path not provided (got \'{0}\')'.format(self._filename))
         self.validate_config(self._required_root_elements)
+        if hasattr(self._configuration, 'replacements'):
+            self._replacements = Replacements(configuration=self._configuration.replacements)
+        self._parse_flags()
         self._is_loaded = True
 
     def _get_locations(self):
@@ -185,6 +199,47 @@ class Configuration(object):
             setattr(self, element, getattr(self._configuration, element))
         return True
 
+    def _parse_flags(self):
+        """
+        Parses flags provided on the command line and adds them to the current configuration
+        """
+        self._setup_parser()
+
+        #pylint: disable=protected-access
+        for key in self._configuration._fields:
+            item = getattr(self, key) if hasattr(self, key) else getattr(self._configuration, key)
+            if hasattr(item, 'flags'):
+                for flag in item.flags:
+                    if flag.shortname == '':
+                        self._parser.add_argument(
+                            flag.longname,
+                            help=flag.description,
+                            default=flag.default,
+                            action=flag.action
+                        )
+                    else:
+                        self._parser.add_argument(
+                            flag.shortname,
+                            flag.longname,
+                            help=flag.description,
+                            default=flag.default,
+                            action=flag.action
+                        )
+        self._parse_args()
+
+    def _setup_parser(self):
+        """
+        Gets a new argparse.ArgumentParser object
+        """
+        self._parser = ArgumentParser()
+
+    def _parse_args(self):
+        """
+        Parse command line options
+        """
+        self._parser.parse_args()
+
+
     def __new__(cls, filename='configuration.json'):
         """
         Override for __new__ to check if Configuration has already been loaded.
@@ -194,4 +249,3 @@ class Configuration(object):
             cls._is_loaded = False
             cls._instance = super(Configuration, cls).__new__(cls)
         return cls._instance
-

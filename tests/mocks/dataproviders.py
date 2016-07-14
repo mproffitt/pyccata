@@ -106,6 +106,14 @@ class DataProviders(object):
         )
 
     @staticmethod
+    def _get_client_without_results():
+        JIRA = namedtuple('JIRA', 'search_issues projects')
+        return JIRA(
+            search_issues=lambda x, maxResults, fields: [],
+            projects=lambda: DataProviders._test_data_for_projects()
+        )
+
+    @staticmethod
     def _test_data_for_projects():
         Project = namedtuple('Project', 'key name')
         return [
@@ -320,4 +328,3 @@ class DataProviders(object):
             result_list.append(issue)
 
         return result_list
-

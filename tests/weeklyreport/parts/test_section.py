@@ -2,6 +2,7 @@ import os
 from unittest import TestCase
 from mock import patch
 from mock import call
+from mock import PropertyMock
 from collections import namedtuple
 from weeklyreport.log import Logger
 from weeklyreport.configuration import Configuration
@@ -10,8 +11,11 @@ from weeklyreport.exceptions import ArgumentMismatchError
 from weeklyreport.parts.section import Section
 from weeklyreport.parts.paragraph import Paragraph
 from weeklyreport.factory import DocumentPartFactory
+from weeklyreport.managers.project import ProjectManager
 from weeklyreport.managers.report import ReportManager
 from weeklyreport.abstract import ThreadableDocument
+from weeklyreport.document import DocumentController
+from weeklyreport.filter import Filter
 
 from tests.mocks.dataproviders import DataProviders
 from tests.mocks.dataproviders import InvalidPriority
@@ -20,13 +24,15 @@ class TestSection(TestCase):
 
     _thread_manager = None
 
+    @patch('argparse.ArgumentParser.parse_args')
     @patch('weeklyreport.log.Logger.log')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def setUp(self, mock_config, mock_log):
+    def setUp(self, mock_config, mock_log, mock_parser):
         path = os.path.dirname(os.path.realpath(__file__ + '../../../../'))
         self._path = os.path.join(path, os.path.join('tests', 'conf'))
         mock_config.return_value = [self._path]
         mock_log.return_value = None
+        mock_parser.return_value = []
         Logger._instance = mock_log
         Configuration('config_sections.json')
         self._thread_manager = ThreadManager()
@@ -112,5 +118,49 @@ class TestSection(TestCase):
             call('This is paragraph number 5')
         ]
         mock_paragraph.assert_has_calls(calls)
+
+    @patch('weeklyreport.managers.subjects.jira.Jira._client')
+    @patch('weeklyreport.configuration.Configuration._load')
+    def test_render_returns_if_section_contains_empty_table(self, mock_load, mock_jira_client):
+        Rows = namedtuple('Row', 'query fields')
+
+        row_config = Rows(query="project=bob and issuetype=Bug", fields=["key", "description", "priority"])
+        #rows = Filter(row_config.query, fields=row_config.fields)
+        #self._thread_manager.append(rows)
+        columns = [
+            'Name',
+            'Description'
+        ]
+
+        TableConfig = namedtuple('TableConfig', 'rows columns style')
+        table_config = TableConfig(rows=row_config, columns=columns, style='Light heading 1')
+
+        StructureConfig = namedtuple('StructureConfig', 'type title content')
+        structure_config = StructureConfig(type='table', title='Hello world', content=table_config)
+
+        SectionConfig = namedtuple('SectionConfig', 'title abstract level structure')
+        section_config = SectionConfig(
+            title='Test',
+            abstract='This is a test for empty tables',
+            level=1,
+            structure=[structure_config]
+        )
+
+        mock_jira_client.return_value = None
+        with patch('weeklyreport.configuration.Configuration.manager', new_callable=PropertyMock) as mock_manager:
+            with patch('weeklyreport.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
+                mock_config.return_value = DataProviders._get_config_for_test()
+                mock_manager.return_value = 'jira'
+                section = Section(self._thread_manager, section_config)
+                rows = section._structure[0].rows
+                rows._thread_manager = self._thread_manager
+                rows._project_manager = ProjectManager()
+                rows.projectmanager._client._client = DataProviders._get_client_without_results()
+
+                document = ReportManager()
+                self._thread_manager.execute()
+                section.render(document)
+
+                self.assertEquals(0, rows.results.total)
 
 

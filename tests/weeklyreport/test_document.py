@@ -19,11 +19,13 @@ from weeklyreport.document import DocumentController
 @ddt
 class TestDocumentController(TestCase):
 
+    @patch('argparse.ArgumentParser.parse_args')
     @patch('weeklyreport.log.Logger.log')
-    def setUp(self, mock_log):
+    def setUp(self, mock_log, mock_parser):
         path = os.path.dirname(os.path.realpath(__file__ + '../../../'))
         self._path = os.path.join(path, os.path.join('tests', 'conf'))
         mock_log.return_value = None
+        mock_parser.return_value = []
         Logger._instance = mock_log
 
     def tearDown(self):
@@ -47,6 +49,7 @@ class TestDocumentController(TestCase):
         with self.assertRaises(exception):
             DocumentController()
 
+    @patch('weeklyreport.configuration.Configuration._parse_flags')
     @patch('weeklyreport.manager.Manager._load')
     @patch('weeklyreport.configuration.Configuration._get_locations')
     @data(
@@ -56,13 +59,14 @@ class TestDocumentController(TestCase):
         (RequiredKeyError, '\'Bob\' is a required key')
     )
     @unpack
-    def test_thread_manager_raises_exception(self, exception, message, mock_config, mock_manager_load):
+    def test_thread_manager_raises_exception(self, exception, message, mock_config, mock_manager_load, mock_parser):
         mock_manager_load.side_effect = exception(message)
         mock_config.return_value = [self._path]
         Configuration('config_sections.json')
         with self.assertRaises(exception):
             DocumentController()
 
+    @patch('weeklyreport.configuration.Configuration._parse_flags')
     @patch('weeklyreport.document.DocumentController.threadmanager')
     @patch('weeklyreport.manager.Manager._load')
     @patch('weeklyreport.configuration.Configuration._get_locations')
@@ -73,7 +77,7 @@ class TestDocumentController(TestCase):
         (RequiredKeyError, '\'Bob\' is a required key')
     )
     @unpack
-    def test_report_manager_raises_exception(self, exception, message, mock_config, mock_manager_load, mock_thread_manager):
+    def test_report_manager_raises_exception(self, exception, message, mock_config, mock_manager_load, mock_thread_manager, mock_parser):
         mock_thread_manager.return_value = None
         mock_manager_load.side_effect = exception(message)
         mock_config.return_value = [self._path]
@@ -81,8 +85,9 @@ class TestDocumentController(TestCase):
         with self.assertRaises(exception):
             DocumentController()
 
+    @patch('weeklyreport.configuration.Configuration._parse_flags')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def test_report_manager_raises_invalid_module_error_if_parts_module_doesnt_exist(self, mock_config):
+    def test_report_manager_raises_invalid_module_error_if_parts_module_doesnt_exist(self, mock_config, mock_parser):
         mock_config.return_value = [self._path]
         Configuration('config_sections.json')
         with self.assertRaises(InvalidModuleError):
@@ -102,8 +107,10 @@ class TestDocumentController(TestCase):
         with self.assertRaises(InvalidModuleError):
             DocumentController()
 
+
+    @patch('weeklyreport.configuration.Configuration._parse_flags')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def test_report_manager_loads_document_part_factory(self, mock_config):
+    def test_report_manager_loads_document_part_factory(self, mock_config, mock_parser):
         mock_config.return_value = [self._path]
         Configuration('config_sections.json')
         document = DocumentController()
@@ -112,25 +119,28 @@ class TestDocumentController(TestCase):
         self.assertIsInstance(document.reportmanager, ReportManager)
         self.assertIsInstance(document.partfactory, DocumentPartFactory)
 
+    @patch('weeklyreport.configuration.Configuration._parse_flags')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def test_build_raises_exception_if_parts_class_does_not_exist(self, mock_config):
+    def test_build_raises_exception_if_parts_class_does_not_exist(self, mock_config, mock_parser):
         mock_config.return_value = [self._path]
         with self.assertRaises(InvalidClassError):
             Configuration('invalid_report_parts.json')
             document = DocumentController()
             document.build()
 
+    @patch('weeklyreport.configuration.Configuration._parse_flags')
     @patch('weeklyreport.configuration.Configuration._get_locations')
     @patch('weeklyreport.managers.thread.ThreadManager.__init__')
-    def test_threadmanager_raises_exception_during_initialisation(self, mock_threadmanager, mock_config):
+    def test_threadmanager_raises_exception_during_initialisation(self, mock_threadmanager, mock_config, mock_parser):
         mock_config.return_value = [self._path]
         Configuration('config_sections.json')
         mock_threadmanager.side_effect = AttributeError('Invalid attribute \'foo\' for manager ThreadManager')
         with self.assertRaises(AttributeError):
             DocumentController()
 
+    @patch('weeklyreport.configuration.Configuration._parse_flags')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def test_document_raises_thread_failed_error_if_threadmanager_execute_returns_false(self, mock_config):
+    def test_document_raises_thread_failed_error_if_threadmanager_execute_returns_false(self, mock_config, mock_parser):
         mock_config.return_value = [self._path]
         Configuration('config_simple.json')
         document = DocumentController()
@@ -139,10 +149,9 @@ class TestDocumentController(TestCase):
             with self.assertRaises(ThreadFailedError):
                 document.build()
 
-
-
+    @patch('weeklyreport.configuration.Configuration._parse_flags')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def test_thread_manager_builds_simple_configuration(self, mock_config):
+    def test_thread_manager_builds_simple_configuration(self, mock_config, mock_parser):
         mock_config.return_value = [self._path]
         Configuration('config_simple.json')
         document = DocumentController()
@@ -167,6 +176,48 @@ class TestDocumentController(TestCase):
         ]
         self.assertEquals(mock_heading.call_count, len(heading_calls))
         mock_heading.assert_has_calls(heading_calls)
-        self.assertEquals(17, mock_paragraph.call_count)
+        self.assertEquals(20, mock_paragraph.call_count)
         mock_save.assert_called_with('demo.docx')
+
+    @patch('weeklyreport.configuration.Configuration._parse_flags')
+    @patch('weeklyreport.configuration.Configuration._get_locations')
+    def test_render(self, mock_config, mock_parser):
+        mock_config.return_value = [self._path]
+        Configuration('config_simple.json')
+        document = DocumentController()
+        self.assertIsInstance(document.configuration, Configuration)
+        self.assertIsInstance(document.threadmanager, ThreadManager)
+        self.assertIsInstance(document.reportmanager, ReportManager)
+        self.assertIsInstance(document.partfactory, DocumentPartFactory)
+        with patch('docx.document.Document.add_heading') as mock_heading, \
+            patch('docx.document.Document.add_paragraph') as mock_paragraph, \
+            patch('docx.document.Document.save') as mock_save:
+                document.build()
+
+        heading_calls = [
+            call('Test document structure for WeeklyReport/Helicopter view', 0),
+            call('Week 41', 1),
+            call('hello world', 1),
+            call('This has sub-sections', 1),
+            call('this is sub section 1', 2),
+            call('this is sub section 2', 2),
+            call('This section uses a file path for its text', 1)
+        ]
+        self.assertEquals(mock_heading.call_count, len(heading_calls))
+        mock_heading.assert_has_calls(heading_calls)
+        self.assertEquals(20, mock_paragraph.call_count)
+
+    @patch('weeklyreport.managers.subjects.docx.Docx.format_for_email')
+    @patch('weeklyreport.configuration.Configuration._parse_flags')
+    @patch('weeklyreport.configuration.Configuration._get_locations')
+    def test_report_manager_loads_document_part_factory(self, mock_config, mock_parser, mock_format):
+        mock_config.return_value = [self._path]
+        Configuration('config_sections.json')
+        document = DocumentController()
+        self.assertIsInstance(document.configuration, Configuration)
+        self.assertIsInstance(document.threadmanager, ThreadManager)
+        self.assertIsInstance(document.reportmanager, ReportManager)
+        self.assertIsInstance(document.partfactory, DocumentPartFactory)
+        document.format_for_email()
+        self.assertEquals(1, mock_format.call_count)
 

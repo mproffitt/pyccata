@@ -1,36 +1,70 @@
 """ Wrapper onto python-docx library """
-from docx import Document
 from weeklyreport.interface import ReportingInterface
 from weeklyreport.decorators import accepts
 from weeklyreport.log import Logger
+from weeklyreport.parts.list import List
+from weeklyreport.configuration import Configuration
+
+from docx import Document
+from docx.shared import Inches
 
 class Docx(object):
     """ Class for creating reports in Microsoft Word format """
     __implements__ = (ReportingInterface,)
     _client = None
     _configuration = None
+    _run = None
 
     MAXWIDTH = 5.7
 
     def __init__(self):
         """ Load the driver and create title page """
         Logger().info('Initialising Microsoft Word format driver')
+        self._configuration = Configuration()
 
     @property
     def client(self):
         """ Get the client interface """
         if self._client is None:
-            self._client = Document()
+            template_file = (
+                self._configuration.report.template if hasattr(self._configuration.report, 'template') else None
+            )
+            Logger().debug('Using template file ' + str(template_file))
+            self._client = Document(docx=template_file)
         return self._client
 
-    @accepts(str)
-    def add_paragraph(self, text):
+    @accepts(str, style=(None, str))
+    def add_paragraph(self, text, style=None):
         """
         Add a paragraph of text to the report
 
         @param text string
         """
-        self.client.add_paragraph(str(text))
+        self._run = self.client.add_paragraph(str(text), style=style)
+
+    @accepts(str, style=(None, str))
+    def add_run(self, text, style=None):
+        """
+        Adds a run of text to the current active paragraph
+
+        @param text string
+        @param style str
+        """
+        if style is not None:
+            setattr(self._run.add_run(text), style, True)
+        else:
+            self._run.add_run(text)
+
+    @accepts(str, style=(None, str))
+    def add_list(self, text, style=None):
+        """
+        Add a paragraph of text to the report
+
+        @param text string
+        @param style string [ListBullet,ListNumber]
+        """
+        paragraph = self.client.add_paragraph(str(text), style=style)
+        paragraph.paragraph_format.left_indent = Inches(List.INDENT)
 
     @accepts(str, int)
     def add_heading(self, heading, level):
@@ -78,6 +112,28 @@ class Docx(object):
         """ Adds a page break to the report """
         self.client.add_page_break()
 
+    def format_for_email(self):
+        """
+        Adds the document contents to a single table cell for display in email
+        """
+        template_file = (
+            self._configuration.report.template if hasattr(self._configuration.report, 'template') else None
+        )
+        Logger().debug('Using template file ' + str(template_file))
+        document = Document(docx=template_file)
+        table = document.add_table(rows=1, cols=1)
+        table.autofit = False
+
+        cell = table.cell(0, 0)
+
+        #pylint: disable=protected-access
+        # We are extending the internals of the docx package to enable
+        # this functionality. Therefore protected access is required
+        cell._element[:] = self.client._body._body[:]
+        cell.add_paragraph()
+
+        self._client = document
+
     @accepts(str)
     def save(self, filename):
         """
@@ -86,4 +142,3 @@ class Docx(object):
         @param filename string
         """
         self.client.save(filename)
-

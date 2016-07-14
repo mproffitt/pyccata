@@ -17,12 +17,15 @@ from weeklyreport.filter import Filter
 class TestList(TestCase):
 
     _report_manager = None
+    _thread_manager = None
 
+    @patch('argparse.ArgumentParser.parse_args')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def setUp(self, mock_config):
+    def setUp(self, mock_config, mock_parser):
         path = os.path.dirname(os.path.realpath(__file__ + '../../../../'))
         self._path = os.path.join(path, os.path.join('tests', 'conf'))
         mock_config.return_value = [self._path]
+        mock_parser.return_value = []
         Logger().debug('Loading configuration')
         Configuration(filename='config_sections.json')
         self._report_manager = ReportManager()
@@ -186,24 +189,13 @@ class TestList(TestCase):
 
         self.assertTrue((result_list[3] in unordered))
 
-
-
-
-
-
-
-
-
-
-
-
     def test_setup_raises_argument_validation_error_if_style_is_invalid(self):
         Config = namedtuple('Config', 'content style field')
         config = Config(content=[], style='IAmInvalid', field='')
         with self.assertRaises(ArgumentValidationError):
             unordered = List(self._thread_manager, config)
 
-    @patch('weeklyreport.managers.report.ReportManager.add_paragraph')
+    @patch('weeklyreport.managers.report.ReportManager.add_list')
     def test_init_creates_list(self, mock_list):
         list_contents = [
             'test item 1',
@@ -221,7 +213,7 @@ class TestList(TestCase):
         mock_list.assert_has_calls(calls)
 
     @patch('weeklyreport.managers.project.ProjectManager.search_issues')
-    @patch('weeklyreport.managers.report.ReportManager.add_paragraph')
+    @patch('weeklyreport.managers.report.ReportManager.add_list')
     def test_init_using_list_of_queries_creates_list(self, mock_list, mock_manager):
         result_list = DataProviders().get_results_for_list_init_with_list_of_queries_in_config()
 
@@ -245,7 +237,7 @@ class TestList(TestCase):
         mock_list.assert_has_calls(calls)
 
     @patch('weeklyreport.managers.project.ProjectManager.search_issues')
-    @patch('weeklyreport.managers.report.ReportManager.add_paragraph')
+    @patch('weeklyreport.managers.report.ReportManager.add_list')
     def test_init_using_list_of_queries_and_strings_creates_list(self, mock_list, mock_manager):
         result_list = DataProviders().get_results_for_list_init_with_list_of_queries_and_strings_in_config()
 
@@ -273,7 +265,7 @@ class TestList(TestCase):
         mock_list.assert_has_calls(calls)
 
     @patch('weeklyreport.managers.project.ProjectManager.search_issues')
-    @patch('weeklyreport.managers.report.ReportManager.add_paragraph')
+    @patch('weeklyreport.managers.report.ReportManager.add_list')
     def test_init_using_single_query_creates_list(self, mock_list, mock_manager):
         result_list = DataProviders().get_results_for_list_init_with_single_query_in_config()
 
@@ -293,7 +285,7 @@ class TestList(TestCase):
         mock_list.assert_has_calls(calls)
 
     @patch('weeklyreport.managers.project.ProjectManager.search_issues')
-    @patch('weeklyreport.managers.report.ReportManager.add_paragraph')
+    @patch('weeklyreport.managers.report.ReportManager.add_list')
     def test_init_using_list_of_queries_and_strings_continues_if_query_errors(self, mock_list, mock_manager):
         result_list = DataProviders().get_results_for_list_init_with_list_of_queries_and_strings_continues()
 
@@ -317,9 +309,7 @@ class TestList(TestCase):
 
         unordered = List(self._thread_manager, config)
         self._thread_manager.execute()
-
         unordered.render(self._report_manager)
-
         mock_list.assert_has_calls(calls)
 
 

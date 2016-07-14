@@ -10,15 +10,19 @@ from weeklyreport.configuration import Configuration
 from weeklyreport.exceptions    import RequiredKeyError, InvalidClassError
 from tests.mocks.dataproviders import DataProviders
 from weeklyreport.log import Logger
+from weeklyreport.resources import Replacements
 
 @ddt
 class TestConfiguration(TestCase):
     _test_configuration_path = ''
     _required_root_elements = Configuration._required_root_elements
 
+    @patch('argparse.ArgumentParser.parse_args')
     @patch('weeklyreport.log.Logger.log')
-    def setUp(self, mock_log):
+    def setUp(self, mock_log, mock_parser):
         mock_log.return_value = None
+        mock_parser.return_value = []
+        self.mock_parser = mock_parser
         path = os.path.dirname(os.path.realpath(__file__ + '../../../'))
         self._path = os.path.join(path, os.path.join('tests', 'conf'))
         self._mock_log = mock_log
@@ -30,6 +34,8 @@ class TestConfiguration(TestCase):
         if Configuration._configuration is not None:
             Configuration._configuration = None
         Configuration._required_root_elements = self._required_root_elements
+        if Replacements._instance is not None:
+            Replacements._instance = None
 
     @patch('weeklyreport.configuration.Configuration._get_locations')
     def test_configuration_raises_io_exception_if_config_file_cannot_be_found(self, mock_config_list):
@@ -92,8 +98,9 @@ class TestConfiguration(TestCase):
             self.assertTrue(config.validate_config(required_elements))
             mock_manager.assert_called_with(data_driver)
 
+    @patch('weeklyreport.configuration.Configuration._parse_flags')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def test_configuration_doesnt_assign_required_if_property_doesnt_exist(self, mock_config_list):
+    def test_configuration_doesnt_assign_required_if_property_doesnt_exist(self, mock_config_list, mock_parser):
         mock_config = DataProviders._get_config_for_test()
         mock_config_list.return_value = [self._path]
         required_elements = ['manager', 'iamrequiredandexistinconfigbutdonothaveaproperty']
@@ -102,6 +109,7 @@ class TestConfiguration(TestCase):
         Configuration._required_root_elements = required_elements
         config = Configuration(filename='config_no_property.json')
 
+    @patch('weeklyreport.configuration.Configuration._parse_flags')
     @patch('weeklyreport.configuration.Configuration._load')
     @patch('weeklyreport.configuration.Configuration._get_locations')
     @data(
@@ -109,7 +117,7 @@ class TestConfiguration(TestCase):
         ['reporting', 'pdf']
     )
     @unpack
-    def test_configuration_raises_requried_key_error_if_required_config_is_not_found(self, data_key, data_driver, mock_config_list, mock_load):
+    def test_configuration_raises_requried_key_error_if_required_config_is_not_found(self, data_key, data_driver, mock_config_list, mock_load, mock_parser):
         mock_config = DataProviders._get_config_for_test_without_report(manager=data_driver, reporting=data_driver)
         mock_config_list.return_value = [self._path]
         Configuration._configuration = mock_config
@@ -185,4 +193,17 @@ class TestConfiguration(TestCase):
         self.assertTrue(config.check)
         with self.assertRaises(AttributeError):
             config.iamnothere
+
+    @patch('argparse.ArgumentParser.parse_args')
+    @patch('weeklyreport.configuration.Configuration._get_locations')
+    def test_config_parse_flags(self, mock_config_list, mock_parse):
+        self.tearDown()
+
+        mock_config_list.return_value = [self._path]
+        Configuration.NAMESPACE = 'tests.mocks'
+
+        config = Configuration(filename='valid_config.json')
+        config.check = True
+        self.assertTrue(config.check)
+        self.assertIsInstance(config.replacements, Replacements)
 

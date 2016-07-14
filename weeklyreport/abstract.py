@@ -64,4 +64,3 @@ class ThreadableDocument(Threadable):
         @param report ReportDocument
         """
         raise NotImplementedError('Method must be implemented by a child')
-

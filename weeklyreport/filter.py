@@ -10,6 +10,7 @@ from weeklyreport.decorators import accepts
 from weeklyreport.threading import Threadable
 from weeklyreport.managers.project import ProjectManager
 from weeklyreport.resources import ResultList
+from weeklyreport.resources  import Replacements
 
 class Filter(Threadable):
     """
@@ -97,7 +98,7 @@ class Filter(Threadable):
         # It is understood that the arguments will always differ
         # from the super() class on this method due to the use of
         # *args and **kwargs in the call from __init__
-        self._query = query
+        self._query = Replacements().replace(query)
         self._fields = fields
         self._observers = []
         self._max_results = max_results
@@ -137,10 +138,10 @@ class Filter(Threadable):
 
             self.notify(False)
             self._complete = True
+
         # pylint: disable=broad-except
         # It is necessary to have a broad exception case here
         # as we need to set the failure state of the thread
         # regardless of what type of exception is thrown
         except Exception as exception:
             self.failure = exception
-

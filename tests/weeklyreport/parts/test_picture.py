@@ -14,13 +14,15 @@ from weeklyreport.exceptions import ThreadFailedError
 @ddt
 class TestPicture(TestCase):
 
+    @patch('argparse.ArgumentParser.parse_args')
     @patch('weeklyreport.log.Logger.log')
     @patch('weeklyreport.configuration.Configuration._get_locations')
-    def setUp(self, mock_config, mock_log):
+    def setUp(self, mock_config, mock_log, mock_parser):
         path = os.path.dirname(os.path.realpath(__file__ + '../../../../'))
         self._path = os.path.join(path, os.path.join('tests', 'conf'))
         mock_config.return_value = [self._path]
         mock_log.return_value = None
+        mock_parser.return_value = []
         Logger._instance = mock_log
         Configuration('config_sections.json')
         self._thread_manager = ThreadManager()

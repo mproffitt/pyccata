@@ -51,4 +51,3 @@ class ProjectManager(Manager):
         @fields             list       A list of fields to retrieve as part of the query results
         """
         return self.client.search_issues(search_query=search_query, max_results=max_results, fields=fields)
-

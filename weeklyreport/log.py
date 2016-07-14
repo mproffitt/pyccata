@@ -180,4 +180,3 @@ class Logger(object):
         if Logger._instance is None:
             Logger._instance = super(Logger, cls).__new__(cls)
         return Logger._instance
-

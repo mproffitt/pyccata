@@ -10,12 +10,18 @@ from tests.mocks.dataproviders import DataProviders
 from weeklyreport.log import Logger
 
 from docx import Document
+from docx.oxml.table import CT_Tbl
+from docx.oxml.section import CT_SectPr
+from docx.oxml.text.paragraph import CT_P
+
 
 class TestDocx(TestCase):
     _document = None
 
+    @patch('argparse.ArgumentParser.parse_args')
     @patch('weeklyreport.log.Logger.log')
-    def setUp(self, mock_log):
+    def setUp(self, mock_log, mock_parser):
+        mock_parser.return_value = []
         mock_log.return_value = None
         Logger._instance = mock_log
         self._document = Document()
@@ -32,7 +38,7 @@ class TestDocx(TestCase):
                 mock_reporting.return_value = 'docx'
                 r = ReportManager()
                 r.add_paragraph('hello world')
-                mock_document.assert_called_with('hello world')
+                mock_document.assert_called_with('hello world', style=None)
 
     @patch('weeklyreport.configuration.Configuration._load')
     @patch('docx.document.Document.add_heading')
@@ -113,4 +119,55 @@ class TestDocx(TestCase):
                 r.add_table(headings=headers, data=data, style='Test Style')
                 mock_document.assert_called_with(rows=1, cols=3, style='Test Style')
 
+    @patch('weeklyreport.configuration.Configuration._load')
+    @patch('docx.document.Document.add_paragraph')
+    def test_add_list(self, mock_document, mock_load):
+        with patch('weeklyreport.configuration.Configuration.reporting', new_callable=PropertyMock) as mock_reporting:
+            with patch('weeklyreport.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
+                mock_config.return_value = DataProviders._get_config_for_test()
+                mock_reporting.return_value = 'docx'
+                r = ReportManager()
+                r.add_list('This is a list item', style='ListBullet')
+                mock_document.assert_called_with('This is a list item', style='ListBullet')
+
+    @patch('weeklyreport.configuration.Configuration._load')
+    @patch('docx.text.paragraph.Paragraph.add_run')
+    def test_add_run_with_no_style(self, mock_run, mock_load):
+        with patch('weeklyreport.configuration.Configuration.reporting', new_callable=PropertyMock) as mock_reporting:
+            with patch('weeklyreport.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
+                mock_config.return_value = DataProviders._get_config_for_test()
+                mock_reporting.return_value = 'docx'
+                r = ReportManager()
+                r.add_paragraph('hello world')
+                r.add_run('This is a paragraph run')
+                mock_run.assert_called_with('This is a paragraph run')
+
+    @patch('weeklyreport.configuration.Configuration._load')
+    @patch('docx.text.paragraph.Paragraph.add_run')
+    def test_add_run_with_style(self, mock_run, mock_load):
+        with patch('weeklyreport.configuration.Configuration.reporting', new_callable=PropertyMock) as mock_reporting:
+            with patch('weeklyreport.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
+                mock_config.return_value = DataProviders._get_config_for_test()
+                mock_reporting.return_value = 'docx'
+                r = ReportManager()
+                r.add_paragraph('hello world')
+                r.add_run('This is a paragraph run', style='bold')
+                mock_run.assert_called_with('This is a paragraph run')
+                self.assertTrue(mock_run.bold)
+
+    @patch('weeklyreport.configuration.Configuration._load')
+    @patch('docx.text.paragraph.Paragraph.add_run')
+    def test_format_for_email(self, mock_run, mock_load):
+        with patch('weeklyreport.configuration.Configuration.reporting', new_callable=PropertyMock) as mock_reporting:
+            with patch('weeklyreport.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
+                mock_config.return_value = DataProviders._get_config_for_test()
+                mock_reporting.return_value = 'docx'
+                r = ReportManager()
+                r.add_paragraph('hello world')
+                r.add_run('This is a paragraph run', style='bold')
+                mock_run.assert_called_with('This is a paragraph run')
+                self.assertTrue(mock_run.bold)
+                r.format_for_email()
+                self.assertIsInstance(r._client._client._body._body[0], CT_Tbl)
+                self.assertIsInstance(r._client._client._body._body[1], CT_SectPr)
 

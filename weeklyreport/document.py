@@ -87,6 +87,12 @@ class DocumentController(object):
         for section in self._sections:
             section.render(self._report_manager)
 
+    def format_for_email(self):
+        """
+        Wraps the document inside a single table cell for display via email.
+        """
+        self.reportmanager.format_for_email()
+
     @accepts(str)
     def save(self, filename):
         """ Save the current report """
@@ -99,4 +105,3 @@ class DocumentController(object):
         Logger().fatal('exception message was:')
         Logger().fatal(str(exception))
         raise exception
-

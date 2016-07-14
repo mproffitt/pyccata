@@ -11,9 +11,11 @@ from weeklyreport.log import Logger
 
 class TestFilter(TestCase):
 
+    @patch('argparse.ArgumentParser.parse_args')
     @patch('weeklyreport.log.Logger.log')
-    def setUp(self, mock_log):
+    def setUp(self, mock_log, mock_parser):
         mock_log.return_value = None
+        mock_parser.return_value = None
         Logger._instance = mock_log
 
 
@@ -52,7 +54,7 @@ class TestFilter(TestCase):
                 mock_filter = Filter('assignee = "Bob"')
                 mock_filter.projectmanager = ProjectManager()
                 mock_filter.projectmanager._client._client = DataProviders._get_client()
-                mock_filter.start()
+                mock_filter.run()
                 self.assertTrue(mock_filter.complete)
                 self.assertEqual(len(mock_filter.results), len(DataProviders._test_data_for_search_results()))
 
@@ -71,7 +73,8 @@ class TestFilter(TestCase):
                 another_filter = Filter('assignee = "Bob"')
                 mock_filter.append(another_filter)
 
-                mock_filter.start()
+                mock_filter.run()
+                self.assertEquals(mock_filter.failure, None)
                 self.assertTrue(mock_filter.complete)
                 self.assertEqual(len(mock_filter.results), len(DataProviders._test_data_for_search_results()))
                 self.assertEqual(mock_filter._results, another_filter._results)
@@ -92,9 +95,8 @@ class TestFilter(TestCase):
                 another_filter.projectmanager = mock_filter.projectmanager
                 mock_filter.append(another_filter)
 
-                mock_filter.start()
+                mock_filter.run()
                 self.assertTrue(mock_filter.complete)
                 self.assertEqual(mock_filter._results, another_filter._results)
                 another_filter.start()
                 self.assertEqual(len(mock_filter.results), len(DataProviders._test_data_for_search_results()))
-

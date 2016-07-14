@@ -196,13 +196,6 @@ class ThreadManager(list):
                     pass
             i += 1
 
-    def flush(self):
-        """
-        Empty the current thread collection
-        """
-        self._querymanager.flush()
-        self.__init__()
-
     def __new__(cls):
         """
         Override for __new__ to check if ThreadManager has already been loaded.
@@ -212,4 +205,3 @@ class ThreadManager(list):
             cls._is_loaded = False
             cls._instance = super(ThreadManager, cls).__new__(cls)
         return cls._instance
-

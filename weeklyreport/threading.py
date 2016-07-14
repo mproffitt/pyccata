@@ -66,5 +66,3 @@ class Threadable(Thread):
         the parent thread to understand the reason a given thread failed
         """
         raise NotImplementedError('Method must be implemented by a child')
-
-

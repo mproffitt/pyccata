@@ -2,13 +2,14 @@
 from weeklyreport.managers.report import ReportManager
 from weeklyreport.abstract import ThreadableDocument
 from weeklyreport.decorators import accepts
+from weeklyreport.resources  import Replacements
 
 class Paragraph(ThreadableDocument):
     """ Create a new Paragraph object """
     PRIORITY = 10
     _content = ''
 
-    @accepts(text=str)
+    @accepts(text=(str, list))
     def setup(self, text=''):
         """ Setup the paragraph """
         # pylint: disable=arguments-differ
@@ -21,4 +22,13 @@ class Paragraph(ThreadableDocument):
     @accepts(ReportManager)
     def render(self, document):
         """ Render the paragraph text """
-        document.add_paragraph(self._content)
+        if isinstance(self._content, str):
+            document.add_paragraph(Replacements().replace(self._content))
+        else:
+            for i, run in enumerate(self._content):
+                if i == 0:
+                    document.add_paragraph(run)
+                elif isinstance(run, str):
+                    document.add_run(run)
+                else:
+                    document.add_run(run.text, style=run.style)

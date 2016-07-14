@@ -2,21 +2,20 @@
 Helper class for creating lists of items
 """
 
-from docx.shared import Inches
-
 from weeklyreport.managers.report import ReportManager
 from weeklyreport.abstract import ThreadableDocument
 from weeklyreport.decorators import accepts
 from weeklyreport.exceptions import ArgumentValidationError
 from weeklyreport.filter import Filter
 from weeklyreport.resources import Issue
+from weeklyreport.resources  import Replacements
 from weeklyreport.log import Logger
 
 class List(ThreadableDocument):
     """
     Helper class for creating and managing lists
     """
-    STYLE_MAPPINGS = {"ordered": "ListNumbered", "unordered": "ListBullet"}
+    STYLE_MAPPINGS = {"ordered": "ListNumber", "unordered": "ListBullet"}
     INDENT = 0.25
 
     _style = ''
@@ -48,7 +47,6 @@ class List(ThreadableDocument):
         """
         while not self.complete:
             if isinstance(self._content, Filter):
-
                 #pylint disable=maybe-no-member
                 self._complete = self._content.complete
             else:
@@ -74,15 +72,7 @@ class List(ThreadableDocument):
                 text = item.results[0].description
 
             if text is not None:
-                self._write(document, text)
-
-    @accepts(ReportManager, str)
-    def _write(self, document, text):
-        """
-        Writes into the document
-        """
-        paragraph = document.add_paragraph(text, style=List.STYLE_MAPPINGS[self._style])
-        paragraph.paragraph_format.left_indent = Inches(List.INDENT)
+                document.add_list(Replacements().replace(text), style=List.STYLE_MAPPINGS[self._style])
 
     @staticmethod
     @accepts((Filter, list))
@@ -137,4 +127,3 @@ class List(ThreadableDocument):
         if isinstance(self._content, Filter):
             return self._content.results.__contains__(item)
         return self._content.__contains__(item)
-

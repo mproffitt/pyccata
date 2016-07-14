@@ -7,9 +7,9 @@ from weeklyreport.log import Logger
 
 class TestQueryManager(TestCase):
 
+    @patch('weeklyreport.configuration.Configuration._parse_flags')
     @patch('weeklyreport.log.Logger.log')
-    def setUp(self, mock_log):
-        mock_log.return_value = None
+    def setUp(self, mock_log, mock_parser):
         Logger._instance = mock_log
         self._manager = QueryManager()
 

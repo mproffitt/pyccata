@@ -86,4 +86,3 @@ def validate_keyword_args(kwargs, akwargs, func):
         elif not isinstance(kwargs[k], akwargs[k]) or not implements(kwargs[k], akwargs[k]):
             raise ArgumentValidationError(k, func.__name__, akwargs[k], kwargs[k])
     return True
-

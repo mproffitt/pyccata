@@ -1,0 +1,133 @@
+{
+    "manager": "jira",
+    "reporting": "docx",
+    "jira": {
+        "username": "",
+        "password": "",
+        "server"  : "",
+        "port"    : ""
+    },
+    "replacements": [
+        {
+            "name": "setup",
+            "type": "string",
+            "value": "a",
+            "overridable": {
+                "flag": "--dosomething",
+                "abbrev": "",
+                "required": false
+            }
+        },
+        {
+            "name": "nosetests",
+            "type": "string",
+            "value": "b",
+            "overridable": {
+                "flag": "-nosetests",
+                "abbrev": "-r",
+                "required": false
+            }
+        },
+        {
+            "name": "s",
+            "type": "string",
+            "value": "c",
+            "overridable": {
+                "flag": "-s",
+                "abbrev": "-tt",
+                "required": false
+            }
+        },
+        {
+            "name": "coverage",
+            "type": "string",
+            "value": "d",
+            "overridable": {
+                "flag": "--with-coverage",
+                "abbrev": "",
+                "required": false
+            }
+        },
+        {
+            "name": "branches",
+            "type": "csv",
+            "value": "e,x,z",
+            "overridable": {
+                "flag": "--cover-branches",
+                "abbrev": "",
+                "required": false
+            }
+        },
+        {
+            "name": "html",
+            "type": "string",
+            "value": "f",
+            "overridable": {
+                "flag": "--cover-html",
+                "abbrev": "",
+                "required": false
+            }
+        },
+        {
+            "name": "package",
+            "type": "string",
+            "value": "g",
+            "overridable": {
+                "flag": "--cover-package",
+                "abbrev": "",
+                "required": false
+            }
+        },
+        {
+            "name": "report",
+            "type": "string",
+            "value": "h",
+            "overridable": false
+        },
+        {
+            "name": "FIX_VERSION",
+            "type": "fix_version",
+            "value": "%Y-%m-%d",
+            "overridable": false
+        },
+        {
+            "name": "RELEASE_DATE",
+            "type": "release_date",
+            "value": "%A, %d %B %Y",
+            "overridable": false
+        }
+    ],
+    "report": {
+        "path": "ess_weekly_report",
+        "datapath": "tests/weeklyreport/data",
+        "title": "Test document structure for WeeklyReport/Helicopter view",
+        "subtitle": "Week 41",
+        "abstract": "This document provides the overall breakdown of stuff which may or may not exist in Jira\n\nEach section starts with a status bar showing what is in todo, what is in progress and what has been completed.\n\nSubsequent to this, a more detailed breakdown is provided where relevant.",
+        "sections": [
+            {
+                "title": "hello world",
+                "abstract":  "This is a test paragraph",
+                "level": 1,
+                "structure": [
+                    {
+                        "type": "paragraph",
+                        "content": "some text"
+                    },
+                    {
+                        "type": "list",
+                        "title": "Test title",
+                        "content": {
+                            "style": "ordered",
+                            "field": "",
+                            "content": [
+                                "This release focuses on bug fixes and enhancements across the {AFFECTED_SYSTEMS} systems",
+                                "This release will require approximately {LENGTH} hours to fully deploy and rollout to the {AFFECTED_REGIONS} regions.\nThe deployment process to each region is done separately, taking approximately 20 minutes per region.",
+                                "Any changes to the Service Manager product currently affect the AMS region only"
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

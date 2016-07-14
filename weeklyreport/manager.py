@@ -77,4 +77,3 @@ class Manager(object):
             if not hasattr(configuration, element):
                 raise RequiredKeyError('{0}/{1}'.format(config_label, element))
         return True
-

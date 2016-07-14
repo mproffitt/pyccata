@@ -16,18 +16,21 @@ setup(
     install_requires=[
         'jira',
         'lxml',
+        'cffi',
         'cairosvg',
         'tinycss',
         'cssselect',
         'pygal',
         'numpy',
         'Pillow',
-        'python-docx'
+        'python-docx',
+        'pyquery'
     ],
 
     test_suite='nose.collector',
     tests_require=[
         'nose',
+        'coverage',
         'pbr',
         'mock',
         'ddt'

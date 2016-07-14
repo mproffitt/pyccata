@@ -45,10 +45,3 @@ class QueryManager(list):
                 break
         if not observed:
             super().append(item)
-
-    def flush(self):
-        #pylint: disable=no-self-use
-        """
-        Clear all queries from the pool
-        """
-        super().__init__()
