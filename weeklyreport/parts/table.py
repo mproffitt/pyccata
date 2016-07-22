@@ -73,15 +73,15 @@ class Table(ThreadableDocument):
             complete = True
             if isinstance(self._rows, Filter):
                 self._complete = self._rows.complete
-                continue
+                break
             for row in self._rows:
                 for item in row:
                     if isinstance(item, Filter) and item.failed:
                         Logger().warning('Failed to execute \'' + item.query + '\'')
                         Logger().warning('Reason was:')
                         Logger().warning(item.failure)
-                    elif not isinstance(item, Filter) or item.complete:
-                        complete = True
+                    elif isinstance(item, Filter) and not item.complete:
+                        complete = False
 
             if complete:
                 self._complete = True

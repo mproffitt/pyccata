@@ -91,6 +91,7 @@ class Jira(object):
                 fields = ','.join(fields)
             max_results = max_results if max_results != 0 else False
             results = self.client.search_issues(search_query, maxResults=max_results, fields=fields)
+            Logger().debug('Got \'' + str(len(results)) + '\' results for query ' + search_query)
             return Jira._convert_results(results)
         except JIRAError as exception:
             expression = '.*Error in the JQL Query.*'
@@ -118,7 +119,7 @@ class Jira(object):
         result_set.total = results.total if hasattr(results, 'total') else len(results)
         for issue in results:
             item = Issue()
-            item.key = issue.key
+            item.key = getattr(issue, 'key') if hasattr(issue, 'key') else None
             item.summary = getattr(issue.fields, 'summary') if hasattr(issue.fields, 'summary') else None
             item.issuetype = getattr(issue.fields, 'issuetype') if hasattr(issue.fields, 'issuetype') else None
             item.created = getattr(issue.fields, 'created') if hasattr(issue.fields, 'created') else None

@@ -148,9 +148,6 @@ class Replacement(object):
         """ Gets the value as a string using the callback function as necessary """
         return self._function(self.value) if self._function is not None else self.value
 
-    def __repr__(self):
-        return str(self)
-
 class Replacements(list):
     """
     List of replacements for the current document

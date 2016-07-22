@@ -4,7 +4,7 @@ from mock                       import patch, PropertyMock
 from ddt                        import ddt, data, unpack
 from collections                import namedtuple
 from weeklyreport.configuration import Configuration
-from weeklyreport.resources import Replacements
+from weeklyreport.resources import Replacements, ReplacementsValidator
 from datetime import datetime, date, timedelta
 
 @ddt
@@ -107,4 +107,39 @@ class TestReplacements(TestCase):
 
         self.assertEquals(config.replacements.replace('{RELEASE_DATE}'), reldate)
 
+    def test_replacements_validator_updates_replacements(self):
+        self.tearDown()
+
+        Config = namedtuple('Config', 'name type value overridable')
+        config = Config(name='TEST', type='string', value='this is a test', overridable=False)
+        class Namespace():
+            test=None
+            def __init__(self, test=None):
+                self.test = test
+
+        namespace = Namespace(test=None)
+
+        replacements = Replacements(configuration=[config])
+        replacement_validator = ReplacementsValidator(None, 'test')
+        replacement_validator.__call__(None, namespace, 'hello world')
+
+        self.assertEquals('hello world', replacements[0].value)
+
+    def test_replacements_validator_does_not_update_lowercase_replacements(self):
+        self.tearDown()
+
+        Config = namedtuple('Config', 'name type value overridable')
+        config = Config(name='test', type='string', value='this is a test', overridable=False)
+        class Namespace():
+            test=None
+            def __init__(self, test=None):
+                self.test = test
+
+        namespace = Namespace(test=None)
+
+        replacements = Replacements(configuration=[config])
+        replacement_validator = ReplacementsValidator(None, 'test')
+        replacement_validator.__call__(None, namespace, 'hello world')
+
+        self.assertEquals('this is a test', replacements[0].value)
 

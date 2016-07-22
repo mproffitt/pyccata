@@ -91,12 +91,19 @@ class DocumentController(object):
         """
         Wraps the document inside a single table cell for display via email.
         """
+        Logger().info('Wrapping document in table for email display')
         self.reportmanager.format_for_email()
 
     @accepts(str)
     def save(self, filename):
-        """ Save the current report """
+        """
+        Save the current report
+
+        @param filename string
+        """
+        Logger().info('Saving document to file')
         self.reportmanager.save(filename)
+        Logger().info('Done')
 
     @staticmethod
     def _raise_and_terminate(what, exception):

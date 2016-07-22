@@ -10,7 +10,7 @@ from weeklyreport.decorators import accepts
 from weeklyreport.threading import Threadable
 from weeklyreport.managers.project import ProjectManager
 from weeklyreport.resources import ResultList
-from weeklyreport.resources  import Replacements
+from weeklyreport.resources import Replacements
 
 class Filter(Threadable):
     """
@@ -102,7 +102,7 @@ class Filter(Threadable):
         self._fields = fields
         self._observers = []
         self._max_results = max_results
-        self._results = None
+        self._results = ResultList()
 
     @accepts(ObservableInterface)
     def append(self, item):

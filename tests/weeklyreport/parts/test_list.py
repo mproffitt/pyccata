@@ -38,12 +38,12 @@ class TestList(TestCase):
             Configuration._instance = None
         Configuration.NAMESPACE = 'weeklyreport'
 
-    def test_get_item_raises_error_if_content_is_filter_and_filter_results_is_none(self):
+    def test_get_item_raises_error_if_content_is_filter_and_filter_results_is_empty(self):
         list_contents = Filter('project=mssportal', max_results=5, fields=['id', 'description' ,'priority'])
         Config = namedtuple('Config', 'content style field')
         config = Config(content=list_contents, style='unordered', field='description')
         unordered = List(self._thread_manager, config)
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(IndexError):
             item = unordered[0]
 
     def test_get_item_raises_error_if_content_is_list_and_results_is_none(self):
@@ -59,7 +59,7 @@ class TestList(TestCase):
         Config = namedtuple('Config', 'content style field')
         config = Config(content=list_contents, style='unordered', field='description')
         unordered = List(self._thread_manager, config)
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(IndexError):
             unordered[0] = 'hello world'
 
     def test_set_item_raises_error_if_content_is_list_and_results_is_none(self):

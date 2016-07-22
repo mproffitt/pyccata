@@ -68,7 +68,7 @@ class List(ThreadableDocument):
                 text = item
             elif isinstance(item, Issue):
                 text = item.description
-            elif isinstance(item.results, list) and isinstance(item.results[0], Issue):
+            elif isinstance(item.results, list) and len(item.results) == 1 and isinstance(item.results[0], Issue):
                 text = item.results[0].description
 
             if text is not None:
