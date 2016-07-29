@@ -38,6 +38,9 @@ class Issue(object):
         self.assignee = None
         self.release_text = None
         self.business_representative = None
+        self.rollout_instructions = None
+        self.rollback_instructions = None
+        self.pipelines = None
 
 class ArgumentFlag():
     """
@@ -224,6 +227,8 @@ class Replacements(list):
             match = '{' + replacement.name.upper() + '}'
             if match in what:
                 what = what.replace(match, str(replacement))
+            elif replacement.name.upper() == what.upper():
+                what = str(replacement)
         return what
 
     @staticmethod

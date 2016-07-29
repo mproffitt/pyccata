@@ -147,5 +147,21 @@ class Jira(object):
             ) if hasattr(
                 issue.fields, 'customfield_10700'
             ) else None
+            item.rollout_instructions = getattr(
+                issue.fields, 'customfield_10800'
+            ) if hasattr(
+                issue.fields, 'customfield_10800'
+            ) else None
+            item.rollback_instructions = getattr(
+                issue.fields, 'customfield_10801'
+            ) if hasattr(
+                issue.fields, 'customfield_10801'
+            ) else None
+            item.pipelines = getattr(
+                issue.fields, 'customfield_10802'
+            ) if hasattr(
+                issue.fields, 'customfield_10802'
+            ) else None
+
             result_set.append(item)
         return result_set

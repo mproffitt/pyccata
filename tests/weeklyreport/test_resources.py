@@ -75,6 +75,7 @@ class TestReplacements(TestCase):
             value_format
         )
         self.assertEquals(config.replacements.replace('{FIX_VERSION}'), fixdate)
+        self.assertEquals(config.replacements.replace('some text'), 'Some Replacement Text')
 
 
     @patch('weeklyreport.configuration.Configuration._parse_flags')

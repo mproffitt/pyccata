@@ -95,6 +95,12 @@
             "type": "release_date",
             "value": "%A, %d %B %Y",
             "overridable": false
+        },
+        {
+            "name": "SOME TEXT",
+            "type": "string",
+            "value": "Some Replacement Text",
+            "overridable": false
         }
     ],
     "report": {
@@ -111,7 +117,9 @@
                 "structure": [
                     {
                         "type": "paragraph",
-                        "content": "some text"
+                        "content": {
+                            "text": "some text"
+                        }
                     },
                     {
                         "type": "list",

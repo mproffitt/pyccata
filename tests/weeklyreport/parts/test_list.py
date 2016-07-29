@@ -2,6 +2,7 @@ import os
 from unittest import TestCase
 from mock import call
 from mock import patch
+from mock import PropertyMock
 from weeklyreport.parts.list import List
 from weeklyreport.log import Logger
 from weeklyreport.configuration import Configuration
@@ -279,9 +280,7 @@ class TestList(TestCase):
 
         unordered = List(self._thread_manager, config)
         self._thread_manager.execute()
-
         unordered.render(self._report_manager)
-
         mock_list.assert_has_calls(calls)
 
     @patch('weeklyreport.managers.project.ProjectManager.search_issues')
@@ -312,4 +311,107 @@ class TestList(TestCase):
         unordered.render(self._report_manager)
         mock_list.assert_has_calls(calls)
 
+    @patch('weeklyreport.managers.project.ProjectManager.search_issues')
+    def test_list_contains_item_if_content_is_tuple(self, mock_manager):
+        result_list = DataProviders().get_results_for_list_init_with_single_query_in_config()
+
+        ListContents = namedtuple('ListContents', 'query fields')
+        list_contents = ListContents('project=msportal', fields=['id', 'description' ,'priority'])
+        mock_manager.return_value = result_list
+        Config = namedtuple('Config', 'content style field')
+        config = Config(content=list_contents, style='unordered', field='description')
+
+        unordered = List(self._thread_manager, config)
+        self._thread_manager.execute()
+
+        self.assertTrue((result_list[3] in unordered))
+
+    @patch('weeklyreport.managers.project.ProjectManager.search_issues')
+    def test_list_fails_if_content_is_invalid_tuple(self, mock_manager):
+        result_list = DataProviders().get_results_for_list_init_with_single_query_in_config()
+
+        Filter = namedtuple('Filter', 'bob fields')
+        list_contents = Filter('project=msportal', fields=['id', 'description' ,'priority'])
+        mock_manager.return_value = result_list
+        Config = namedtuple('Config', 'content style field')
+        config = Config(content=list_contents, style='unordered', field='description')
+
+        with self.assertRaises(ArgumentValidationError):
+            unordered = List(self._thread_manager, config)
+
+    def test_run_completes_if_filter_delays_in_completing(self):
+        ListContents = namedtuple('ListContents', 'query fields')
+        list_contents = ListContents('project=msportal', fields=['id', 'description' ,'priority'])
+        Config = namedtuple('Config', 'content style field')
+        config = Config(content=list_contents, style='unordered', field='description')
+
+        with patch('weeklyreport.filter.Filter.complete', new_callable=PropertyMock) as mock_thread_complete:
+            unordered = List(self._thread_manager, config)
+            mock_thread_complete.side_effect = [False, False, True]
+            unordered.run()
+            self.assertTrue(unordered._complete)
+
+    def test_run_completes_if_thread_fails(self):
+        ListContents = namedtuple('ListContents', 'query fields')
+        list_contents = ListContents('project=msportal', fields=['id', 'description' ,'priority'])
+        Config = namedtuple('Config', 'content style field')
+        config = Config(content=list_contents, style='unordered', field='description')
+
+        with patch('weeklyreport.threading.Threadable.complete', new_callable=PropertyMock) as mock_thread_complete:
+            unordered = List(self._thread_manager, config)
+            mock_thread_complete.return_value = True
+            unordered._content._failure = InvalidQueryError('Your JQL contains an error before Pipeline')
+            unordered.run()
+            self.assertTrue(unordered._complete)
+
+    @patch('weeklyreport.managers.project.ProjectManager.search_issues')
+    @patch('weeklyreport.managers.report.ReportManager.add_list')
+    def test_init_using_list_of_queries_and_strings_continues_if_query_is_delayed(self, mock_list, mock_manager):
+        result_list = DataProviders().get_results_for_list_init_with_list_of_queries_and_strings_continues()
+
+        list_contents = [
+            "This is a string entry",
+            Filter('project=msportal', max_results=5, fields=['id', 'description' ,'priority'])
+        ]
+
+        effect = [item for item in result_list if isinstance(item, ResultList)]
+        effect[1] = InvalidQueryError('The query you have provided is invalid')
+
+        mock_manager.side_effect = effect
+        Config = namedtuple('Config', 'content style field')
+        config = Config(content=list_contents, style='unordered', field='description')
+
+        with patch('weeklyreport.filter.Filter.complete', new_callable=PropertyMock) as mock_thread_complete:
+            mock_thread_complete.side_effect = [False, False, True]
+            unordered = List(self._thread_manager, config)
+            unordered.run()
+            self.assertTrue(unordered._complete)
+
+    @patch('weeklyreport.filter.Filter.results', new_callable=PropertyMock)
+    @patch('weeklyreport.managers.report.ReportManager.add_list')
+    def test_init_using_single_query_creates_list_of_items(self, mock_list, mock_results):
+
+        results = [
+            "test 1",
+            "test 2",
+            "test 3",
+            "test 4",
+            "test 5"
+        ]
+
+        resultset = Issue()
+        resultset.pipelines = results
+
+        list_contents = Filter('project=msportal', max_results=5, fields=['id', 'description' ,'priority'])
+        Config = namedtuple('Config', 'content style field')
+        config = Config(content=list_contents, style='unordered', field='pipelines')
+
+        calls = [call(item, style='ListBullet') for item in results]
+        with patch('weeklyreport.filter.Filter.complete', new_callable=PropertyMock):
+            unordered = List(self._thread_manager, config)
+            mock_results.return_value = [resultset]
+            list_contents.complete.return_value = True
+            unordered.run()
+            unordered.render(self._report_manager)
+            mock_list.assert_has_calls(calls)
 
