@@ -1,4 +1,4 @@
-from weeklyreport.interface import ManagerInterface
+from releaseessentials.interface import ManagerInterface
 
 class Jira(ManagerInterface):
     __implements__ = (ManagerInterface,)

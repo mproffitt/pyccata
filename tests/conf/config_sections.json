@@ -9,7 +9,7 @@
     },
     "report": {
         "path": "ess_weekly_report",
-        "datapath": "tests/weeklyreport/data",
+        "datapath": "tests/releaseessentials/data",
         "title": "Test document structure for WeeklyReport/Helicopter view",
         "subtitle": "Week 41",
         "abstract": "This document provides the overall breakdown of stuff which may or may not exist in Jira\n\nEach section starts with a status bar showing what is in todo, what is in progress and what has been completed.\n\nSubsequent to this, a more detailed breakdown is provided where relevant.",

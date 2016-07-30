@@ -1,0 +1,7 @@
+.coverage
+cover
+doc
+dist
+build
+.eggs
+JiraWeeklyReport.egg-info

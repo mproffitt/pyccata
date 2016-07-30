@@ -6,7 +6,7 @@ Primary module for generating release notes from Jira
 
 """
 from datetime import datetime
-from weeklyreport.document import DocumentController
+from releaseessentials.document import DocumentController
 
 class ReleaseInstructions(object):
     """

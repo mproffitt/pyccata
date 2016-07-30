@@ -1,4 +1,4 @@
-from weeklyreport.interface import ReportingInterface
+from releaseessentials.interface import ReportingInterface
 
 class Pdf(object):
     pass

@@ -81,7 +81,7 @@ To execute the tests, you will further require:
 
 Tests can be executed by running the following command:
 
-    python3 setup.py nosetests -s --with-coverage --cover-branches --cover-html --cover-package weeklyreport
+    python3 setup.py nosetests -s --with-coverage --cover-branches --cover-html --cover-package releaseessentials
 
 This command will generate code coverage and place this in the `cover` directory in the module root.
 
@@ -89,7 +89,7 @@ Linting
 -------
 If you have PyLint installed, code quality can be obtained by running:
 
-    python3-pylint weeklyreport
+    python3-pylint releaseessentials
 
 Lint configuration:
 

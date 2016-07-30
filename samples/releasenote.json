@@ -60,7 +60,7 @@
     "report":{
         "path":"releasenote",
         "template": "templates/HPTemplate.docx",
-        "datapath": "weeklyreport/data",
+        "datapath": "releaseessentials/data",
         "title": "MSS Platform Release Notification {RELEASE_DATE}",
         "subtitle":"HP Restricted – For Internal Use Only",
         "abstract": "An MSS Platform release will occur on {RELEASE_DATE} with deployment commencing at 07:30am BST.",

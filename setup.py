@@ -11,7 +11,7 @@ setup(
     url='http://www.jitsc.co.uk/weekly-report',
 
     packages=[
-        'weeklyreport'
+        'releaseessentials'
     ],
     install_requires=[
         'jira',

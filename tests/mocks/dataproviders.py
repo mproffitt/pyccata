@@ -2,17 +2,17 @@ import copy
 from time import sleep
 from random import shuffle
 from collections import namedtuple
-from weeklyreport.threading import Threadable
-from weeklyreport.interface import ObservableInterface
-from weeklyreport.log import Logger
-from weeklyreport.exceptions import InvalidQueryError
-from weeklyreport.exceptions import InvalidConnectionError
-from weeklyreport.filter import Filter
-from weeklyreport.manager import Manager
-from weeklyreport.interface import ManagerInterface
-from weeklyreport.interface import ReportingInterface
-from weeklyreport.parts.paragraph import Paragraph
-from weeklyreport.resources import *
+from releaseessentials.threading import Threadable
+from releaseessentials.interface import ObservableInterface
+from releaseessentials.log import Logger
+from releaseessentials.exceptions import InvalidQueryError
+from releaseessentials.exceptions import InvalidConnectionError
+from releaseessentials.filter import Filter
+from releaseessentials.manager import Manager
+from releaseessentials.interface import ManagerInterface
+from releaseessentials.interface import ReportingInterface
+from releaseessentials.parts.paragraph import Paragraph
+from releaseessentials.resources import *
 
 class TestObservableThread(Threadable):
     __implements__ = (ObservableInterface,)
@@ -166,7 +166,7 @@ class DataProviders(object):
             title='hello world',
             subtitle='sub title test',
             path='/path/to',
-            datapath='tests/weeklyreport/data',
+            datapath='tests/releaseessentials/data',
             sections=[None],
             abstract='An abstract block of text.\n\nSpanning two paragraphs...'
         )
@@ -223,7 +223,7 @@ class DataProviders(object):
             title='hello world',
             subtitle='sub title test',
             path='/path/to',
-            datapath='weeklyreport/data',
+            datapath='releaseessentials/data',
             sections=[None],
             abstract='An abstract block of text.\n\nSpanning two paragraphs...'
         )
