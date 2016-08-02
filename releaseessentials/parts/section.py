@@ -103,7 +103,6 @@ class Section(ThreadableDocument):
                     structure.append(component)
                 except Exception as exception:
                     Logger().warning('Failed to add item of type \'{0}\''.format(item.type))
-                    Logger().warning('Reason was:')
                     Logger().warning(exception)
                     Logger().warning(args)
         return structure

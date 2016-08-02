@@ -1,10 +1,13 @@
 import os
+import calendar
 from unittest                   import TestCase
 from mock                       import patch, PropertyMock
 from ddt                        import ddt, data, unpack
 from collections                import namedtuple
 from releaseessentials.configuration import Configuration
-from releaseessentials.resources import Replacements, ReplacementsValidator
+from releaseessentials.resources import Replacements
+from releaseessentials.resources import ReplacementsValidator
+from releaseessentials.resources import Calendar
 from datetime import datetime, date, timedelta
 
 @ddt
@@ -13,9 +16,11 @@ class TestReplacements(TestCase):
     _required_root_elements = Configuration._required_root_elements
 
 
+    @patch('argparse.ArgumentParser.parse_args')
     @patch('releaseessentials.log.Logger.log')
-    def setUp(self, mock_log):
+    def setUp(self, mock_log, mock_parser):
         mock_log.return_value = None
+        mock_parser.return_value = []
         path = os.path.dirname(os.path.realpath(__file__ + '../../../'))
         self._path = os.path.join(path, os.path.join('tests', 'conf'))
         self._mock_log = mock_log
@@ -40,7 +45,9 @@ class TestReplacements(TestCase):
         ['{NOSETESTS}', 'b'],
         ['{S}', 'c'],
         ['{COVERAGE}', 'd'],
-        ['{BRANCHES}', 'e, x and z']
+        ['{BRANCHES}', 'e, x and z'],
+        ['Look in your {HOME} directory', 'Look in your ' + os.environ.get('HOME') + ' directory'],
+        ['HOME', os.environ.get('HOME')]
     )
     @unpack
     def test_replace_words_in_string(self, string, response, mock_config_list, mock_arg):
@@ -68,13 +75,7 @@ class TestReplacements(TestCase):
 
         today = date.today()
         releasedate = today + timedelta((3 - today.weekday()) % 7)
-
-        value_format = '%Y-%m-%d'
-        fixdate = datetime.strftime(
-            releasedate,
-            value_format
-        )
-        self.assertEquals(config.replacements.replace('{FIX_VERSION}'), fixdate)
+        self.assertEquals(config.replacements.replace('{FIX_VERSION}'), '28/Jul/2016')
         self.assertEquals(config.replacements.replace('some text'), 'Some Replacement Text')
 
 
@@ -144,3 +145,50 @@ class TestReplacements(TestCase):
 
         self.assertEquals('this is a test', replacements[0].value)
 
+class TestCalendar(TestCase):
+
+    _calendar = None
+    def setUp(self):
+        self._calendar = Calendar()
+
+    def test_get_month_and_year_14_months_from_now(self):
+        date = datetime.today()
+        year, month = self._calendar.get_month_and_year(14, date)
+        self.assertEquals(date.year + 1, year)
+        self.assertEquals(date.month + 2, month)
+
+    def test_get_monday(self):
+        for i in range(4):
+            date = self._calendar.get_monday(i)
+            self.assertEquals('Monday', datetime.strptime(str(date), '%Y-%m-%d').strftime('%A'))
+
+    def test_today(self):
+        today = datetime.today()
+        compare = self._calendar.today()
+        self.assertEquals(today.year, compare.year)
+        self.assertEquals(today.month, compare.month)
+        self.assertEquals(today.day, compare.day)
+
+    def test_get_last_day_of_month_ahead_raises_attribute_error_if_day_is_invalid(self):
+        with self.assertRaises(AttributeError):
+            self._calendar.get_last_day_of_month_ahead('ImNotADay')
+
+    @patch('releaseessentials.resources.Calendar.get_calendar_day')
+    def test_for_five_week_month(self, mock_calendar):
+        mock_calendar.side_effect = [IndexError('Five week month'), datetime.today()]
+        cal = Calendar()
+        date = cal.get_last_day_of_month_ahead()
+        self.assertEquals(datetime.today().year, date.year)
+        self.assertEquals(datetime.today().month, date.month)
+        self.assertEquals(datetime.today().day, date.day)
+
+
+    @patch('releaseessentials.resources.Calendar.get_last_day_of_month_ahead')
+    @patch('releaseessentials.resources.Calendar.today')
+    def test_get_release_day_skips_to_next_month_if_today_is_release_day(self, mock_calendar_today, mock_calendar):
+        release_day = datetime.strptime('2016-07-28', '%Y-%m-%d')
+        next_release = datetime.strptime('2016-08-31', '%Y-%m-%d')
+        mock_calendar.side_effect = [release_day, next_release]
+
+        mock_calendar_today.return_value = release_day
+        self.assertEquals(next_release, self._calendar.get_release_day())

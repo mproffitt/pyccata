@@ -35,6 +35,15 @@ class DocumentController(object):
         self._part_factory = self.partfactory
         self._sections = []
 
+    def add_callback(self, name, function):
+        """
+        Adds a callback onto the report manager
+
+        @param name string
+        @param function method signature
+        """
+        self._report_manager.add_callback(name, function)
+
     @property
     def configuration(self):
         """ Load the configuration from file """

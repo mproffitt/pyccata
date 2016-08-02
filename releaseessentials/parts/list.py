@@ -22,17 +22,6 @@ class List(ThreadableDocument):
     _content = None
 
     _field = ''
-    _title = None
-
-    @property
-    def title(self):
-        """ gets the list title """
-        return self._title
-
-    @title.setter
-    def title(self, title):
-        """ sets the list title """
-        self._title = title
 
     @accepts(content=(Filter, list, tuple), style=str, field=str)
     def setup(self, content=None, style='unordered', field='description'):
@@ -55,7 +44,6 @@ class List(ThreadableDocument):
                 # log the exception and move on.
             except Exception as exception:
                 Logger().warning('Got type tuple but cannot create filter')
-                Logger().warning('Reason was')
                 Logger().warning(exception)
 
         self._content = List._parse(content)
@@ -75,7 +63,6 @@ class List(ThreadableDocument):
             if isinstance(self._content, Filter):
                 #pylint disable=maybe-no-member
                 self._complete = self._content.complete
-                Logger().error(self._content._failure)
                 if self._content.failed:
                     Logger().debug(self._content.failure)
                     self._complete = True
@@ -86,7 +73,6 @@ class List(ThreadableDocument):
                         complete = item.complete or item.failed
                         if item.failed:
                             Logger().warning('Failed to execute \'' + item.query + '\'')
-                            Logger().warning('Reason was:')
                             Logger().warning(item.failure)
                     if not complete:
                         break
@@ -107,7 +93,10 @@ class List(ThreadableDocument):
             elif isinstance(item, Issue):
                 text = getattr(item, self._field) if hasattr(item, self._field) else item.description
             elif isinstance(item.results, list) and len(item.results) == 1 and isinstance(item.results[0], Issue):
-                text = getattr(item.results[0], self._field) if hasattr(item.results[0], self._field) else item.results[0].description
+                text = getattr(
+                    item.results[0],
+                    self._field
+                ) if hasattr(item.results[0], self._field) else item.results[0].description
 
             if isinstance(text, list):
                 for item in text:

@@ -35,6 +35,18 @@ class ProjectManager(Manager):
         namespace = self.configuration.NAMESPACE
         self._load(namespace, self.configuration.manager, must_implement=ManagerInterface)
 
+    @property
+    def server(self):
+        """
+        Get the server address of this client
+
+        Clients providing this functionality must at the very least provide
+        both server_address and attachments as properties to the return value,
+        where attachments is a callback function.
+        """
+        return self._client.server
+
+
     def projects(self):
         """
         Get a list of projects defined in the agile project manager

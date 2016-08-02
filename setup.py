@@ -24,7 +24,8 @@ setup(
         'numpy',
         'Pillow',
         'python-docx',
-        'pyquery'
+        'pyquery',
+        'pycurl'
     ],
 
     test_suite='nose.collector',

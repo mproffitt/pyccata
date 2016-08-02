@@ -16,6 +16,7 @@ class ThreadableDocument(Threadable):
     """
     MAX_DOCUMENT_PRIORITY = 100
     PRIORITY = 0
+    _title = None
 
     @accepts(ThreadManager, tuple)
     def __init__(self, threadmanager, config):
@@ -50,6 +51,18 @@ class ThreadableDocument(Threadable):
 
         super().__init__(**config._asdict())
         self.threadmanager.append(self)
+
+
+    @property
+    def title(self):
+        """ gets the list title """
+        return self._title
+
+    @title.setter
+    def title(self, title):
+        """ sets the list title """
+        self._title = title
+
 
     @property
     def threadmanager(self):

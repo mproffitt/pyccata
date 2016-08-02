@@ -1,3 +1,4 @@
+import os
 from unittest import TestCase
 from mock     import patch, PropertyMock
 from collections import namedtuple
@@ -16,6 +17,8 @@ class TestReportManager(TestCase):
     @patch('argparse.ArgumentParser.parse_args')
     @patch('releaseessentials.log.Logger.log')
     def setUp(self, mock_log, mock_parser):
+        path = os.path.dirname(os.path.realpath(__file__ + '../../../../'))
+        self._path = os.path.join(path, os.path.join('tests', 'conf'))
         mock_log.return_value = None
         mock_parser.return_value = None
         self._mock_log = mock_log
@@ -76,3 +79,26 @@ class TestReportManager(TestCase):
             with self.assertRaises(RequiredKeyError):
                 a = InvalidReportRequires()
 
+    @patch('argparse.ArgumentParser.parse_args')
+    @patch('releaseessentials.configuration.Configuration._get_locations')
+    def test_report_callback_returns_none_if_callback_has_not_been_added(self, mock_config_list, mock_parser):
+        mock_parser.return_value = []
+        mock_config_list.return_value = [self._path]
+        Configuration.NAMESPACE = 'releaseessentials'
+        config = Configuration(filename='valid_config.json')
+        config.check = True
+        report = ReportManager()
+        report.add_callback('test', 'test_callback')
+        self.assertEquals(None, report.get_callback('bob'))
+
+    @patch('argparse.ArgumentParser.parse_args')
+    @patch('releaseessentials.configuration.Configuration._get_locations')
+    def test_report_callback_returns_callback(self, mock_config_list, mock_parser):
+        mock_parser.return_value = []
+        mock_config_list.return_value = [self._path]
+        Configuration.NAMESPACE = 'releaseessentials'
+        config = Configuration(filename='valid_config.json')
+        config.check = True
+        report = ReportManager()
+        report.add_callback('test', 'test_callback')
+        self.assertEquals('test_callback', report.get_callback('test'))

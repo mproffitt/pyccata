@@ -3,6 +3,8 @@ Helper methods for the releaseessentials package
 """
 import os
 import importlib
+import zipfile
+import shutil
 
 def class_exists(namespace, module, class_name):
     """
@@ -61,3 +63,80 @@ def read_file(text_url, report_path=''):
         with open(path) as file_pointer:
             return file_pointer.read()
     return text_url
+
+def create_directory(directory):
+    """
+    Recursively creates a directory path if it doesn't already exist
+
+    @param directory string
+    """
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+def unzip(source_filename, dest_dir, flatten=False):
+    """
+    Unpack a zip file to the destination directory
+
+    @param source_filename
+    @param dest_dir
+    @param flatten bool
+
+    Function has been adapted from stack-overflow.
+    @see http://stackoverflow.com/questions/12886768/how-to-unzip-file-in-python-on-all-oses
+
+    If flatten is True, this will take all files from the zip and move them into dest_dir without
+    including any child paths.
+    """
+    if flatten:
+        return unzip_flat_dir(source_filename, dest_dir)
+
+    with zipfile.ZipFile(source_filename) as zip_file:
+        for member in zip_file.infolist():
+            # Path traversal defense copied from
+            # http://hg.python.org/cpython/file/tip/Lib/http/server.py#l789
+            words = member.filename.split('/')
+            path = dest_dir
+
+            for word in words[:-1]:
+                while True:
+                    drive, word = os.path.splitdrive(word)
+                    word = os.path.split(word)[1]
+                    if not drive:
+                        break
+                if word in (os.curdir, os.pardir, ''):
+                    continue
+                path = os.path.join(path, word)
+            zip_file.extract(member, path)
+
+
+def unzip_flat_dir(source_filename, dest_dir):
+    """
+    Unpack a zip file to a flattened directory structure
+    """
+    with zipfile.ZipFile(source_filename) as zip_file:
+        for member in zip_file.namelist():
+            filename = os.path.basename(member)
+            if not filename:
+                continue
+            with zip_file.open(member) as source, open(os.path.join(dest_dir, filename), mode="wb") as target:
+                shutil.copyfileobj(source, target)
+
+def mkzip(directory, zip_name):
+    """
+    Zip up a given directory
+
+    @param directory string
+    @param zip_name string
+
+    @return path to final zip file
+    """
+    cur_dir = os.getcwd()
+    os.chdir(directory)
+    with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        # pylint: disable=unused-variable
+        for root, dirs, files in os.walk('.'):
+            for filename in files:
+                zip_file.write(os.path.join(root, filename))
+        zip_file.close()
+        os.chdir(cur_dir)
+        return zip_name

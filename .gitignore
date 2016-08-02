@@ -5,3 +5,4 @@ dist
 build
 .eggs
 JiraWeeklyReport.egg-info
+MSS*.docx

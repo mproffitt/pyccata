@@ -223,3 +223,18 @@ class TestDocumentController(TestCase):
         document.format_for_email()
         self.assertEquals(1, mock_format.call_count)
 
+    @patch('releaseessentials.managers.report.ReportManager.add_callback')
+    @patch('releaseessentials.configuration.Configuration._parse_flags')
+    @patch('releaseessentials.configuration.Configuration._get_locations')
+    def test_add_callback_hands_off_to_report_manager(self, mock_config, mock_parser, mock_callback):
+        mock_config.return_value = [self._path]
+        Configuration('config_sections.json')
+        document = DocumentController()
+        self.assertIsInstance(document.configuration, Configuration)
+        self.assertIsInstance(document.threadmanager, ThreadManager)
+        self.assertIsInstance(document.reportmanager, ReportManager)
+        self.assertIsInstance(document.partfactory, DocumentPartFactory)
+        document.add_callback('test', 'test_method')
+
+        self.assertEquals(1, mock_callback.call_count)
+        mock_callback.assert_called_with('test', 'test_method')
