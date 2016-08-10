@@ -34,12 +34,18 @@ To execute the tests, you will further require:
 
 Installation
 ------------
-To install this application, the following RPM libraries are required:
+To install this application, the following libraries are required:
 
 * xz-devel
 * libxml2
 * libxml2-devel
 * libjpeg-devel
+* libcurl-devel
+* Depending on how libcurl was compiled, you will also require one of:
+** nss-devel
+** openssl-devel
+** gnutls-devel
+** ssl-devel
 
 Once installed, from the root of the JiraWeeklyReport directory, execute the following:
 
@@ -72,6 +78,20 @@ Use the following steps to resolve:
 3) Run setup.py to build and install from source instead of downloading
 
     python3 setup.py install
+
+If the tests (see execution steps below) fail an error similar to the following:
+
+    ImportError: pycurl: libcurl link-time ssl backend (nss) is different from compile-time ssl backend (openssl)
+
+Uninstall pycurl then install the library listed as the link-time library, for example:
+
+    pip3 uninstall pycurl
+    [apt-get|dnf|yum] install -y nss-devel
+
+Next, set an environment variable of `PYCURL_SSL_LIBRARY=<link_time_library>` and re-install pycurl
+
+    PYCURL_SSL_LIBRARY=nss
+    pip3 install pycurl
 
 Tests
 ---------
