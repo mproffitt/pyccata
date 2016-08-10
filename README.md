@@ -69,6 +69,9 @@ Use the following steps to resolve:
     -    void *func = dlsym(lib_handle, func_name);
     +    func = dlsym(lib_handle, func_name);
 
+3) Run setup.py to build and install from source instead of downloading
+
+    python3 setup.py install
 
 Tests
 ---------
@@ -89,7 +92,9 @@ Linting
 -------
 If you have PyLint installed, code quality can be obtained by running:
 
-    python3-pylint releaseessentials
+    pylint releaseessentials
+
+Note: This configuration has been targetted for pylint 1.6.4 or later with Astroid 1.4.7 or later.
 
 Lint configuration:
 
@@ -97,6 +102,11 @@ To avoid common warnings, set the following in your `~/.pylintrc`
 
     max-line-length=120
     disable=locally-disabled,abstract-class-not-used,maybe-no-member
+
+You may also need to delete the following if they exist for pylint to stop complaining
+
+    required-attributes
+    ignore-iface-methods
 
 Documentation
 -------------

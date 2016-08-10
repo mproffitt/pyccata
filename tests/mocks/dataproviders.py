@@ -159,6 +159,27 @@ class DataProviders(object):
         return data
 
     @staticmethod
+    def _test_data_for_attachments():
+        Project = namedtuple('Project', 'key name')
+        Assignee = namedtuple('Assignee', 'name displayName')
+        Field = namedtuple('Field', 'attachment')
+        Issue = namedtuple('Issue', 'key fields')
+        Attachment = namedtuple('Attachment', 'id mimeType filename')
+        data = [
+            Issue(
+                key='TP-123',
+                fields=Field(
+                    attachment=[
+                        Attachment(id=1, mimeType='application/sql', filename='TestApplication.sql'),
+                        Attachment(id=1, mimeType='application/zip', filename='AnotherTestApplication.zip')
+                    ]
+                )
+            )
+        ]
+        return data
+
+
+    @staticmethod
     def _get_config_for_test(port='8080', manager='jira', reporting='docx'):
         ReportType = namedtuple('Report', 'title subtitle abstract path datapath sections')
         Config = namedtuple('Config', 'manager reporting report jira server port username password')
@@ -328,3 +349,9 @@ class DataProviders(object):
             result_list.append(issue)
 
         return result_list
+
+    @staticmethod
+    def test_callback(filepath, content):
+        return [
+            'TestFile.zip'
+        ]

@@ -1,7 +1,6 @@
 from unittest import TestCase
 from mock import patch, PropertyMock
 
-from collections import namedtuple
 from releaseessentials.configuration import Configuration
 from releaseessentials.managers.project import ProjectManager
 from releaseessentials.exceptions import InvalidConnectionError, InvalidQueryError
@@ -11,6 +10,7 @@ from tests.mocks.dataproviders import DataProviders
 from jira.client import JIRA
 from jira.exceptions import JIRAError
 from releaseessentials.log import Logger
+from collections import namedtuple
 
 class TestJira(TestCase):
 
@@ -55,6 +55,7 @@ class TestJira(TestCase):
                 self.assertIsInstance(manager._client, Jira)
                 self.assertTrue(ManagerInterface in manager.__implements__)
                 self.assertTrue(ManagerInterface in manager._client.__implements__)
+                self.assertEquals('http://jira.local:8080', manager.server.server_address)
 
     @patch('jira.client.JIRA.__init__')
     @patch('releaseessentials.configuration.Configuration._load')
@@ -124,4 +125,20 @@ class TestJira(TestCase):
                 self.assertIsInstance(manager.client.client, JIRA)
                 with self.assertRaisesRegexp(InvalidConnectionError, 'Recieved HTTP/500 whilst establishing.*'):
                     manager.search_issues(search_query='assignee = "bob123"', max_results=2, fields=[])
+
+    @patch('jira.client.JIRA.__init__')
+    @patch('jira.client.JIRA.search_issues')
+    @patch('releaseessentials.configuration.Configuration._load')
+    def test_jira_attachments(self, mock_load, mock_search, mock_jira_client):
+        data = DataProviders._test_data_for_attachments()
+        mock_jira_client.return_value = None
+        mock_search.return_value = data
+        with patch('releaseessentials.configuration.Configuration.manager', new_callable=PropertyMock) as mock_manager:
+            with patch('releaseessentials.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
+                mock_config.return_value = DataProviders._get_config_for_test()
+                mock_manager.return_value = 'jira'
+                manager = ProjectManager()
+                self.assertIsInstance(manager.client.client, JIRA)
+                attachments = manager.search_issues(search_query='assignee = "bob123"', max_results=2, fields=['attachments'])
+
 

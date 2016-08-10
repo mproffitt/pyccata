@@ -118,3 +118,12 @@ class PoolEmptyError(RuntimeError):
 class ThreadFailedError(RuntimeError):
     """ Called when a thread has failed for an unknown reason """
     pass
+
+class InvalidFilenameError(ValueError):
+    """ Called when the filename provided does not match a specific format """
+    def __init__(self, message):
+        self.error = message
+        super().__init__(self.error)
+
+    def __str__(self):
+        return self.error

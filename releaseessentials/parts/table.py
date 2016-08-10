@@ -20,19 +20,6 @@ class Table(ThreadableDocument):
     _columns = []
     _style = None
 
-    _title = None
-
-    @property
-    def title(self):
-        """ Get the title of this table """
-        return self._title
-
-    @title.setter
-    @accepts(str)
-    def title(self, title):
-        """ Set the title of the table """
-        self._title = title
-
     @property
     def rows(self):
         """
@@ -107,8 +94,8 @@ class Table(ThreadableDocument):
             report.add_heading(Replacements().replace(self.title), 3)
 
         data = self._rows if isinstance(self._rows, list) else self._rows.results
-        for row in data:
-            row = [Replacements().replace(cell) if cell is not None else cell for cell in row]
+        for index, row in enumerate(data):
+            data[index] = [Replacements().replace(cell) if cell is not None else cell for cell in row]
 
         report.add_table(
             headings=self._columns,

@@ -1,5 +1,7 @@
 """ Wrapper class onto python-jira """
+import os
 import re
+from collections import namedtuple
 from releaseessentials.decorators import accepts
 from releaseessentials.interface import ManagerInterface
 from releaseessentials.configuration import Configuration
@@ -7,7 +9,7 @@ from releaseessentials.log import Logger
 from releaseessentials.exceptions import InvalidConnectionError
 from releaseessentials.exceptions import InvalidQueryError
 from releaseessentials.resources import ResultList
-from releaseessentials.resources import Issue
+from releaseessentials.resources import Issue, Attachment
 
 from jira.client import JIRA
 from jira.exceptions import JIRAError
@@ -29,6 +31,17 @@ class Jira(object):
 
         # explicitly turn error log files off
         JIRAError.log_to_tempfile = False
+
+    @property
+    def server(self):
+        """
+        Get callback information for the Jira server
+        """
+        server = namedtuple('Server', 'server_address, attachments')
+        return server(
+            server_address=self._options['server'],
+            attachments=getattr(self, '_attachment_url')
+        )
 
     @property
     def client(self):
@@ -104,6 +117,18 @@ class Jira(object):
                 exception.headers
             )
 
+    @accepts((str, int), str)
+    def _attachment_url(self, attachment_id, filename):
+        """
+        Call back method for formatting the Attachment URL
+
+        @param attachment_id string|int
+        @param filename      string
+
+        @return a valid URL to an attachment
+        """
+        return self._options['server'] + '/secure/attachment/' + attachment_id + filename
+
     def projects(self):
         """ Get a list of all projects defined in Jira """
         return self.client.projects()
@@ -137,6 +162,9 @@ class Jira(object):
             ) if hasattr(issue.fields, 'resolutiondate') else None
             item.creator = getattr(issue.fields, 'creator') if hasattr(issue.fields, 'creator') else None
             item.assignee = getattr(issue.fields, 'assignee') if hasattr(issue.fields, 'assignee') else None
+            item.attachments = Jira._get_attachments(
+                getattr(issue.fields, 'attachment') if hasattr(issue.fields, 'attachment') else None
+            )
             item.release_text = getattr(
                 issue.fields, 'customfield_10600'
             ) if hasattr(
@@ -164,4 +192,23 @@ class Jira(object):
             ) else None
 
             result_set.append(item)
+        return result_set
+
+    @staticmethod
+    @accepts((list, None))
+    def _get_attachments(attachments):
+        """
+        Formats the Jira attachments into releaseessentials attachment type
+
+        @param attachments list
+        """
+        result_set = []
+        if attachments is not None:
+            for attachment in attachments:
+                item = Attachment()
+                item.filename = attachment.filename
+                item.attachment_id = attachment.id
+                item.mime_type = attachment.mimeType
+                item.extension = os.path.splitext(attachment.filename)[1][1:].strip()
+                result_set.append(item)
         return result_set

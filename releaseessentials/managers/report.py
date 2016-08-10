@@ -1,7 +1,7 @@
 """
 Defines the Reporting manager used by the application
 """
-
+from collections import namedtuple
 from releaseessentials.manager import Manager
 from releaseessentials.decorators import accepts
 from releaseessentials.interface import ReportingInterface
@@ -31,6 +31,8 @@ class ReportManager(Manager):
         'sections'
     ]
 
+    _callbacks = []
+
     def __init__(self):
         """
         Initialise the object and call _load
@@ -38,6 +40,31 @@ class ReportManager(Manager):
         namespace = self.configuration.NAMESPACE
         self._load(namespace, self.configuration.reporting, must_implement=ReportingInterface)
         self._maxwidth = self.client.MAXWIDTH
+
+    def add_callback(self, name, function):
+        """
+        Adds a callback function for processing reports
+
+        @param name string
+        @param function Name of a static method to call back onto.
+        """
+        for index, callback in enumerate(self._callbacks):
+            if callback.name == name:
+                self._callbacks[index] = callback._replace(function=function)
+
+        callback = namedtuple('Callback', 'name function')
+        self._callbacks.append(callback(name=name, function=function))
+
+    def get_callback(self, name):
+        """
+        Gets the callback defined for a given name or None
+
+        @param name string
+        """
+        for item in self._callbacks:
+            if item.name == name:
+                return item.function
+        return None
 
     @property
     def maxwidth(self):
@@ -50,8 +77,6 @@ class ReportManager(Manager):
         self.add_heading(Replacements().replace(self.configuration.report.subtitle), 1)
         for paragraph in read_file(self.configuration.report.abstract).split("\n"):
             self.add_paragraph(Replacements().replace(paragraph))
-
-
 
     @accepts(str, style=(None, str))
     def add_paragraph(self, text, style=None):

@@ -87,13 +87,19 @@
         {
             "name": "FIX_VERSION",
             "type": "fix_version",
-            "value": "%Y-%m-%d",
+            "value": "28/Jul/2016",
             "overridable": false
         },
         {
             "name": "RELEASE_DATE",
             "type": "release_date",
             "value": "%A, %d %B %Y",
+            "overridable": false
+        },
+        {
+            "name": "RELEASE_DAY",
+            "type": "string",
+            "value": "Wednesday",
             "overridable": false
         },
         {

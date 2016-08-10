@@ -20,6 +20,7 @@ class TestConfiguration(TestCase):
     @patch('argparse.ArgumentParser.parse_args')
     @patch('releaseessentials.log.Logger.log')
     def setUp(self, mock_log, mock_parser):
+        self.tearDown()
         mock_log.return_value = None
         mock_parser.return_value = []
         self.mock_parser = mock_parser
@@ -30,11 +31,14 @@ class TestConfiguration(TestCase):
     def tearDown(self):
         Configuration.NAMESPACE = 'releaseessentials'
         if Configuration._instance is not None:
+            del Configuration._instance
             Configuration._instance = None
         if Configuration._configuration is not None:
+            del Configuration._configuration
             Configuration._configuration = None
         Configuration._required_root_elements = self._required_root_elements
         if Replacements._instance is not None:
+            del Replacements._instance
             Replacements._instance = None
 
     @patch('releaseessentials.configuration.Configuration._get_locations')
@@ -195,14 +199,14 @@ class TestConfiguration(TestCase):
             config.iamnothere
 
     @patch('argparse.ArgumentParser.parse_args')
+    @patch('argparse.ArgumentParser.add_argument')
     @patch('releaseessentials.configuration.Configuration._get_locations')
-    def test_config_parse_flags(self, mock_config_list, mock_parse):
-        self.tearDown()
-
+    def test_config_parse_flags(self, mock_config_list, mock_arguments, mock_parser):
         mock_config_list.return_value = [self._path]
         Configuration.NAMESPACE = 'tests.mocks'
-
+        mock_parser.return_value = []
         config = Configuration(filename='valid_config.json')
+        self.assertGreater(mock_parser.call_count, 0)
         config.check = True
         self.assertTrue(config.check)
         self.assertIsInstance(config.replacements, Replacements)
