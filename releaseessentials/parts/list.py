@@ -97,7 +97,10 @@ class List(ThreadableDocument):
                     item.results[0],
                     self._field
                 ) if hasattr(item.results[0], self._field) else item.results[0].description
+            self._write(document, text)
 
+    @accepts(ReportManager, (list, str, None))
+    def _write(self, document, text):
             if isinstance(text, list):
                 for item in text:
                     document.add_list(Replacements().replace(

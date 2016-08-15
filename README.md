@@ -1,14 +1,50 @@
-JIRA Reporting application suite
+Pipeline application suite
 ===========================
 
-This suite provides helper classes and functionality for generating Reports in Microsoft Word format from Jira.
+This suite provides library functionality for supporting application release processes.
 
-The suite requires a basic driver to be provided to set up the applications configuration file, and a JSON configuration file to be stored in `${XDG_CONFIG_HOME}/releaseessentials/` (usually `~/.config`).
+Key functionality
+-----------------
 
-An example driver can be seen by examining the `releasenote.py` file.
+* Ability to generate release notes from your project manager software
+* Ability to generate release instructions for the SysOps team from your project manager software
+* Ability to output the release note and release instructions in Microsoft word format optionally embedded in a single table cell for sending as an email body.
+
+Road map
+--------
+
+### Version 1.2 [October/November 2016] ###
+Version 1.2 of this application will see the following functionality included
+
+* Documentation on how to write the config files including available and required fields
+* Ability to generate future fix versions against the format you specify
+* Ability to capture a 'helicopter' view of targetted specific projects, allowing for easy creation of project status reports
+* Ability to output graphs
+* Simple command pipeline runner (Bash commands)
+
+### Version 1.3 [January 2017] ###
+Version 1.3 of this application suite will see:
+
+* Extended pipeline runner (direct `R` language inclusion using r2py)
+* Integration to Jenkins for larger pipeline support
+
+### Unplanned ###
+
+* Integration to GIT
+* Configuration file generation software
+
+Basic setup
+-----------
+The suite requires a basic application binding to be provided - see the bin/ directory for examples of how to do this.
+
+A JSON configuration file must also be provided for your application inside one of the following search paths:
+
+* `${XDG_CONFIG_HOME}/releaseessentials`
+* `/etc/releaseessentials`
+* `<install_directory>/releasessentials/conf`
 
 Requirements
------------------------
+------------
 
 This application can only be executed with Python 3.4 or later and requires the following libraries:
 
@@ -24,7 +60,7 @@ This application can only be executed with Python 3.4 or later and requires the 
 * pyquery
 
 Tests
----------
+-----
 To execute the tests, you will further require:
 
 * nose
@@ -34,18 +70,18 @@ To execute the tests, you will further require:
 
 Installation
 ------------
-To install this application, the following libraries are required:
+To install this application, the following system libraries are required:
 
 * xz-devel
 * libxml2
 * libxml2-devel
 * libjpeg-devel
 * libcurl-devel
-* Depending on how libcurl was compiled, you will also require one of:
-** nss-devel
-** openssl-devel
-** gnutls-devel
-** ssl-devel
+* Depending on how libcurl was compiled, you may also require one of:
+  * nss-devel
+  * openssl-devel
+  * gnutls-devel
+  * ssl-devel
 
 Once installed, from the root of the JiraWeeklyReport directory, execute the following:
 
@@ -94,7 +130,7 @@ Next, set an environment variable of `PYCURL_SSL_LIBRARY=<link_time_library>` an
     pip3 install pycurl
 
 Tests
----------
+-----
 To execute the tests, you will further require:
 
 * nose
@@ -137,13 +173,26 @@ A Doxyfile has been provided for this purpose which will generate API documentat
 Please note, this API is not complete although existing functionality is not expected to change.
 
 Sample configuration
------------------------------------
-The samples directory contains sample config as used by the `ReleaseNote` module for generating reports.
+--------------------
+The samples directory contains sample configuration files
 
-TODO
+Templates
 ---------
-* Document how to write the config files including available and required fields
-* Picture and graph generation
-* Embedded hyperlinks
-* Complex types
+
+The following Microsoft Word template has been provided as an example:
+
+* GreenTemplate.docx
+  Top level headings are underlined in green, sub-headings are green and tables are outputted in green and white banding.
+
+Contributions
+-------------
+Contributions are welcome although they must meet the following guidelines.
+
+* All submitted branches must follow the GitFlow model (see http://nvie.com/posts/a-successful-git-branching-model/).
+* 100% line and branch coverage must be produced - No code will be accepted unless this is the case.
+* Code must meet the project guidelines.
+  * Line length no greater than 120 characters.
+  * Use of @accepts for all public methods.
+  * If you disable pylint validation, you must provide a clear reason why as a comment on the line immediatly below the disable line.
+* Overly complex code will not be accepted.
 
