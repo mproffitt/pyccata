@@ -8,6 +8,7 @@ from releaseessentials.decorators import accepts
 from releaseessentials.filter import Filter
 from releaseessentials.log import Logger
 from releaseessentials.resources  import Replacements
+from releaseessentials.configuration import Configuration
 
 class Table(ThreadableDocument):
 
@@ -39,21 +40,59 @@ class Table(ThreadableDocument):
         #pylint: disable=arguments-differ
         if isinstance(rows, tuple):
             try:
-                self._rows = Filter(
-                    rows.query,
-                    max_results=(rows.max_results if hasattr(rows, 'max_results') else Table.MAX_ROWS),
-                    fields=(rows.fields if hasattr(rows, 'fields') else [])
-                )
-                self._thread_manager.append(self._rows)
+                self._rows = Table._parse_filter(rows)
+                self.threadmanager.append(self._rows)
             #pylint: disable=broad-except
             except Exception as exception:
                 Logger().warning('Failed to create filter from config object')
                 Logger().warning('Exception was:')
                 Logger().warning(exception)
         else:
-            self._rows = rows
+            self._rows = self._parse_content(rows)
         self._columns = columns
         self._style = style
+
+    @accepts(list)
+    def _parse_content(self, rows):
+        """
+        Parses a list of row/cell data, forming filters where necessary
+
+        @param rows list
+
+        @return list
+        """
+        for row_index, row in enumerate(rows):
+            for cell_index, cell in enumerate(row):
+                if isinstance(cell, tuple):
+                    try:
+                        rows[row_index][cell_index] = Table._parse_filter(cell)
+                        self.threadmanager.append(rows[row_index][cell_index])
+                    #pylint: disable=broad-except
+                    except Exception as exception:
+                        Logger().warning('Failed to create filter from config object')
+                        Logger().warning('Exception was:')
+                        Logger().warning(exception)
+        return rows
+
+    @staticmethod
+    @accepts(tuple)
+    def _parse_filter(cell_content):
+        """
+        Parses a configuration tuple and forms a filter object
+
+        @param cell_content tuple
+
+        @return Filter
+        """
+        cell_filter = Filter(
+            cell_content.query,
+            max_results=(cell_content.max_results if hasattr(cell_content, 'max_results') else Table.MAX_ROWS),
+            fields=(cell_content.fields if hasattr(cell_content, 'fields') else []),
+            collate=(cell_content.collate if hasattr(cell_content, 'collate') else None),
+            distinct=(cell_content.distinct if hasattr(cell_content, 'distinct') else False),
+            namespace=Configuration.NAMESPACE
+        )
+        return cell_filter
 
     def run(self):
         while not self._complete:
@@ -80,7 +119,6 @@ class Table(ThreadableDocument):
 
         @param report ReportManager
         """
-
         if isinstance(self._rows, Filter):
             if self._rows.results.total == 0:
                 return
@@ -95,7 +133,7 @@ class Table(ThreadableDocument):
 
         data = self._rows if isinstance(self._rows, list) else self._rows.results
         for index, row in enumerate(data):
-            data[index] = [Replacements().replace(cell) if cell is not None else cell for cell in row]
+            data[index] = [Replacements().replace(cell) if isinstance(cell, str) else cell for cell in row]
 
         report.add_table(
             headings=self._columns,

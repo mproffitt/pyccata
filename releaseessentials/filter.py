@@ -60,7 +60,7 @@ class Filter(Threadable):
     @property
     def results(self):
         """ Get the results of the filter search """
-        return self._results
+        return self._results.collate
 
     @property
     def hasobservers(self):
@@ -83,8 +83,8 @@ class Filter(Threadable):
         """ get the list of observers to this object """
         return self._observers
 
-    @accepts(str, max_results=(bool, int), fields=(None, list))
-    def setup(self, query, max_results=0, fields=None):
+    @accepts(str, max_results=(bool, int), fields=(None, list), collate=(None, tuple, str), distinct=bool, namespace=(None, str))
+    def setup(self, query, max_results=0, fields=None, collate=None, distinct=False, namespace=None):
         """
         Initialise the filter
 
@@ -102,7 +102,8 @@ class Filter(Threadable):
         self._fields = fields
         self._observers = []
         self._max_results = max_results
-        self._results = ResultList()
+
+        self._results = ResultList(collate=collate, distinct=distinct, namespace=namespace)
 
     @accepts(ObservableInterface)
     def append(self, item):
@@ -117,7 +118,7 @@ class Filter(Threadable):
             for observer in self._observers:
                 observer.notify(self.results)
         else:
-            self._results = results
+            self._results.extend(results)
             self._complete = True
 
     def run(self):
@@ -130,10 +131,12 @@ class Filter(Threadable):
         try:
             assert self.projectmanager is not None
             if not self._complete:
-                self._results = self.projectmanager.search_issues(
-                    search_query=self.query,
-                    max_results=self.max_results,
-                    fields=self.fields
+                self._results.extend(
+                    self.projectmanager.search_issues(
+                        search_query=self.query,
+                        max_results=self.max_results,
+                        fields=self.fields
+                    )
                 )
 
             self.notify(False)

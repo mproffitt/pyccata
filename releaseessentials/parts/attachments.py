@@ -53,11 +53,14 @@ class Attachments(ThreadableDocument):
                 getattr(Attachments, collate)(content) if hasattr(Attachments, collate) else content
             )
         self._content = [item for content in contents for item in content]
+        if len(self._content) == 0:
+            Logger().warning('No Attachments to download. Skipping.')
+            return
         self._download_attachments()
 
     def _download_attachments(self):
         """
-        Downloads all attachments from Jira
+        Downloads all attachments from the project manager.
         """
         # attachments function is a callback to the project manager
         attachments_function = self.projectmanager.server.attachments
@@ -72,7 +75,6 @@ class Attachments(ThreadableDocument):
                 curl_instance.setopt(curl_instance.WRITEDATA, output_file)
                 curl_instance.perform()
                 curl_instance.close()
-
 
     @accepts(ReportManager)
     def render(self, document):

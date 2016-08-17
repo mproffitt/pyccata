@@ -418,4 +418,18 @@ class TestList(TestCase):
             unordered.render(self._report_manager)
             mock_list.assert_has_calls(calls)
 
+    @patch('releaseessentials.managers.project.ProjectManager.search_issues')
+    def test_list_completes_if_content_filter_fails(self, mock_manager):
+        result_list = DataProviders().get_results_for_list_init_with_single_query_in_config()
+
+        list_contents = Filter('project=msportal', max_results=5, fields=['id', 'description' ,'priority'])
+        mock_manager.return_value = result_list
+        Config = namedtuple('Config', 'content style field')
+        config = Config(content=list_contents, style='unordered', field='description')
+
+        unordered = List(self._thread_manager, config)
+        with patch('releaseessentials.filter.Filter.failure', new_callable=PropertyMock) as mock_failure:
+            mock_failure.return_value = RuntimeError('I blew up')
+            self._thread_manager.execute()
+
 

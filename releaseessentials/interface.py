@@ -3,6 +3,7 @@ Defines the interfaces used by the releaseessentials package
 """
 from abc import ABCMeta
 from abc import abstractmethod
+from abc import abstractproperty
 
 # Disabled because these are all pure interfaces
 # and not abstract classes. Pylint is incorrectly
@@ -155,4 +156,24 @@ class ReportingInterface(metaclass=ABCMeta):
     @abstractmethod
     def add_page_break(self):
         """ Adds a page break to the report """
+        raise NotImplementedError('Method must be implemented by a child')
+
+class ResultListInterface(metaclass=ABCMeta):
+    """
+    Interface defining a result list object
+    """
+
+    @abstractproperty
+    def collate(self):
+        """ Gets the collation of the result set (if set) """
+        raise NotImplementedError('Method must be implemented by a child')
+
+    @abstractproperty
+    def distinct(self):
+        """Get if this result set is distinct """
+        raise NotImplementedError('Method must be implemented by a child')
+
+    @abstractproperty
+    def total(self):
+        """ Get the total results returned by this result set """
         raise NotImplementedError('Method must be implemented by a child')

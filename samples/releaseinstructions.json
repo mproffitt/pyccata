@@ -1,0 +1,188 @@
+{
+    "manager": "jira",
+    "reporting": "docx",
+
+    "modules":[
+        "jira",
+        "jenkins",
+        "git"
+    ],
+    "jira":{
+        "username":"",
+        "password":"",
+        "server":"",
+        "port":"8080"
+    },
+    "replacements": [
+        {
+            "name": "RELEASE_DATE",
+            "type": "release_date",
+            "value": "%A, %d %B %Y",
+            "overridable": false
+        },
+        {
+            "name": "RELEASE_DAY",
+            "type": "string",
+            "value": "Wednesday",
+            "overridable": false
+        },
+        {
+            "name": "FIX_VERSION",
+            "type": "fix_version",
+            "value": "%Y-%m-%d",
+            "overridable": false
+        },
+        {
+            "name": "AFFECTED_SYSTEMS",
+            "type": "csv",
+            "value": "Example Product,Foo,Bar",
+            "overridable": {
+                "flag": "--affected-systems",
+                "abbrev": "-as",
+                "required": false
+            }
+        },
+        {
+            "name": "AFFECTED_REGIONS",
+            "type": "csv",
+            "value": "UK,US",
+            "overridable": {
+                "flag": "--affected-regions",
+                "abbrev": "-ar",
+                "required": false
+            }
+        },
+        {
+            "name": "START_TIME",
+            "type": "string",
+            "value": "7:30am BST",
+            "overridable": {
+                "flag": "--start-time",
+                "abbrev": "-st",
+                "required": false
+            }
+        },
+
+        {
+            "name": "DURATION",
+            "type": "string",
+            "value": "2 hours",
+            "overridable": {
+                "flag": "--release-duration",
+                "abbrev": "-rd",
+                "required": false
+            }
+        }
+    ],
+    "report":{
+        "path":"sysops-releasenote",
+        "template": "templates/GreenTemplate.docx",
+        "datapath": "weeklyreport/data",
+        "title": "Rollout and Rollback for {RELEASE_DATE}",
+        "subtitle":"For Internal Use Only",
+        "abstract": "",
+        "board_id":"118",
+        "sections":[
+            {
+                "title": "Release Contents",
+                "level": 1,
+                "abstract": "",
+                "structure": [
+                    {
+                        "type": "table",
+                        "content": {
+                            "style": "Grid Table 4 Accent 6",
+                            "columns": ["", ""],
+                            "rows": [
+                                ["Start Time", "{START_TIME}"],
+                                ["Window Duration", "{DURATION}"]
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Deployment Instructions",
+                "abstract": "The following instructions below have been provided by the SMEs for releasing the platform",
+                "level": 2,
+                "structure": [
+                    {
+                        "type": "list",
+                        "title": "Deployment Pipelines",
+                        "content": {
+                            "content": {
+                                "query": "fixVersion = '{FIX_VERSION}' and 'Pipelines' is not empty and status in (Done, Resolved, Closed) and resolution in (Done, Fixed)",
+                                "fields": [
+                                    "Pipelines"
+                                ]
+                            },
+                            "style": "unordered",
+                            "field": "pipelines"
+                        }
+                    },
+                    {
+                        "type": "table",
+                        "title": "Rollout instructions",
+                        "content": {
+                            "style": "Light Shading Accent 6",
+                            "columns": [
+                                "Jira ID",
+                                "Description"
+                            ],
+                            "rows": {
+                                "query": "fixVersion = '{FIX_VERSION}' and 'Rollout Instructions' is not empty and status in (Done, Resolved, Closed) and resolution in (Done, Fixed)",
+                                "fields": [
+                                    "key",
+                                    "Rollout Instructions"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "type": "paragraph",
+                        "content": {
+                            "text": ""
+                        }
+                    },
+                    {
+                        "type": "table",
+                        "title": "Rollback instructions",
+                        "content": {
+                            "style": "Light Shading Accent 6",
+                            "columns": [
+                                "Jira ID",
+                                "Description"
+                            ],
+                            "rows": {
+                                "query": "fixVersion = '{FIX_VERSION}' and 'Rollback Instructions' is not empty and status in (Done, Resolved, Closed) and resolution in (Done, Fixed)",
+                                "fields": [
+                                    "key",
+                                    "Rollback Instructions"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Attachments",
+                "abstract": "The following attachments have been collated for this release",
+                "level": 1,
+                "structure": [
+                    {
+                        "type": "attachments",
+                        "content": {
+                            "query": "fixVersion = '{FIX_VERSION}' and 'Attachments' is not empty and 'Release text' is not empty and 'Release SQL' = 'yes' and status in (Done, Resolved, Closed) and resolution in (Done, Fixed)",
+                            "fields": [
+                                "key",
+                                "attachments"
+                            ],
+                            "collate": "sql,zip",
+                            "output_path": "/tmp/{FIX_VERSION}"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

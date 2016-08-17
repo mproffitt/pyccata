@@ -1,7 +1,9 @@
 from unittest import TestCase
 from mock import patch
 from mock import PropertyMock
+from ddt import ddt, data, unpack
 
+from collections import namedtuple
 from releaseessentials.filter import Filter
 from releaseessentials.managers.query import QueryManager
 from releaseessentials.exceptions import InvalidQueryError
@@ -9,6 +11,7 @@ from releaseessentials.managers.project import ProjectManager
 from tests.mocks.dataproviders import DataProviders
 from releaseessentials.log import Logger
 
+@ddt
 class TestFilter(TestCase):
 
     @patch('argparse.ArgumentParser.parse_args')
@@ -23,7 +26,7 @@ class TestFilter(TestCase):
         pass
 
     def test_run_raises_exception_if_manager_is_not_provided(self):
-        mock_filter = Filter('issuetype = "Bug"')
+        mock_filter = Filter('issuetype = "Bug"', namespace='releaseessentials')
         mock_filter.start()
         self.assertTrue(mock_filter.failed)
         self.assertIsInstance(mock_filter.failure, AssertionError)
@@ -37,7 +40,7 @@ class TestFilter(TestCase):
             with patch('releaseessentials.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
                 mock_config.return_value = DataProviders._get_config_for_test()
                 mock_manager.return_value = 'jira'
-                mock_filter = Filter('iamnotavalidquery')
+                mock_filter = Filter('iamnotavalidquery', namespace='releaseessentials')
                 mock_filter.projectmanager = ProjectManager()
                 mock_filter.start()
                 self.assertTrue(mock_filter.failed)
@@ -51,7 +54,7 @@ class TestFilter(TestCase):
             with patch('releaseessentials.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
                 mock_config.return_value = DataProviders._get_config_for_test()
                 mock_manager.return_value = 'jira'
-                mock_filter = Filter('assignee = "Bob"')
+                mock_filter = Filter('assignee = "Bob"', namespace='releaseessentials')
                 mock_filter.projectmanager = ProjectManager()
                 mock_filter.projectmanager._client._client = DataProviders._get_client()
                 mock_filter.run()
@@ -66,11 +69,11 @@ class TestFilter(TestCase):
             with patch('releaseessentials.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
                 mock_config.return_value = DataProviders._get_config_for_test()
                 mock_manager.return_value = 'jira'
-                mock_filter = Filter('assignee = "Bob"')
+                mock_filter = Filter('assignee = "Bob"', namespace='releaseessentials')
                 mock_filter.projectmanager = ProjectManager()
                 mock_filter.projectmanager._client._client = DataProviders._get_client()
 
-                another_filter = Filter('assignee = "Bob"')
+                another_filter = Filter('assignee = "Bob"', namespace='releaseessentials')
                 mock_filter.append(another_filter)
 
                 mock_filter.run()
@@ -87,11 +90,11 @@ class TestFilter(TestCase):
             with patch('releaseessentials.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
                 mock_config.return_value = DataProviders._get_config_for_test()
                 mock_manager.return_value = 'jira'
-                mock_filter = Filter('assignee = "Bob"')
+                mock_filter = Filter('assignee = "Bob"', namespace='releaseessentials')
                 mock_filter.projectmanager = ProjectManager()
                 mock_filter.projectmanager._client._client = DataProviders._get_client()
 
-                another_filter = Filter('assignee = "Bob"')
+                another_filter = Filter('assignee = "Bob"', namespace='releaseessentials')
                 another_filter.projectmanager = mock_filter.projectmanager
                 mock_filter.append(another_filter)
 
@@ -100,3 +103,57 @@ class TestFilter(TestCase):
                 self.assertEqual(mock_filter._results, another_filter._results)
                 another_filter.start()
                 self.assertEqual(len(mock_filter.results), len(DataProviders._test_data_for_search_results()))
+
+    @data(
+        [namedtuple('Config', 'method field')(method='total_by_field', field='summary'), False, 3],
+        [namedtuple('Config', 'method field')(method='total_by_field', field='summary'), True, 2],
+        ['average_days_since_creation', False, '733 days'],
+        ['average_days_since_creation', True, '733 days'],
+        ['average_duration', False, '616 days'],
+        ['average_duration', True, '616 days'],
+        ['priority', False, namedtuple('Priority', 'critical high medium low lowest')(critical=1, high=1, medium=4, low=0, lowest=0)],
+        ['priority', True, namedtuple('Priority', 'critical high medium low lowest')(critical=1, high=1, medium=4, low=0, lowest=0)]
+    )
+    @patch('releaseessentials.managers.subjects.jira.Jira._client')
+    @patch('releaseessentials.configuration.Configuration._load')
+    @unpack
+    def test_results_with_collation(self, collation, distinct, results, mock_load, mock_jira_client):
+        mock_jira_client.return_value = None
+        with patch('releaseessentials.configuration.Configuration.manager', new_callable=PropertyMock) as mock_manager:
+            with patch('releaseessentials.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
+                mock_config.return_value = DataProviders._get_config_for_test()
+                mock_manager.return_value = 'jira'
+                mock_filter = Filter(
+                    'assignee = "Bob"',
+                    collate=collation,
+                    distinct=distinct,
+                    namespace='releaseessentials'
+                )
+                mock_filter.projectmanager = ProjectManager()
+                mock_filter.projectmanager._client._client = DataProviders._get_client_for_collation()
+                mock_filter.run()
+                self.assertTrue(mock_filter.complete)
+                self.assertEqual(results, mock_filter.results)
+
+    @patch('releaseessentials.managers.subjects.jira.Jira._client')
+    @patch('releaseessentials.configuration.Configuration._load')
+    def test_results_with_collation_method_that_doesnt_exist(self, mock_load, mock_jira_client):
+        collation = 'iamamethodwhichwillneverexist'
+        distinct = False
+        mock_jira_client.return_value = None
+        with patch('releaseessentials.configuration.Configuration.manager', new_callable=PropertyMock) as mock_manager:
+            with patch('releaseessentials.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
+                mock_config.return_value = DataProviders._get_config_for_test()
+                mock_manager.return_value = 'jira'
+                mock_filter = Filter(
+                    'assignee = "Bob"',
+                    collate=collation,
+                    distinct=distinct,
+                    namespace='releaseessentials'
+                )
+                mock_filter.projectmanager = ProjectManager()
+                mock_filter.projectmanager._client._client = DataProviders._get_client_for_collation()
+                mock_filter.run()
+                self.assertTrue(mock_filter.complete)
+                self.assertEqual(7, len(mock_filter.results))
+

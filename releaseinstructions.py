@@ -31,7 +31,7 @@ class ReleaseInstructions(object):
     _document_controller = None
     _document_ready = False
     _document_title = 'MSS Platform Release Rollout and Rollback'
-    _regex = re.compile('^([0-9]*)?_?(\w+-\d+)_([a-zA-Z]+)_([a-zA-Z]+)_(UP|DOWN)_([0-9]*)?_?(\w+).[a-zA-Z]+$')
+    _regex = re.compile('^([0-9]*)?_?(\w+-\d+)_([a-zA-Z-]+)_([a-zA-Z0-9]+)_(UP|DOWN)_([0-9]*)?_?(\w+).[a-zA-Z]+$')
 
     def __init__(self):
         """ initialise the ReleaseNote object """
@@ -69,6 +69,10 @@ class ReleaseInstructions(object):
         destination = os.path.join(path, package_name)
         up_dir = os.path.join(destination, 'up')
         down_dir = os.path.join(destination, 'down')
+        package_dir = os.path.join(os.getcwd(), 'packages')
+        print(package_dir)
+        if not os.path.exists(package_dir):
+            create_directory(package_dir)
 
         create_directory(destination)
         create_directory(up_dir)
@@ -81,7 +85,9 @@ class ReleaseInstructions(object):
                     destination,
                     os.path.join(path, attachment.filename)
                 )
-        return mkzip(destination, os.path.join(path, package_name + '.zip'))
+
+        filename = mkzip(destination, os.path.join(path, package_name + '.zip'))
+        os.rename(os.path.join(destination, filename), os.path.join(package_dir, filename))
 
     @staticmethod
     def zip_handler(destination, filepath):

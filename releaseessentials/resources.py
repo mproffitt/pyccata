@@ -4,11 +4,18 @@ into ones recognised by the report
 """
 import os
 import re
-from argparse import Action
+import sys
 import calendar
-from datetime import datetime, date, timedelta
+import importlib
+import inspect
+from argparse import Action
+from datetime import datetime
+from datetime import date
+from datetime import timedelta
 from releaseessentials.log import Logger
 from releaseessentials.decorators import accepts
+from releaseessentials.interface import ResultListInterface
+from releaseessentials.exceptions import InvalidModuleError
 
 class Attachment(object):
     """ Basic storage for a single attachment """
@@ -183,7 +190,70 @@ class ResultList(list):
     """
     List of results returned by a <project manager>
     """
+    __implements__ = (ResultListInterface,)
+    _namespace = None
     _total = 0
+    _collate = None
+    _distinct = False
+    _field = False
+
+    def __init__(self, collate=None, distinct=False, namespace=None):
+        """
+        Create a new ResultList item
+        """
+        self._namespace = namespace
+        self.collate = collate
+        self.distinct = distinct
+        super().__init__()
+
+    @property
+    def field(self):
+        """ Gets the field used for collation """
+        return str(self._field)
+
+    @property
+    def collate(self):
+        """
+        Get the collation of this result set
+
+        @return string
+        """
+        if self._collate is None:
+            return self
+        return self._collate(self)
+
+    @collate.setter
+    def collate(self, collation):
+        """
+        Set the collation method of this ResultList
+        """
+        function = None
+        if isinstance(collation, tuple):
+            self._field = collation.field
+            collation = collation.method
+
+        try:
+            function = self._import(collation)
+        except InvalidModuleError as exception:
+            if collation is not None:
+                Logger().error('Failed to set collation method')
+                Logger().error(exception)
+        self._collate = function
+
+    @property
+    def distinct(self):
+        """ Is this result set distinct """
+        return self._distinct
+
+    @distinct.setter
+    @accepts(bool)
+    def distinct(self, distinct):
+        """
+        Set whether this resultset should be filled with distinct values
+
+        This is only used in collation of results.
+        """
+        self._distinct = distinct
 
     @property
     def total(self):
@@ -202,12 +272,6 @@ class ResultList(list):
         """
         self._total = value
 
-    def __init__(self):
-        """
-        Create a new ResultList item
-        """
-        super().__init__()
-
     @accepts(Issue)
     def append(self, item):
         """
@@ -217,6 +281,27 @@ class ResultList(list):
         """
         super().append(item)
 
+    @accepts(list)
+    def extend(self, results):
+        """
+        Extends the current list of results with the set given
+
+        @param result ResultList
+        """
+        for item in results:
+            self.append(item)
+
+    def _import(self, name):
+        """
+        Attempts to import the collation method from the collation module
+        """
+        module_name = str(self._namespace) + '.' + 'collation'
+        try:
+            importlib.import_module(module_name)
+            functions = inspect.getmembers(sys.modules[module_name], inspect.isfunction)
+            return [function for function in functions if function[0].lower() == name.lower()][0][1]
+        except (IndexError, AttributeError, ImportError):
+            raise InvalidModuleError(str(name), str(module_name))
 
 class ReplacementsValidator(Action):
     """
@@ -363,7 +448,8 @@ class Replacements(list):
         """ helper function for getting the release date """
         today = date.today()
 
-        releasedate = today + timedelta((3 - today.weekday()) % 7)
+        release_day = getattr(Calendar, Replacements().replace('{RELEASE_DAY}').upper())
+        releasedate = today + timedelta((release_day - today.weekday()) % 7)
 
         return datetime.strftime(
             releasedate,

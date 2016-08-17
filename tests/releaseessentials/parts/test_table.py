@@ -76,7 +76,7 @@ class TestTable(TestCase):
         table = Table(self._thread_manager, config)
 
     def test_run_completes_if_filter_fails(self):
-        mock_filter = Filter('bob', max_results=5, fields=None)
+        mock_filter = Filter('bob', max_results=5, fields=None, namespace='releaseessentials')
         mock_filter._failure = InvalidQueryError('query is wrong')
         Config = namedtuple('Config', 'rows columns style')
         config = Config(rows=[['My search', mock_filter]], columns=['Test column', 'Test Results'], style=None)
@@ -85,7 +85,7 @@ class TestTable(TestCase):
         self.assertTrue(table._complete)
 
     def test_run_completes_if_filter_delays_in_completing(self):
-        mock_filter = Filter('bob', max_results=5, fields=None)
+        mock_filter = Filter('bob', max_results=5, fields=None, namespace='releaseessentials')
         Config = namedtuple('Config', 'rows columns style')
         config = Config(rows=[['My search', mock_filter]], columns=['Test column', 'Test Results'], style=None)
         with patch('releaseessentials.threading.Threadable.complete', new_callable=PropertyMock) as mock_thread:
@@ -100,8 +100,8 @@ class TestTable(TestCase):
         self.tearDown()
         Config = namedtuple('Config', 'rows columns style')
 
-        Filter = namedtuple('Filter', 'query max_results')
-        rows = Filter(query='project=mssportal', max_results=5)
+        Filter = namedtuple('Filter', 'query max_results namespace')
+        rows = Filter(query='project=mssportal', max_results=5, namespace='releaseessentials')
 
         columns = [
             'Name',
@@ -127,8 +127,8 @@ class TestTable(TestCase):
             mock_results.return_value = ResultsList(total=1, results=[
                 Result(key='testproj-123', release_text='I am test text', business_representative='Bob Smith')
             ])
-            Filter = namedtuple('Filter', 'query max_results')
-            rows = Filter(query='project=mssportal', max_results=5)
+            Filter = namedtuple('Filter', 'query max_results namespace')
+            rows = Filter(query='project=mssportal', max_results=5, namespace='releaseessentials')
 
             columns = [
                 'Name',
@@ -144,7 +144,7 @@ class TestTable(TestCase):
 
     @patch('releaseessentials.managers.report.ReportManager.add_table')
     @patch('releaseessentials.managers.report.ReportManager.add_heading')
-    def test_table_renders_filter_results(self, mock_heading, mock_table):
+    def test_table_renders_filter_results_from_cell_query(self, mock_heading, mock_table):
         self.tearDown()
         Config = namedtuple('Config', 'rows columns style')
 
@@ -154,14 +154,43 @@ class TestTable(TestCase):
             mock_results.return_value = ResultsList(total=1, results=[
                 Result(key='testproj-123', release_text='I am test text', business_representative='Bob Smith')
             ])
-            Filter = namedtuple('Filter', 'query max_results')
-            rows = Filter(query='project=mssportal', max_results=5)
+            Filter = namedtuple('Filter', 'query max_results namespace')
+            rows = Filter(query='project=mssportal', max_results=5, namespace='releaseessentials')
 
             columns = [
                 'Name',
                 'Description'
             ]
-            config = Config(rows=rows, columns=columns, style='Light heading 1')
+            config = Config(rows=[['Data', rows]], columns=columns, style='Light heading 1')
+            table = Table(self._thread_manager, config)
+            table.title = 'Test Title'
+
+            document = ReportManager()
+            table.render(document)
+            self.assertEquals(1, mock_table.call_count)
+            self.assertEquals(1, mock_heading.call_count)
+            mock_heading.assert_called_with('Test Title', 3)
+
+    @patch('releaseessentials.managers.report.ReportManager.add_table')
+    @patch('releaseessentials.managers.report.ReportManager.add_heading')
+    def test_table_renders_filter_results_from_cell_query_continues_if_filter_errors(self, mock_heading, mock_table):
+        self.tearDown()
+        Config = namedtuple('Config', 'rows columns style')
+
+        with patch('releaseessentials.filter.Filter.results', new_callable=PropertyMock) as mock_results:
+            ResultsList = namedtuple('ResultsList', 'total results')
+            Result = namedtuple('Result', 'key release_text business_representative')
+            mock_results.return_value = ResultsList(total=1, results=[
+                Result(key='testproj-123', release_text='I am test text', business_representative='Bob Smith')
+            ])
+            Filter = namedtuple('Filter', 'max_results namespace')
+            rows = Filter(max_results=5, namespace='releaseessentials')
+
+            columns = [
+                'Name',
+                'Description'
+            ]
+            config = Config(rows=[['Data', rows]], columns=columns, style='Light heading 1')
             table = Table(self._thread_manager, config)
             table.title = 'Test Title'
 

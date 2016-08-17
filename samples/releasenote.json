@@ -21,15 +21,21 @@
             "overridable": false
         },
         {
+            "name": "RELEASE_DAY",
+            "type": "string",
+            "value": "Wednesday",
+            "overridable": false
+        },
+        {
             "name": "FIX_VERSION",
             "type": "fix_version",
-            "value": "%d/%b/%Y",
+            "value": "%Y-%m-%d",
             "overridable": false
         },
         {
             "name": "AFFECTED_SYSTEMS",
             "type": "csv",
-            "value": "MSS Classic Portal, MSS New Portal, Service Desk, GrUD, Vigilance, Service Manager",
+            "value": "Example Product,Foo,Bar",
             "overridable": {
                 "flag": "--affected-systems",
                 "abbrev": "-as",
@@ -39,7 +45,7 @@
         {
             "name": "AFFECTED_REGIONS",
             "type": "csv",
-            "value": "AMS,APJ,EMEA",
+            "value": "UK,US",
             "overridable": {
                 "flag": "--affected-regions",
                 "abbrev": "-ar",
@@ -47,7 +53,18 @@
             }
         },
         {
-            "name": "LENGTH",
+            "name": "START_TIME",
+            "type": "string",
+            "value": "7:30am BST",
+            "overridable": {
+                "flag": "--start-time",
+                "abbrev": "-st",
+                "required": false
+            }
+        },
+
+        {
+            "name": "DURATION",
             "type": "string",
             "value": "2 hours",
             "overridable": {
@@ -59,11 +76,11 @@
     ],
     "report":{
         "path":"releasenote",
-        "template": "templates/HPTemplate.docx",
-        "datapath": "releaseessentials/data",
-        "title": "MSS Platform Release Notification {RELEASE_DATE}",
-        "subtitle":"HP Restricted – For Internal Use Only",
-        "abstract": "An MSS Platform release will occur on {RELEASE_DATE} with deployment commencing at 07:30am BST.",
+        "template": "templates/GreenTemplate.docx",
+        "datapath": "weeklyreport/data",
+        "title": "Platform Release Notification {RELEASE_DATE}",
+        "subtitle":"Restricted – For Internal Use Only",
+        "abstract": "A Platform release will occur on {RELEASE_DATE} with deployment commencing at {START_TIME}.",
         "board_id":"118",
         "sections":[
             {
@@ -78,8 +95,8 @@
                             "field": "",
                             "content": [
                                 "This release focuses on bug fixes and enhancements across the {AFFECTED_SYSTEMS} systems",
-                                "This release will require approximately {LENGTH} hours to fully deploy and rollout to the {AFFECTED_REGIONS} regions.\nThe deployment process to each region is done separately, taking approximately 20 minutes per region.",
-                                "Any changes to the Service Manager product currently affect the AMS region only"
+                                "This release will require approximately {DURATION} hours to fully deploy and rollout to the {AFFECTED_REGIONS} regions.\nThe deployment process to each region is done separately, taking approximately 20 minutes per region.",
+                                "Any changes to the FooBar product currently affect the UK region only"
                             ]
                         }
                     }
@@ -93,30 +110,22 @@
                     {
                         "type": "table",
                         "content": {
-                            "style": "List Table 4 Accent 6",
+                            "style": "Grid Table 4 Accent 6",
                             "columns": [
                                 "",
                                 ""
                             ],
                             "rows": [
                                 [
-                                    "Service Desk",
+                                    "Example Product",
                                     "No Expected Disruption"
                                 ],
                                 [
-                                    "MSS Portal",
+                                    "Foo",
                                     "No Expected Disruption"
                                 ],
                                 [
-                                    "GrUD",
-                                    "No Expected Disruption"
-                                ],
-                                [
-                                    "Vigilance",
-                                    "No Expected Disruption"
-                                ],
-                                [
-                                    "Service Manager",
+                                    "Bar",
                                     "No Expected Disruption"
                                 ]
                             ]
@@ -128,12 +137,6 @@
                 "title": "Release Contents",
                 "level": 1,
                 "abstract": "Please read carefully to familiarise yourself with the forthcoming system changes contained in this release.",
-                "structure": []
-            },
-            {
-                "title": "MSS Portal",
-                "abstract": "",
-                "level": 2,
                 "structure": [
                     {
                         "type": "table",
@@ -146,7 +149,7 @@
                                 "Business Representative"
                             ],
                             "rows": {
-                                "query": "project=mssportal and fixVersion = '{FIX_VERSION}' and issuetype=Bug and 'Release text' is not empty and status= Done and resolution = Fixed",
+                                "query": "fixVersion = '{FIX_VERSION}' and issuetype = Bug and 'Release text' is not empty and status= Done and resolution in (Done, Fixed)",
                                 "fields": [
                                     "key",
                                     "Release text",
@@ -157,7 +160,7 @@
                     },
                     {
                         "type": "table",
-                        "title": "Enhancements",
+                        "title": "Enhancements / New Features",
                         "content": {
                             "style": "Light Shading Accent 6",
                             "columns": [
@@ -166,7 +169,7 @@
                                 "Business Representative"
                             ],
                             "rows": {
-                                "query": "project=mssportal and fixVersion = '{FIX_VERSION}' and issuetype=Improvement and 'Release text' is not empty and status= Done and resolution = Fixed",
+                                "query": "fixVersion = '{FIX_VERSION}' and issuetype != Bug and 'Release text' is not empty and status= Done and resolution in (Done, Fixed)",
                                 "fields": [
                                     "key",
                                     "Release text",
@@ -178,195 +181,7 @@
                 ]
             },
             {
-                "title": "Service Desk",
-                "abstract": "",
-                "level": 2,
-                "structure": [
-                    {
-                        "type": "table",
-                        "title": "Bugs",
-                        "content": {
-                            "style": "Light Shading Accent 6",
-                            "columns": [
-                                "JIRA Reference",
-                                "Description",
-                                "Business Representative"
-                            ],
-                            "rows": {
-                                "query": "project=svcdesk and fixVersion = '{FIX_VERSION}' and issuetype=Bug and 'Release text' is not empty and status= Done and resolution = Fixed",
-                                "fields": [
-                                    "key",
-                                    "Release text",
-                                    "Business Representative"
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "type": "table",
-                        "title": "Enhancements",
-                        "content": {
-                            "style": "Light Shading Accent 6",
-                            "columns": [
-                                "JIRA Reference",
-                                "Description",
-                                "Business Representative"
-                            ],
-                            "rows": {
-                                "query": "project=svcdesk and fixVersion = '{FIX_VERSION}' and issuetype=Improvement and 'Release text' is not empty and status= Done and resolution = Fixed",
-                                "fields": [
-                                    "key",
-                                    "Release text",
-                                    "Business Representative"
-                                ]
-                            }
-                        }
-                    }
-                ]
-            },
-            {
-                "title": "GrUD",
-                "abstract": "",
-                "level": 2,
-                "structure": [
-                    {
-                        "type": "table",
-                        "title": "Bugs",
-                        "content": {
-                            "style": "Light Shading Accent 6",
-                            "columns": [
-                                "JIRA Reference",
-                                "Description",
-                                "Business Representative"
-                            ],
-                            "rows": {
-                                "query": "project=grud and fixVersion = '{FIX_VERSION}' and issuetype=Bug and 'Release text' is not empty and status= Done and resolution = Fixed",
-                                "fields": [
-                                    "key",
-                                    "Release text",
-                                    "Business Representative"
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "type": "table",
-                        "title": "Enhancements",
-                        "content": {
-                            "style": "Light Shading Accent 6",
-                            "columns": [
-                                "JIRA Reference",
-                                "Description",
-                                "Business Representative"
-                            ],
-                            "rows": {
-                                "query": "project=grud and fixVersion = '{FIX_VERSION}' and issuetype=Improvement and 'Release text' is not empty and status= Done and resolution = Fixed",
-                                "fields": [
-                                    "key",
-                                    "Release text",
-                                    "Business Representative"
-                                ]
-                            }
-                        }
-                    }
-                ]
-            },
-            {
-                "title": "Vigilance",
-                "abstract": "",
-                "level": 2,
-                "structure": [
-                    {
-                        "type": "table",
-                        "title": "Bugs",
-                        "content": {
-                            "style": "Light Shading Accent 6",
-                            "columns": [
-                                "JIRA Reference",
-                                "Description",
-                                "Business Representative"
-                            ],
-                            "rows": {
-                                "query": "project=vigilance and fixVersion = '{FIX_VERSION}' and issuetype=Bug and 'Release text' is not empty and status= Done and resolution = Fixed",
-                                "fields": [
-                                    "key",
-                                    "Release text",
-                                    "Business Representative"
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "type": "table",
-                        "title": "Enhancements",
-                        "content": {
-                            "style": "Light Shading Accent 6",
-                            "columns": [
-                                "JIRA Reference",
-                                "Description",
-                                "Business Representative"
-                            ],
-                            "rows": {
-                                "query": "project=vigilance and fixVersion = '{FIX_VERSION}' and issuetype=Improvement and 'Release text' is not empty and status= Done and resolution = Fixed",
-                                "fields": [
-                                    "key",
-                                    "Release text",
-                                    "Business Representative"
-                                ]
-                            }
-                        }
-                    }
-                ]
-            },
-            {
-                "title": "Service Manager",
-                "abstract": "",
-                "level": 2,
-                "structure": [
-                    {
-                        "type": "table",
-                        "title": "Bugs",
-                        "content": {
-                            "style": "Light Shading Accent 6",
-                            "columns": [
-                                "JIRA Reference",
-                                "Description",
-                                "Business Representative"
-                            ],
-                            "rows": {
-                                "query": "project=bub and fixVersion = '{FIX_VERSION}' and issuetype=Bug and 'Release text' is not empty and status= Done and resolution = Fixed",
-                                "fields": [
-                                    "key",
-                                    "Release text",
-                                    "Business Representative"
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "type": "table",
-                        "title": "Enhancements",
-                        "content": {
-                            "style": "Light Shading Accent 6",
-                            "columns": [
-                                "JIRA Reference",
-                                "Description",
-                                "Business Representative"
-                            ],
-                            "rows": {
-                                "query": "project=bub and fixVersion = '{FIX_VERSION}' and issuetype=Improvement and 'Release text' is not empty and status= Done and resolution = Fixed",
-                                "fields": [
-                                    "key",
-                                    "Release text",
-                                    "Business Representative"
-                                ]
-                            }
-                        }
-                    }
-                ]
-            },
-            {
-                "title": "MSS Product User Guides",
+                "title": "Product User Guides",
                 "abstract": "",
                 "level": 1,
                 "structure": [
@@ -374,7 +189,7 @@
                         "type": "paragraph",
                         "content": {
                             "text": [
-                                "The latest product user guides for the MSS Platform applications can be viewed and downloaded from: https://ent301.sharepoint.hp.com/teams/mssglobaldocs/_layouts/15/start.aspx#/SitePages/Home.aspx?RootFolder=%2Fteams%2Fmssglobaldocs%2FShared%20Documents%2FTechnical%20Information%2FUser%20Guides&FolderCTID=0x012000DAFA4C999DC0A344A14012D09DBF45E7&View=%7B419F65C4%2D2677%2D4821%2D87EB%2D978C23DA5757%7D"
+                                "The latest product user guides for the platform can be viewed and downloaded from: http://example.com/my/guides"
                             ]
                         }
                     }
@@ -388,18 +203,16 @@
                     {
                         "type": "table",
                         "content": {
-                            "style": "List Table 4 Accent 6",
+                            "style": "Grid Table 4 Accent 6",
                             "columns": [
                                 "Name",
                                 "Region",
                                 "Business Function"
                             ],
                             "rows": [
-                                ["Jillian Barrett", "EMEA/AMS/APJ", "Service Management"],
-                                ["Gareth Williams", "EMEA", "Security Incident & Response"],
-                                ["Ross Webb", "EMEA", "Operational Support"],
-                                ["Daniel Hayes", "APJ", "Operational Support"],
-                                ["Davy Rhule", "AMS", "Operational Support"]
+                                ["Bob Jones", "UK / US", "Service Management"],
+                                ["Joe Bloggs", "UK", "Operational Support - FooBar product"],
+                                ["Jane Doe", "US", "Operational Support - Example Product"]
                             ]
                         }
                     }
@@ -408,3 +221,4 @@
         ]
     }
 }
+

@@ -106,6 +106,14 @@ class DataProviders(object):
         )
 
     @staticmethod
+    def _get_client_for_collation():
+        JIRA = namedtuple('JIRA', 'search_issues projects')
+        return JIRA(
+            search_issues=lambda x, maxResults, fields: DataProviders._test_data_for_collation(),
+            projects=lambda: DataProviders._test_data_for_projects()
+        )
+
+    @staticmethod
     def _get_client_without_results():
         JIRA = namedtuple('JIRA', 'search_issues projects')
         return JIRA(
@@ -173,6 +181,92 @@ class DataProviders(object):
                         Attachment(id=1, mimeType='application/sql', filename='TestApplication.sql'),
                         Attachment(id=1, mimeType='application/zip', filename='AnotherTestApplication.zip')
                     ]
+                )
+            )
+        ]
+        return data
+
+    @staticmethod
+    def _test_data_for_collation():
+        Project = namedtuple('Project', 'key name')
+        Assignee = namedtuple('Assignee', 'name displayName')
+        Field = namedtuple('Field', 'assignee project priority created resolutiondate')
+        FieldWithSummary = namedtuple('FieldWithSummary', 'assignee project priority created resolutiondate summary')
+
+        Issue = namedtuple('Issue', 'key fields')
+        Priority = namedtuple('Priority', 'name id')
+        data = [
+            Issue(
+                key='ATP-114',
+                fields=Field(
+                    assignee=Assignee(name='proffitt', displayName='Martin Proffitt'),
+                    project=Project(key='ATP', name='Another Test Project'),
+                    priority=Priority(name='3 - Medium', id=3),
+                    created='2014-05-07T15:09:29.000+0000',
+                    resolutiondate='2016-05-10T12:49:38.000+0000'
+                )
+            ),
+            Issue(
+                key='ATP-115',
+                fields=Field(
+                    assignee=Assignee(name='proffitt', displayName='Martin Proffitt'),
+                    project=Project(key='ATP', name='Another Test Project'),
+                    priority=Priority(name='3 - Medium', id=3),
+                    created='2014-06-03T15:09:29.000+0000',
+                    resolutiondate='2016-03-08T12:49:38.000+0000'
+                )
+            ),
+            Issue(
+                key='TP-11',
+                fields=Field(
+                    assignee=Assignee(name='proffitt', displayName='Martin Proffitt'),
+                    project=Project(key='TP', name='Test Project'),
+                    priority=Priority(name='2 - High', id=2),
+                    created='2016-03-04T15:09:29.000+0000',
+                    resolutiondate='2016-03-05T12:49:38.000+0000'
+                )
+            ),
+            Issue(
+                key='ATP-117',
+                fields=Field(
+                    assignee=Assignee(name='proffitt', displayName='Martin Proffitt'),
+                    project=Project(key='ATP', name='Another Test Project'),
+                    priority=Priority(name='1 - Critical', id=1),
+                    created='2014-05-07T15:09:29.000+0000',
+                    resolutiondate='2016-05-10T12:49:38.000+0000'
+                )
+            ),
+            Issue(
+                key='TP-124',
+                fields=FieldWithSummary(
+                    assignee=Assignee(name='proffitt', displayName='Martin Proffitt'),
+                    project=Project(key='TP', name='Test Project'),
+                    priority=Priority(name='1 - Critical', id=3),
+                    created='2014-05-07T15:09:29.000+0000',
+                    resolutiondate='2016-05-10T12:49:38.000+0000',
+                    summary='This is a ticket item'
+                )
+            ),
+            Issue(
+                key='ATP-155',
+                fields=FieldWithSummary(
+                    assignee=Assignee(name='proffitt', displayName='Martin Proffitt'),
+                    project=Project(key='ATP', name='Another Test Project'),
+                    priority=Priority(name='3 - Medium', id=3),
+                    created='2014-05-07T15:09:29.000+0000',
+                    resolutiondate='2016-05-10T12:49:38.000+0000',
+                    summary='This is a test line'
+                )
+            ),
+            Issue(
+                key='ATP-157',
+                fields=FieldWithSummary(
+                    assignee=Assignee(name='proffitt', displayName='Martin Proffitt'),
+                    project=Project(key='ATP', name='Another Test Project'),
+                    priority=Priority(name='6 - Deadly', id=6),
+                    created='2014-05-07T15:09:29.000+0000',
+                    resolutiondate='2016-05-10T12:49:38.000+0000',
+                    summary='This is a test line'
                 )
             )
         ]

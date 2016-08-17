@@ -10,6 +10,7 @@ from releaseessentials.filter import Filter
 from releaseessentials.resources import Issue
 from releaseessentials.resources  import Replacements
 from releaseessentials.log import Logger
+from releaseessentials.configuration import Configuration
 
 class List(ThreadableDocument):
     """
@@ -37,7 +38,8 @@ class List(ThreadableDocument):
                 content = Filter(
                     content.query,
                     max_results=getattr(content, 'max_results') if hasattr(content, 'max_results') else 1,
-                    fields=getattr(content, 'fields') if hasattr(content, 'fields') else None
+                    fields=getattr(content, 'fields') if hasattr(content, 'fields') else None,
+                    namespace=Configuration.NAMESPACE
                 )
                 # pylint: disable=broad-except
                 # Any reason can come back here. Just need to
@@ -101,13 +103,14 @@ class List(ThreadableDocument):
 
     @accepts(ReportManager, (list, str, None))
     def _write(self, document, text):
-            if isinstance(text, list):
-                for item in text:
-                    document.add_list(Replacements().replace(
-                        getattr(item, 'value') if isinstance(item, object) and hasattr(item, 'value') else item
-                    ), style=List.STYLE_MAPPINGS[self._style])
-            elif text is not None:
-                document.add_list(Replacements().replace(text), style=List.STYLE_MAPPINGS[self._style])
+        """ Write text into the document """
+        if isinstance(text, list):
+            for item in text:
+                document.add_list(Replacements().replace(
+                    getattr(item, 'value') if isinstance(item, object) and hasattr(item, 'value') else item
+                ), style=List.STYLE_MAPPINGS[self._style])
+        elif text is not None:
+            document.add_list(Replacements().replace(text), style=List.STYLE_MAPPINGS[self._style])
 
     @staticmethod
     @accepts((Filter, list))

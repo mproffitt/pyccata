@@ -272,6 +272,52 @@ class TestAttachments(TestCase):
                 mock_paragraph.assert_called_with('The following file(s) have been attached to this document:')
                 mock_list.assert_called_with('TestFile.zip')
 
+    @data(
+        ('zip,sql', 2, [])
+    )
+    @patch('builtins.open', create=True)
+    @patch('jira.client.JIRA.__init__')
+    @patch('jira.client.JIRA.search_issues')
+    @patch('releaseessentials.configuration.Configuration._get_locations')
+    @unpack
+    def test_setup_and_run_doesnt_download_if_attachments_is_empty(
+        self,
+        collation,
+        result_count,
+        result_filename,
+        mock_config_list,
+        mock_results,
+        mock_jira_client,
+        mock_open
+    ):
+        mock_jira_client.return_value = None
+        mock_config_list.return_value = [self._path]
+        Configuration.NAMESPACE = 'releaseessentials'
+        report = ReportManager()
+        mock_results.return_value = []
+
+        report.add_callback('attachments', lambda x,y: '')
+        self.assertIsInstance(Configuration().replacements, Replacements)
+
+        Config = namedtuple('Config', 'query fields collate output_path')
+        config = Config(
+            query='project=test and attachments is not empty',
+            fields=[
+                'key',
+                'attachments'
+            ],
+            collate=collation,
+            output_path='/tmp/{FIX_VERSION}'
+        )
+
+        attachments = None
+        with patch('os.makedirs') as mock_os:
+            attachments = Attachments(self._thread_manager, config)
+            mock_os.assert_called_with('/tmp/28/Jul/2016')
+
+        with patch('releaseessentials.parts.attachments.Attachments._download_attachments') as mock_download:
+            self._thread_manager.execute()
+            mock_download.assert_not_called()
 
     @patch('releaseessentials.filter.Filter.failure', new_callable=PropertyMock)
     @patch('argparse.ArgumentParser.parse_args')

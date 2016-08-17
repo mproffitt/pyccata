@@ -92,7 +92,7 @@ class TestReplacements(TestCase):
         self.assertIsInstance(config.replacements, Replacements)
 
         today = date.today()
-        releasedate = today + timedelta((3 - today.weekday()) % 7)
+        releasedate = today + timedelta((2 - today.weekday()) % 7)
 
         value_format = '%A, %d %B %Y'
         reldate = datetime.strftime(
