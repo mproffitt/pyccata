@@ -1,3 +1,4 @@
+#!/bin/env python3
 """
 Primary module for generating release notes from Jira
 

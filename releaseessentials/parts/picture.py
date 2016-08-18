@@ -5,6 +5,7 @@ from releaseessentials.decorators import accepts
 from releaseessentials.configuration import Configuration
 from releaseessentials.managers.report import ReportManager
 from releaseessentials.exceptions import ThreadFailedError
+from releaseessentials.log import Logger
 
 class Picture(ThreadableDocument):
     """ Base class for picture objects """
@@ -63,6 +64,7 @@ class Picture(ThreadableDocument):
     @accepts(ReportManager)
     def render(self, report):
         """ Render the picture into the report """
+        Logger().info('Adding picture {0}'.format(self.title if self.title is not None else ''))
         if not self._complete:
             raise ThreadFailedError('Failed to render document. Has thread been executed?')
         report.add_picture(self.filepath, width=self.width)

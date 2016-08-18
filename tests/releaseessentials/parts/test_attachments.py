@@ -89,6 +89,7 @@ class TestAttachments(TestCase):
             collate=collation,
             output_path='/tmp/{FIX_VERSION}'
         )
+        Replacements().find('FIX_VERSION').value = '28/Jul/2016'
 
         attachments = None
         with patch('os.makedirs') as mock_os:
@@ -163,6 +164,7 @@ class TestAttachments(TestCase):
             collate=collation,
             output_path='/tmp/{FIX_VERSION}'
         )
+        Replacements().find('FIX_VERSION').value = '28/Jul/2016'
 
         attachments = None
         with patch('os.makedirs') as mock_os:
@@ -237,6 +239,7 @@ class TestAttachments(TestCase):
             collate=collation,
             output_path='/tmp/{FIX_VERSION}'
         )
+        Replacements().find('FIX_VERSION').value = '28/Jul/2016'
 
         attachments = None
         with patch('os.makedirs') as mock_os:
@@ -309,6 +312,7 @@ class TestAttachments(TestCase):
             collate=collation,
             output_path='/tmp/{FIX_VERSION}'
         )
+        Replacements().find('FIX_VERSION').value = '28/Jul/2016'
 
         attachments = None
         with patch('os.makedirs') as mock_os:
@@ -344,6 +348,7 @@ class TestAttachments(TestCase):
             collate='zip',
             output_path='/tmp/{FIX_VERSION}'
         )
+        Replacements().find('FIX_VERSION').value = '28/Jul/2016'
 
         attachments = None
         with patch('os.makedirs') as mock_os:

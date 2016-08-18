@@ -1,17 +1,24 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from setuptools import setup
 
 setup(
-    name='JiraWeeklyReport',
-    version='0.1',
-    description='Application for generating a weekly report from Jira',
+    name='ReleaseEssentials',
+    version='1.2',
+    description='Application helper suite for software releases',
     author='Martin Proffitt',
     author_email='mproffitt@jitsc.co.uk',
-    url='http://www.jitsc.co.uk/weekly-report',
+    url='https://bitbucket.org/mproffitt/releaseessentials',
 
     packages=[
-        'releaseessentials'
+        'releaseessentials',
+        'releaseessentials.managers',
+        'releaseessentials.managers.subjects',
+        'releaseessentials.parts'
+    ],
+    scripts=[
+        'bin/releasenote.py',
+        'bin/releaseinstructions.py'
     ],
     install_requires=[
         'jira',

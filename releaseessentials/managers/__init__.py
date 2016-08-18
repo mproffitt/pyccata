@@ -1,3 +1,1 @@
-"""
-Available Managers go in here
-"""
+""" Available Managers go in here """

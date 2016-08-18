@@ -34,7 +34,7 @@ def average_days_since_creation(results):
     @param field string.
     """
     dates = []
-    today = datetime.today()
+    today = _today
     for result in results:
         dates.append(datetime.strptime(getattr(result, 'created').split('.')[0], '%Y-%m-%dT%H:%M:%S'))
     return '{0} days'.format((sum([today - x for x in dates], timedelta(0)) / len(dates)).days)
@@ -70,3 +70,21 @@ def priority(results):
         low=levels[3],
         lowest=levels[4]
     )
+
+@accepts(ResultListInterface)
+def flatten(results):
+    """ Flattens a list of objects by a field on the object """
+    items = [
+        item for result in results for item in (getattr(
+            result, results.field
+        ) if getattr(result, results.field) is not None else [])
+    ]
+    if results.distinct:
+        return sorted(list(set(items)))
+    return items
+
+def _today():
+    """
+    Private wrapper for datetime.today for testing
+    """
+    return datetime.today()

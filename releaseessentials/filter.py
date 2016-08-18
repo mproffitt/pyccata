@@ -83,7 +83,14 @@ class Filter(Threadable):
         """ get the list of observers to this object """
         return self._observers
 
-    @accepts(str, max_results=(bool, int), fields=(None, list), collate=(None, tuple, str), distinct=bool, namespace=(None, str))
+    @accepts(
+        str,
+        max_results=(bool, int),
+        fields=(None, list),
+        collate=(None, tuple, str),
+        distinct=bool,
+        namespace=(None, str)
+    )
     def setup(self, query, max_results=0, fields=None, collate=None, distinct=False, namespace=None):
         """
         Initialise the filter
@@ -98,6 +105,9 @@ class Filter(Threadable):
         # It is understood that the arguments will always differ
         # from the super() class on this method due to the use of
         # *args and **kwargs in the call from __init__
+
+        # pylint: disable=too-many-arguments
+        # This class requires a large number of arguments to come from the config
         self._query = Replacements().replace(query)
         self._fields = fields
         self._observers = []

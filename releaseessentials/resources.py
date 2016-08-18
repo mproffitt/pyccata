@@ -10,8 +10,6 @@ import importlib
 import inspect
 from argparse import Action
 from datetime import datetime
-from datetime import date
-from datetime import timedelta
 from releaseessentials.log import Logger
 from releaseessentials.decorators import accepts
 from releaseessentials.interface import ResultListInterface
@@ -442,23 +440,38 @@ class Replacements(list):
 
         return what
 
+    def find(self, what):
+        """
+        Finds an item in the Replacements list by name
+
+        @param what string
+
+        @return Replacement if what matches name else None
+        """
+        for item in self:
+            if item.name == what:
+                return item
+        return None
+
     @staticmethod
     @accepts(str)
     def release_date(value_format):
         """ helper function for getting the release date """
-        today = date.today()
+        replacements = Replacements()
 
-        release_day = getattr(Calendar, Replacements().replace('{RELEASE_DAY}').upper())
-        releasedate = today + timedelta((release_day - today.weekday()) % 7)
+        release_date = datetime.strptime(
+            replacements.replace('{FIX_VERSION}'),
+            replacements.find('FIX_VERSION').value
+        )
 
         return datetime.strftime(
-            releasedate,
+            release_date,
             value_format.replace('%d', '{th}')
         ).replace(
             '{th}',
-            (str(releasedate.day) + (
-                "th" if 4 <= releasedate.day % 100 <= 20 else {1:"st", 2:"nd", 3:"rd"}.get(
-                    releasedate.day % 10, "th")
+            (str(release_date.day) + (
+                "th" if 4 <= release_date.day % 100 <= 20 else {1:"st", 2:"nd", 3:"rd"}.get(
+                    release_date.day % 10, "th")
                 )
             )
         )
@@ -467,10 +480,8 @@ class Replacements(list):
     @accepts(str)
     def fix_version(value_format):
         """ Helper function for getting the fix version """
-        #today = date.today()
         release_day = Replacements().replace('{RELEASE_DAY}')
         release_date = Calendar().get_release_day(release_day)
-        #releasedate = today + timedelta((3 - today.weekday()) % 7)
         return datetime.strftime(release_date, value_format)
 
     @staticmethod

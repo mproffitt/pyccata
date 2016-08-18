@@ -1,8 +1,8 @@
 .coverage
+.eggs
 cover
 doc
 dist
 build
-.eggs
 JiraWeeklyReport.egg-info
-MSS*.docx
+*.docx

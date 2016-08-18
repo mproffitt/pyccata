@@ -49,8 +49,8 @@ The following keys are required by the manager.
 * **server** `string` [required]
 * **port** `string` [required]
 
-### Targeted for 1.2 ###
-The following key is targeted for the 1.2 release of the library
+### Targeted for 1.3 ###
+The following key is targeted for the 1.3 release of the library
 
 * **customfields** `list` [required]
 
@@ -262,6 +262,7 @@ At present, the following methods are defined as collation callbacks.
 * **average_days_since_creation** (returns string, e.g. `'716 days'`)
 * **average_duration** (returns string, e.g. `'716 days'`)
 * **priority** (returns `namedtuple('Priority', 'critical medium high low lowest')`)
+* **flatten** (returns a list)
 * **project** (returns list of issues grouped by project)
 
 **Object based**

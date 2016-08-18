@@ -3,6 +3,7 @@ from mock import patch
 from mock import PropertyMock
 from ddt import ddt, data, unpack
 
+from datetime import datetime
 from collections import namedtuple
 from releaseessentials.filter import Filter
 from releaseessentials.managers.query import QueryManager
@@ -10,6 +11,7 @@ from releaseessentials.exceptions import InvalidQueryError
 from releaseessentials.managers.project import ProjectManager
 from tests.mocks.dataproviders import DataProviders
 from releaseessentials.log import Logger
+from releaseessentials.collation import _today
 
 @ddt
 class TestFilter(TestCase):
@@ -107,12 +109,14 @@ class TestFilter(TestCase):
     @data(
         [namedtuple('Config', 'method field')(method='total_by_field', field='summary'), False, 3],
         [namedtuple('Config', 'method field')(method='total_by_field', field='summary'), True, 2],
-        ['average_days_since_creation', False, '733 days'],
-        ['average_days_since_creation', True, '733 days'],
+        ['average_days_since_creation', False, '734 days'],
+        ['average_days_since_creation', True, '734 days'],
         ['average_duration', False, '616 days'],
         ['average_duration', True, '616 days'],
         ['priority', False, namedtuple('Priority', 'critical high medium low lowest')(critical=1, high=1, medium=4, low=0, lowest=0)],
-        ['priority', True, namedtuple('Priority', 'critical high medium low lowest')(critical=1, high=1, medium=4, low=0, lowest=0)]
+        ['priority', True, namedtuple('Priority', 'critical high medium low lowest')(critical=1, high=1, medium=4, low=0, lowest=0)],
+        [namedtuple('Config', 'method field')(method='flatten', field='pipelines'), False, ['Foo', 'Bar', 'Bar']],
+        [namedtuple('Config', 'method field')(method='flatten', field='pipelines'), True, ['Bar', 'Foo']]
     )
     @patch('releaseessentials.managers.subjects.jira.Jira._client')
     @patch('releaseessentials.configuration.Configuration._load')
@@ -133,7 +137,13 @@ class TestFilter(TestCase):
                 mock_filter.projectmanager._client._client = DataProviders._get_client_for_collation()
                 mock_filter.run()
                 self.assertTrue(mock_filter.complete)
-                self.assertEqual(results, mock_filter.results)
+                self.assertIsInstance(_today(), datetime)
+                with patch(
+                    'releaseessentials.collation._today', new_callable=(
+                        lambda: datetime.strptime('2016-08-18', '%Y-%m-%d')
+                    )
+                ):
+                    self.assertEqual(results, mock_filter.results)
 
     @patch('releaseessentials.managers.subjects.jira.Jira._client')
     @patch('releaseessentials.configuration.Configuration._load')
@@ -156,4 +166,3 @@ class TestFilter(TestCase):
                 mock_filter.run()
                 self.assertTrue(mock_filter.complete)
                 self.assertEqual(7, len(mock_filter.results))
-

@@ -1,6 +1,7 @@
 """ Wrapper class onto python-jira """
 import os
 import re
+import urllib.parse
 from collections import namedtuple
 from releaseessentials.decorators import accepts
 from releaseessentials.interface import ManagerInterface
@@ -20,6 +21,8 @@ class Jira(object):
     _client = None
     _configuration = None
     _options = {}
+
+    MAX_RESULTS = 50
 
     def __init__(self):
         """ Initialise Jira """
@@ -102,7 +105,7 @@ class Jira(object):
         try:
             if isinstance(fields, list):
                 fields = ','.join(fields)
-            max_results = max_results if max_results != 0 else False
+            max_results = max_results if max_results != 0 else Jira.MAX_RESULTS
             results = self.client.search_issues(search_query, maxResults=max_results, fields=fields)
             Logger().debug('Got \'' + str(len(results)) + '\' results for query ' + search_query)
             return Jira._convert_results(results)
@@ -127,7 +130,9 @@ class Jira(object):
 
         @return a valid URL to an attachment
         """
-        return self._options['server'] + '/secure/attachment/' + attachment_id + filename
+        return self._options['server'] + '/secure/attachment/' + attachment_id + '/' + urllib.parse.urlencode(
+            {'': filename}
+        ).strip('=')
 
     def projects(self):
         """ Get a list of all projects defined in Jira """
@@ -185,11 +190,9 @@ class Jira(object):
             ) if hasattr(
                 issue.fields, 'customfield_10801'
             ) else None
-            item.pipelines = getattr(
-                issue.fields, 'customfield_10802'
-            ) if hasattr(
-                issue.fields, 'customfield_10802'
-            ) else None
+
+            if hasattr(issue.fields, 'customfield_10802'):
+                item.pipelines = [item.value for item in getattr(issue.fields, 'customfield_10802')]
 
             result_set.append(item)
         return result_set

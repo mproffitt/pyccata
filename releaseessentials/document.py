@@ -6,8 +6,8 @@ from releaseessentials.exceptions import InvalidModuleError
 from releaseessentials.exceptions import RequiredKeyError
 from releaseessentials.exceptions import ThreadFailedError
 from releaseessentials.configuration import Configuration
-from releaseessentials.managers.thread import ThreadManager
 from releaseessentials.managers.report import ReportManager
+from releaseessentials.managers.thread import ThreadManager
 from releaseessentials.factory import DocumentPartFactory
 from releaseessentials.log import Logger
 from releaseessentials.decorators import accepts

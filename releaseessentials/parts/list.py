@@ -37,8 +37,10 @@ class List(ThreadableDocument):
             try:
                 content = Filter(
                     content.query,
-                    max_results=getattr(content, 'max_results') if hasattr(content, 'max_results') else 1,
+                    max_results=getattr(content, 'max_results') if hasattr(content, 'max_results') else 0,
                     fields=getattr(content, 'fields') if hasattr(content, 'fields') else None,
+                    collate=(content.collate if hasattr(content, 'collate') else None),
+                    distinct=(content.distinct if hasattr(content, 'distinct') else False),
                     namespace=Configuration.NAMESPACE
                 )
                 # pylint: disable=broad-except
@@ -84,9 +86,11 @@ class List(ThreadableDocument):
     @accepts(ReportManager)
     def render(self, document):
         """ Render the paragraph text """
+        Logger().info('Writing list {0}'.format(self.title if self.title is not None else ''))
         if self.title is not None:
             document.add_heading(Replacements().replace(self.title), 3)
 
+        # Lists should be unique
         for item in self:
             # Only append the first result, discard any extra
             text = None

@@ -1,4 +1,5 @@
 """ Wrapper onto python-docx library """
+import os
 from releaseessentials.interface import ReportingInterface
 from releaseessentials.decorators import accepts
 from releaseessentials.log import Logger
@@ -14,6 +15,7 @@ class Docx(object):
     _client = None
     _configuration = None
     _run = None
+    _template_file = None
 
     MAXWIDTH = 5.7
 
@@ -26,11 +28,22 @@ class Docx(object):
     def client(self):
         """ Get the client interface """
         if self._client is None:
-            template_file = (
-                self._configuration.report.template if hasattr(self._configuration.report, 'template') else None
-            )
-            Logger().debug('Using template file ' + str(template_file))
-            self._client = Document(docx=template_file)
+            for location in self._configuration.locations:
+                try:
+                    template = self._configuration.report.template if hasattr(
+                        self._configuration.report, 'template'
+                    ) else None
+
+                    Logger().debug('Checking for template file in \'{0}\''.format(location))
+                    template_file = os.path.join(str(location), str(template))
+                    with open(template_file):
+                        self._template_file = template_file
+                        Logger().info('Using template file ' + str(template_file))
+                        break
+                except (IOError, TypeError):
+                    pass
+
+            self._client = Document(docx=self._template_file)
         return self._client
 
     @accepts(str, style=(None, str))
@@ -116,11 +129,7 @@ class Docx(object):
         """
         Adds the document contents to a single table cell for display in email
         """
-        template_file = (
-            self._configuration.report.template if hasattr(self._configuration.report, 'template') else None
-        )
-        Logger().debug('Using template file ' + str(template_file))
-        document = Document(docx=template_file)
+        document = Document(docx=self._template_file)
         table = document.add_table(rows=1, cols=1)
         table.autofit = False
 

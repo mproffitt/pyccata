@@ -63,14 +63,16 @@ class Section(ThreadableDocument):
     @accepts(ReportManager)
     def render(self, report):
         """ render the current object """
+        Logger().info('\033[1mWriting section {0}\033[0m'.format(self.title if self.title is not None else ''))
         if len(self._structure) > 0:
             using_tables = len(self._structure)
             for item in self._structure:
                 if isinstance(item, Table) and isinstance(item.rows, Filter):
-                    using_tables = using_tables - 1 if item.rows.results.total == 0 else using_tables
+                    using_tables = using_tables - 1 if len(item.rows.results) == 0 else using_tables
 
             if using_tables == 0:
                 # we probably have nothing to render
+                Logger().info('Empty section. Skipping...')
                 return
 
         report.add_heading(str(Replacements().replace(self._title)), self.level)

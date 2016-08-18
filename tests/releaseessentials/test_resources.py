@@ -72,6 +72,7 @@ class TestReplacements(TestCase):
         config.check = True
         self.assertTrue(config.check)
         self.assertIsInstance(config.replacements, Replacements)
+        config.replacements.find('FIX_VERSION').value = '28/Jul/2016'
 
         today = date.today()
         releasedate = today + timedelta((3 - today.weekday()) % 7)
@@ -92,7 +93,7 @@ class TestReplacements(TestCase):
         self.assertIsInstance(config.replacements, Replacements)
 
         today = date.today()
-        releasedate = today + timedelta((2 - today.weekday()) % 7)
+        releasedate = Calendar().get_last_day_of_month_ahead()
 
         value_format = '%A, %d %B %Y'
         reldate = datetime.strftime(
@@ -144,6 +145,23 @@ class TestReplacements(TestCase):
         replacement_validator.__call__(None, namespace, 'hello world')
 
         self.assertEquals('this is a test', replacements[0].value)
+
+    def test_replacements_find_returns_none_if_replacement_is_not_cofigured(self):
+        self.tearDown()
+
+        Config = namedtuple('Config', 'name type value overridable')
+        config = Config(name='test', type='string', value='this is a test', overridable=False)
+        class Namespace():
+            test=None
+            def __init__(self, test=None):
+                self.test = test
+
+        namespace = Namespace(test=None)
+
+        replacements = Replacements(configuration=[config])
+
+        self.assertEquals(None, replacements.find('helloworld'))
+
 
 class TestCalendar(TestCase):
 

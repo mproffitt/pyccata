@@ -1,3 +1,4 @@
+#!/bin/env python3
 """
 Primary module for generating release notes from Jira
 
@@ -31,7 +32,7 @@ class ReleaseInstructions(object):
     _document_controller = None
     _document_ready = False
     _document_title = 'MSS Platform Release Rollout and Rollback'
-    _regex = re.compile('^([0-9]*)?_?(\w+-\d+)_([a-zA-Z-]+)_([a-zA-Z0-9]+)_(UP|DOWN)_([0-9]*)?_?(\w+).[a-zA-Z]+$')
+    _regex = re.compile('^([0-9]*)?_?(\w+-\d+)_([a-zA-Z-]+)_(\w+)_(UP|DOWN)_([0-9]*)?_?(\w+)(.[a-zA-Z]+)?$', re.IGNORECASE)
 
     def __init__(self):
         """ initialise the ReleaseNote object """
@@ -70,7 +71,6 @@ class ReleaseInstructions(object):
         up_dir = os.path.join(destination, 'up')
         down_dir = os.path.join(destination, 'down')
         package_dir = os.path.join(os.getcwd(), 'packages')
-        print(package_dir)
         if not os.path.exists(package_dir):
             create_directory(package_dir)
 
@@ -80,14 +80,23 @@ class ReleaseInstructions(object):
 
         for attachment in attachments:
             if hasattr(ReleaseInstructions, attachment.extension.lower() + '_handler'):
-                Logger().debug('Calling handler \'' + attachment.extension + '_handler\'')
-                getattr(ReleaseInstructions, attachment.extension.lower() + '_handler')(
-                    destination,
-                    os.path.join(path, attachment.filename)
+                filename = os.path.join(path, attachment.filename)
+                Logger().debug(
+                    'Calling handler \'' + attachment.extension + '_handler\' for file ' + filename
                 )
 
+                try:
+                    getattr(ReleaseInstructions, attachment.extension.lower() + '_handler')(
+                        destination,
+                        os.path.join(path, attachment.filename)
+                    )
+                except Exception as exception:
+                    Logger().error('Failed to add file \'' + filename + '\' to archive')
+                    Logger().error('reason: ' + str(exception))
+
         filename = mkzip(destination, os.path.join(path, package_name + '.zip'))
-        os.rename(os.path.join(destination, filename), os.path.join(package_dir, filename))
+        shutil.move(os.path.join(destination, filename), os.path.join(package_dir, os.path.basename(filename)))
+        return os.path.basename(filename)
 
     @staticmethod
     def zip_handler(destination, filepath):
@@ -95,7 +104,13 @@ class ReleaseInstructions(object):
         create_directory(temporary_directory)
         unzip(filepath, temporary_directory, flatten=True)
 
-        sql_files = [filename for filename in os.listdir(temporary_directory) if re.search("^.*\.sql$", filename)]
+        sql_files = [
+            filename for filename in os.listdir(
+                temporary_directory
+            ) if re.search(
+                "^.*\.sql$", filename, re.IGNORECASE
+            )
+        ]
         if len(sql_files) == 0:
             Logger().error('Got zip file but it contains no SQL files. Skipping...')
         for sql in sql_files:
@@ -131,7 +146,7 @@ class ReleaseInstructions(object):
         # ANY error here and the file gets bounced back to the developer.
         except Exception as exception:
             Logger().error('Failed to handle SQL file \'' + os.path.basename(filepath) + '\'')
-            Logger().error(exception)
+            Logger().error('reason: ' +  str(exception))
 
     @staticmethod
     def _sql_filename(filename):

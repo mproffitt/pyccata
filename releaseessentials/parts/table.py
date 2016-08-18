@@ -15,7 +15,7 @@ class Table(ThreadableDocument):
     """
     Create a table from the specified structure
     """
-    MAX_ROWS = 5
+    MAX_ROWS = 0
 
     _rows = []
     _columns = []
@@ -34,7 +34,7 @@ class Table(ThreadableDocument):
         Creates the table
 
         @param rows list    A list of row data to add
-        @param columns list    A list of column headings
+        @param columns list A list of column headings
         @param style string The style to draw the table
         """
         #pylint: disable=arguments-differ
@@ -49,6 +49,7 @@ class Table(ThreadableDocument):
                 Logger().warning(exception)
         else:
             self._rows = self._parse_content(rows)
+
         self._columns = columns
         self._style = style
 
@@ -84,7 +85,7 @@ class Table(ThreadableDocument):
 
         @return Filter
         """
-        cell_filter = Filter(
+        return Filter(
             cell_content.query,
             max_results=(cell_content.max_results if hasattr(cell_content, 'max_results') else Table.MAX_ROWS),
             fields=(cell_content.fields if hasattr(cell_content, 'fields') else []),
@@ -92,7 +93,6 @@ class Table(ThreadableDocument):
             distinct=(cell_content.distinct if hasattr(cell_content, 'distinct') else False),
             namespace=Configuration.NAMESPACE
         )
-        return cell_filter
 
     def run(self):
         while not self._complete:
@@ -119,8 +119,10 @@ class Table(ThreadableDocument):
 
         @param report ReportManager
         """
+        Logger().info('Writing table {0}'.format(self.title if self.title is not None else ''))
         if isinstance(self._rows, Filter):
-            if self._rows.results.total == 0:
+            if len(self._rows.results) == 0:
+                Logger().info('Empty table. Skipping...')
                 return
             results = self._rows.results
             fields = self._rows.fields

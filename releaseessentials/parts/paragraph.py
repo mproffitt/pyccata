@@ -3,6 +3,7 @@ from releaseessentials.managers.report import ReportManager
 from releaseessentials.abstract import ThreadableDocument
 from releaseessentials.decorators import accepts
 from releaseessentials.resources  import Replacements
+from releaseessentials.log import Logger
 
 class Paragraph(ThreadableDocument):
     """ Create a new Paragraph object """
@@ -22,6 +23,7 @@ class Paragraph(ThreadableDocument):
     @accepts(ReportManager)
     def render(self, document):
         """ Render the paragraph text """
+        Logger().info('Writing paragraph')
         if isinstance(self._content, str):
             document.add_paragraph(Replacements().replace(self._content))
         else:

@@ -87,7 +87,7 @@
         {
             "name": "FIX_VERSION",
             "type": "fix_version",
-            "value": "28/Jul/2016",
+            "value": "%Y-%m-%d",
             "overridable": false
         },
         {
@@ -115,6 +115,7 @@
         "title": "Test document structure for WeeklyReport/Helicopter view",
         "subtitle": "Week 41",
         "abstract": "This document provides the overall breakdown of stuff which may or may not exist in Jira\n\nEach section starts with a status bar showing what is in todo, what is in progress and what has been completed.\n\nSubsequent to this, a more detailed breakdown is provided where relevant.",
+        "template": "templates/GreenTemplate",
         "sections": [
             {
                 "title": "hello world",

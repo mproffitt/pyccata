@@ -1,3 +1,4 @@
+import os
 
 from unittest import TestCase
 from mock import patch, call, PropertyMock
@@ -25,15 +26,19 @@ class TestDocx(TestCase):
         mock_log.return_value = None
         Logger._instance = mock_log
         self._document = Document()
+        path = os.path.dirname(os.path.realpath(__file__ + '../../../../../'))
+        self._path = os.path.join(path, os.path.join('tests', 'conf'))
 
     def tearDown(self):
         self._document = None
 
+    @patch('releaseessentials.configuration.Configuration._get_locations')
     @patch('releaseessentials.configuration.Configuration._load')
     @patch('docx.document.Document.add_paragraph')
-    def test_add_paragraph(self, mock_document, mock_load):
+    def test_add_paragraph(self, mock_document, mock_load, mock_locations):
         with patch('releaseessentials.configuration.Configuration.reporting', new_callable=PropertyMock) as mock_reporting:
             with patch('releaseessentials.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
+                mock_locations.return_value = [self._path]
                 mock_config.return_value = DataProviders._get_config_for_test()
                 mock_reporting.return_value = 'docx'
                 r = ReportManager()
@@ -160,7 +165,7 @@ class TestDocx(TestCase):
     def test_format_for_email(self, mock_run, mock_load):
         with patch('releaseessentials.configuration.Configuration.reporting', new_callable=PropertyMock) as mock_reporting:
             with patch('releaseessentials.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
-                mock_config.return_value = DataProviders._get_config_for_test()
+                mock_config.return_value = DataProviders._get_config_for_test_no_template()
                 mock_reporting.return_value = 'docx'
                 r = ReportManager()
                 r.add_paragraph('hello world')

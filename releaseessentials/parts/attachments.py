@@ -66,11 +66,10 @@ class Attachments(ThreadableDocument):
         attachments_function = self.projectmanager.server.attachments
         for item in self._content:
             with open(os.path.join(self._output_path, item.filename), 'wb') as output_file:
-                Logger().debug('Downloading file \'' + item.filename + '\'')
+                attachment_url = attachments_function(str(item.attachment_id), item.filename)
+                Logger().info('Downloading file \'' + item.filename + '\' from \'' + attachment_url + '\'')
                 curl_instance = pycurl.Curl()
-                curl_instance.setopt(
-                    curl_instance.URL, attachments_function(str(item.attachment_id), item.filename)
-                )
+                curl_instance.setopt(curl_instance.URL, attachment_url)
 
                 curl_instance.setopt(curl_instance.WRITEDATA, output_file)
                 curl_instance.perform()

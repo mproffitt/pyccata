@@ -46,6 +46,11 @@ class Configuration(object):
         return os.environ.get('XDG_CONFIG_HOME') if os.environ.get('XDG_CONFIG_HOME') is not None else ''
 
     @property
+    def locations(self):
+        """ public synonym for Configuration._get_locations """
+        return self._get_locations()
+
+    @property
     def manager(self):
         """ Get the configured manager """
         return self._manager

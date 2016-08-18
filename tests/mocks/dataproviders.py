@@ -192,9 +192,11 @@ class DataProviders(object):
         Assignee = namedtuple('Assignee', 'name displayName')
         Field = namedtuple('Field', 'assignee project priority created resolutiondate')
         FieldWithSummary = namedtuple('FieldWithSummary', 'assignee project priority created resolutiondate summary')
-
+        FieldWithSummaryAndPipelines = namedtuple('FieldWithSummary', 'assignee project priority created resolutiondate summary customfield_10802')
+        Pipeline = namedtuple('Pipeline', 'value')
         Issue = namedtuple('Issue', 'key fields')
         Priority = namedtuple('Priority', 'name id')
+
         data = [
             Issue(
                 key='ATP-114',
@@ -249,32 +251,33 @@ class DataProviders(object):
             ),
             Issue(
                 key='ATP-155',
-                fields=FieldWithSummary(
+                fields=FieldWithSummaryAndPipelines(
                     assignee=Assignee(name='proffitt', displayName='Martin Proffitt'),
                     project=Project(key='ATP', name='Another Test Project'),
                     priority=Priority(name='3 - Medium', id=3),
                     created='2014-05-07T15:09:29.000+0000',
                     resolutiondate='2016-05-10T12:49:38.000+0000',
-                    summary='This is a test line'
+                    summary='This is a test line',
+                    customfield_10802=[Pipeline(value='Foo'), Pipeline(value='Bar')]
                 )
             ),
             Issue(
                 key='ATP-157',
-                fields=FieldWithSummary(
+                fields=FieldWithSummaryAndPipelines(
                     assignee=Assignee(name='proffitt', displayName='Martin Proffitt'),
                     project=Project(key='ATP', name='Another Test Project'),
                     priority=Priority(name='6 - Deadly', id=6),
                     created='2014-05-07T15:09:29.000+0000',
                     resolutiondate='2016-05-10T12:49:38.000+0000',
-                    summary='This is a test line'
+                    summary='This is a test line',
+                    customfield_10802=[Pipeline(value='Bar')]
                 )
             )
         ]
         return data
 
-
     @staticmethod
-    def _get_config_for_test(port='8080', manager='jira', reporting='docx'):
+    def _get_config_for_test_no_template(port='8080', manager='jira', reporting='docx'):
         ReportType = namedtuple('Report', 'title subtitle abstract path datapath sections')
         Config = namedtuple('Config', 'manager reporting report jira server port username password')
         Report = ReportType(
@@ -282,6 +285,65 @@ class DataProviders(object):
             subtitle='sub title test',
             path='/path/to',
             datapath='tests/releaseessentials/data',
+            sections=[None],
+            abstract='An abstract block of text.\n\nSpanning two paragraphs...'
+        )
+        Jira   = Config(
+            manager  = None,
+            reporting= None,
+            report   = None,
+            jira     = None,
+            server   = 'http://jira.local',
+            port     = port,
+            username = 'test',
+            password = 'letmein'
+        )
+
+        return Config(
+            manager  = manager,
+            reporting= reporting,
+            jira     = Jira,
+            report   = Report,
+            server   = None,
+            port     = None,
+            username = None,
+            password = None
+        )
+
+    @staticmethod
+    def _get_config_for_test_without_report(port='8080', manager='jira', reporting='docx'):
+        Config = namedtuple('Config', 'manager reporting jira server port username password')
+        Jira   = Config(
+            manager  = None,
+            reporting= None,
+            jira     = None,
+            server   = 'http://jira.local',
+            port     = port,
+            username = 'test',
+            password = 'letmein'
+        )
+
+        return Config(
+            manager  = manager,
+            reporting= reporting,
+            jira     = Jira,
+            server   = None,
+            port     = None,
+            username = None,
+            password = None
+        )
+
+
+    @staticmethod
+    def _get_config_for_test(port='8080', manager='jira', reporting='docx'):
+        ReportType = namedtuple('Report', 'title subtitle abstract path datapath sections template')
+        Config = namedtuple('Config', 'manager reporting report jira server port username password')
+        Report = ReportType(
+            title='hello world',
+            subtitle='sub title test',
+            path='/path/to',
+            datapath='tests/releaseessentials/data',
+            template='templates/GreenTemplate.docx',
             sections=[None],
             abstract='An abstract block of text.\n\nSpanning two paragraphs...'
         )

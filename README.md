@@ -13,8 +13,8 @@ Key functionality
 Road map
 --------
 
-### Version 1.2 [October/November 2016] ###
-Version 1.2 of this application will see the following functionality included
+### Version 1.3 [October/November 2016] ###
+Version 1.3 of this application will see the following functionality included
 
 * Documentation on how to write the config files including available and required fields
 * Ability to generate future fix versions against the format you specify
@@ -22,8 +22,8 @@ Version 1.2 of this application will see the following functionality included
 * Ability to output graphs
 * Simple command pipeline runner (Bash commands)
 
-### Version 1.3 [January 2017] ###
-Version 1.3 of this application suite will see:
+### Version 1.4 [January 2017] ###
+Version 1.4 of this application suite will see:
 
 * Extended pipeline runner (direct `R` language inclusion using r2py)
 * Integration to Jenkins for larger pipeline support

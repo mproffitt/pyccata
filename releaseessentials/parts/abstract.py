@@ -4,6 +4,7 @@ from releaseessentials.decorators import accepts
 from releaseessentials.managers.report import ReportManager
 from releaseessentials.configuration import Configuration
 from releaseessentials.resources  import Replacements
+from releaseessentials.log import Logger
 
 class Abstract(object):
     """ class to parse the abstract """
@@ -26,5 +27,6 @@ class Abstract(object):
 
         @param document ReportManager
         """
+        Logger().info('Adding section abstract')
         for paragraph in self._content:
             document.add_paragraph(Replacements().replace(paragraph))
