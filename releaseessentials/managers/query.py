@@ -37,10 +37,9 @@ class QueryManager(list):
         """
         observed = False
         for query in self:
-            if (query.query == item.query
-                    and query.max_results == item.max_results
-                    and query.fields == item.fields):
-                query.append(item)
+            if query.query == item.query and query.max_results == item.max_results and query.fields == item.fields:
+                if not item in query.observers:
+                    query.append(item)
                 observed = True
                 break
         if not observed:

@@ -9,7 +9,9 @@ from releaseessentials.interface import ObservableInterface
 from releaseessentials.decorators import accepts
 from releaseessentials.threading import Threadable
 from releaseessentials.managers.project import ProjectManager
+
 from releaseessentials.resources import ResultList
+from releaseessentials.resources import MultiResultList
 from releaseessentials.resources import Replacements
 
 class Filter(Threadable):
@@ -112,7 +114,6 @@ class Filter(Threadable):
         self._fields = fields
         self._observers = []
         self._max_results = max_results
-
         self._results = ResultList(collate=collate, distinct=distinct, namespace=namespace)
 
     @accepts(ObservableInterface)
@@ -141,13 +142,20 @@ class Filter(Threadable):
         try:
             assert self.projectmanager is not None
             if not self._complete:
-                self._results.extend(
-                    self.projectmanager.search_issues(
-                        search_query=self.query,
-                        max_results=self.max_results,
-                        fields=self.fields
-                    )
+                results = self.projectmanager.search_issues(
+                    search_query=self.query,
+                    max_results=self.max_results,
+                    fields=self.fields
                 )
+                if isinstance(results, MultiResultList):
+                    # pylint: disable=protected-access
+                    # We need access to results collation method
+                    # in order to ensure collation is passed into sub-lists
+                    results.collate = self._results._collate
+                    results.distinct = self._results._distinct
+                    self._results = results
+                else:
+                    self._results.extend(results)
 
             self.notify(False)
             self._complete = True

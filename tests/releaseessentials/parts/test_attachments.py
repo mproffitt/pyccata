@@ -14,6 +14,7 @@ from tests.mocks.dataproviders import DataProviders
 from releaseessentials.filter import Filter
 from releaseessentials.parts.attachments import Attachments
 from releaseessentials.exceptions import InvalidFilenameError
+from releaseessentials.exceptions import InvalidCallbackError
 
 @ddt
 class TestAttachments(TestCase):
@@ -358,3 +359,60 @@ class TestAttachments(TestCase):
         with patch('releaseessentials.filter.Filter.failed', return_value=True):
             attachments.run()
             self.assertEquals(str(attachments._content.failure), 'The specified file does not exist')
+
+    @patch('builtins.open', create=True)
+    @patch('jira.client.JIRA.__init__')
+    @patch('jira.client.JIRA.search_issues')
+    @patch('releaseessentials.managers.subjects.jira.Jira.server', new_callable=PropertyMock)
+    @patch('releaseessentials.configuration.Configuration._get_locations')
+    @unpack
+    def test_run_raises_type_error_if_attachments_callback_function_is_not_set(
+        self,
+        mock_config_list,
+        mock_results,
+        mock_jira_results,
+        mock_jira_client,
+        mock_open
+    ):
+        mock_jira_client.return_value = None
+        mock_config_list.return_value = [self._path]
+        Configuration.NAMESPACE = 'releaseessentials'
+        report = ReportManager()
+        report.add_callback('attachments', None)
+        mock_jira_results.return_value = DataProviders._test_data_for_attachments()
+        server = namedtuple('Server', 'server_address attachments')
+        mock_results.return_value = server(server_address=None, attachments=None)
+
+        self.assertIsInstance(Configuration().replacements, Replacements)
+
+        Config = namedtuple('Config', 'query fields collate output_path')
+        config = Config(
+            query='project=test and attachments is not empty',
+            fields=[
+                'key',
+                'attachments'
+            ],
+            collate='zip',
+            output_path='/tmp/{FIX_VERSION}'
+        )
+
+        attachments = None
+        with patch('os.makedirs') as mock_os:
+            attachments = Attachments(self._thread_manager, config)
+            mock_os.assert_called_with('/tmp/' + Configuration().replacements.replace('{FIX_VERSION}'))
+
+        self._thread_manager.append(attachments)
+
+        with patch('pycurl.Curl') as mock_curl:
+            with patch('pycurl.Curl.setopt') as mock_setopt:
+                with patch('pycurl.Curl.perform') as mock_perform:
+                    with patch('pycurl.Curl.close') as mock_close:
+                        Curl = namedtuple('Curl', 'URL WRITEDATA setopt perform close')
+                        mock_curl.return_value = Curl(URL=None, WRITEDATA=None, setopt=mock_setopt, perform=mock_perform, close=mock_close)
+                        with self.assertRaises(InvalidCallbackError):
+                            self._thread_manager.execute()
+                        self.assertIsInstance(attachments.failure, InvalidCallbackError)
+                        mock_setopt.assert_not_called()
+                        mock_perform.assert_not_called()
+                        mock_close.assert_not_called()
+                        mock_open.assert_not_called()

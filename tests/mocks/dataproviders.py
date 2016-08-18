@@ -13,6 +13,7 @@ from releaseessentials.interface import ManagerInterface
 from releaseessentials.interface import ReportingInterface
 from releaseessentials.parts.paragraph import Paragraph
 from releaseessentials.resources import *
+import pandas
 
 class TestObservableThread(Threadable):
     __implements__ = (ObservableInterface,)
@@ -110,6 +111,28 @@ class DataProviders(object):
         JIRA = namedtuple('JIRA', 'search_issues projects')
         return JIRA(
             search_issues=lambda x, maxResults, fields: DataProviders._test_data_for_collation(),
+            projects=lambda: DataProviders._test_data_for_projects()
+        )
+
+    @staticmethod
+    def _get_client_for_multi_results():
+        results_set_one = ResultList(name='test results')
+        result_issue = Issue()
+        result_issue.description = 'This is a test item'
+        results_set_one.append(result_issue)
+
+        results_set_two = ResultList(name='another set of tests')
+        another_result_issue = Issue()
+        another_result_issue.description = 'This is a test item'
+        results_set_two.append(another_result_issue)
+
+        multi_results = MultiResultList()
+        multi_results.combine = False
+        multi_results.append(results_set_one)
+        multi_results.append(results_set_two)
+        JIRA = namedtuple('JIRA', 'search_issues projects')
+        return JIRA(
+            search_issues=lambda x, maxResults, fields: None,
             projects=lambda: DataProviders._test_data_for_projects()
         )
 
@@ -510,4 +533,146 @@ class DataProviders(object):
     def test_callback(filepath, content):
         return [
             'TestFile.zip'
+        ]
+
+    @staticmethod
+    def get_csv_results():
+        return [
+            pandas.DataFrame([
+                {
+                    'read_count': 12,
+                    'peak_id':None,
+                    'chromasone': 'chr1',
+                    'start': 1234,
+                    'end': 5413,
+                    'strand':None,
+                    'peak_score':None,
+                    'focus_ratio':None,
+                    'annotation':None,
+                    'detailed_annotation':None,
+                    'distance_to_tss':None,
+                    'nearest_promoter_id':None,
+                    'entrez_id':None,
+                    'nearest_unigene':None,
+                    'nearest_refseq':None,
+                    'nearest_ensemble':None,
+                    'gene_name':None,
+                    'gene_alias':None,
+                    'gene_description':None,
+                    'gene_type':None
+                },
+                {
+                    'read_count': 92,
+                    'peak_id':None,
+                    'chromasone': 'chr1',
+                    'start': 8888,
+                    'end': 9999,
+                    'strand':None,
+                    'peak_score':None,
+                    'focus_ratio':None,
+                    'annotation':None,
+                    'detailed_annotation':None,
+                    'distance_to_tss':None,
+                    'nearest_promoter_id':None,
+                    'entrez_id':None,
+                    'nearest_unigene':None,
+                    'nearest_refseq':None,
+                    'nearest_ensemble':None,
+                    'gene_name':None,
+                    'gene_alias':None,
+                    'gene_description':None,
+                    'gene_type':None
+                },
+                {
+                    'read_count': 47,
+                    'peak_id':None,
+                    'chromasone': 'gfi1',
+                    'start': 1238,
+                    'end': 6511,
+                    'strand':None,
+                    'peak_score':None,
+                    'focus_ratio':None,
+                    'annotation':None,
+                    'detailed_annotation':None,
+                    'distance_to_tss':None,
+                    'nearest_promoter_id':None,
+                    'entrez_id':None,
+                    'nearest_unigene':None,
+                    'nearest_refseq':None,
+                    'nearest_ensemble':None,
+                    'gene_name':None,
+                    'gene_alias':None,
+                    'gene_description':None,
+                    'gene_type':None
+                }
+            ], columns=BedFileItem().keys()),
+
+            pandas.DataFrame([
+                {
+                    'read_count': 2,
+                    'peak_id':None,
+                    'chromasone': 'chr1',
+                    'start': 134,
+                    'end': 513,
+                    'strand':None,
+                    'peak_score':None,
+                    'focus_ratio':None,
+                    'annotation':None,
+                    'detailed_annotation':None,
+                    'distance_to_tss':None,
+                    'nearest_promoter_id':None,
+                    'entrez_id':None,
+                    'nearest_unigene':None,
+                    'nearest_refseq':None,
+                    'nearest_ensemble':None,
+                    'gene_name':None,
+                    'gene_alias':None,
+                    'gene_description':None,
+                    'gene_type':None
+                },
+                {
+                    'read_count': 136,
+                    'peak_id':None,
+                    'chromasone': 'gfi1',
+                    'start': 8988,
+                    'end': 9899,
+                    'strand':None,
+                    'peak_score':None,
+                    'focus_ratio':None,
+                    'annotation':None,
+                    'detailed_annotation':None,
+                    'distance_to_tss':None,
+                    'nearest_promoter_id':None,
+                    'entrez_id':None,
+                    'nearest_unigene':None,
+                    'nearest_refseq':None,
+                    'nearest_ensemble':None,
+                    'gene_name':None,
+                    'gene_alias':None,
+                    'gene_description':None,
+                    'gene_type':None
+                },
+                {
+                    'read_count': 800,
+                    'peak_id':None,
+                    'chromasone': 'gfi1',
+                    'start': 1239,
+                    'end': 6512,
+                    'strand':None,
+                    'peak_score':None,
+                    'focus_ratio':None,
+                    'annotation':None,
+                    'detailed_annotation':None,
+                    'distance_to_tss':None,
+                    'nearest_promoter_id':None,
+                    'entrez_id':None,
+                    'nearest_unigene':None,
+                    'nearest_refseq':None,
+                    'nearest_ensemble':None,
+                    'gene_name':None,
+                    'gene_alias':None,
+                    'gene_description':None,
+                    'gene_type':None
+                }
+            ], columns=BedFileItem().keys())
         ]

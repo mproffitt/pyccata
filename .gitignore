@@ -4,5 +4,7 @@ cover
 doc
 dist
 build
-JiraWeeklyReport.egg-info
+*.egg-info
 *.docx
+*/*.bed
+.~lock.*

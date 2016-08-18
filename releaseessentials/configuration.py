@@ -3,14 +3,14 @@ Configuration module
 """
 import os
 import json
-from collections             import namedtuple
-from argparse                import ArgumentParser
-from releaseessentials.log        import Logger
+from collections import namedtuple
+from argparse import ArgumentParser
+from releaseessentials.log import Logger
 from releaseessentials.decorators import accepts
-from releaseessentials.helpers    import class_exists
+from releaseessentials.helpers import class_exists
 from releaseessentials.exceptions import RequiredKeyError
 from releaseessentials.exceptions import InvalidClassError
-from releaseessentials.resources  import Replacements
+from releaseessentials.resources import Replacements
 
 class Configuration(object):
     """

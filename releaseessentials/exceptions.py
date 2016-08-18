@@ -119,6 +119,10 @@ class ThreadFailedError(RuntimeError):
     """ Called when a thread has failed for an unknown reason """
     pass
 
+class ThreadNotStartedError(RuntimeError):
+    """ Called when a thread has not been started """
+    pass
+
 class InvalidFilenameError(ValueError):
     """ Called when the filename provided does not match a specific format """
     def __init__(self, message):
@@ -127,3 +131,7 @@ class InvalidFilenameError(ValueError):
 
     def __str__(self):
         return self.error
+
+class InvalidCallbackError(RuntimeError):
+    """ Raised when a required callback is attempted but not set """
+    pass

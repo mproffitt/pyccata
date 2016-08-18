@@ -72,6 +72,22 @@ class ManagerInterface(metaclass=ABCMeta):
         """
         raise NotImplementedError('Method must be implemented by a child')
 
+    @abstractproperty
+    def server(self):
+        """
+        Gets information pertaining to the server
+
+        The server property should be a read only property which returns
+        a struct or namedtuple containing the following information.
+
+        @code
+        {
+            server_address: string
+            attachments: bound method to call back on to
+        }
+        """
+        raise NotImplementedError('Property must be implemented by a child')
+
 class ObservableInterface(metaclass=ABCMeta):
     """
     Interface for Observable objects
@@ -176,4 +192,16 @@ class ResultListInterface(metaclass=ABCMeta):
     @abstractproperty
     def total(self):
         """ Get the total results returned by this result set """
+        raise NotImplementedError('Method must be implemented by a child')
+
+class ResultListItemInterface(metaclass=ABCMeta):
+    """
+    Interface defining what can be placed into a ResultList
+    """
+    # pylint: disable=too-few-public-methods
+    # This interface doesn't require many methods
+
+    @abstractmethod
+    def keys(self):
+        """ Get the keys on this particular object """
         raise NotImplementedError('Method must be implemented by a child')

@@ -12,6 +12,9 @@ from releaseessentials.managers.project import ProjectManager
 from tests.mocks.dataproviders import DataProviders
 from releaseessentials.log import Logger
 from releaseessentials.collation import _today
+from releaseessentials.resources import ResultList
+from releaseessentials.resources import MultiResultList
+from releaseessentials.resources import Issue
 
 @ddt
 class TestFilter(TestCase):
@@ -22,7 +25,6 @@ class TestFilter(TestCase):
         mock_log.return_value = None
         mock_parser.return_value = None
         Logger._instance = mock_log
-
 
     def tearDown(self):
         pass
@@ -106,6 +108,28 @@ class TestFilter(TestCase):
                 another_filter.start()
                 self.assertEqual(len(mock_filter.results), len(DataProviders._test_data_for_search_results()))
 
+    @patch('releaseessentials.managers.subjects.jira.Jira._client')
+    @patch('releaseessentials.configuration.Configuration._load')
+    def test_results_with_collation_method_that_doesnt_exist(self, mock_load, mock_jira_client):
+        collation = 'iamamethodwhichwillneverexist'
+        distinct = False
+        mock_jira_client.return_value = None
+        with patch('releaseessentials.configuration.Configuration.manager', new_callable=PropertyMock) as mock_manager:
+            with patch('releaseessentials.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
+                mock_config.return_value = DataProviders._get_config_for_test()
+                mock_manager.return_value = 'jira'
+                mock_filter = Filter(
+                    'assignee = "Bob"',
+                    collate=collation,
+                    distinct=distinct,
+                    namespace='releaseessentials'
+                )
+                mock_filter.projectmanager = ProjectManager()
+                mock_filter.projectmanager._client._client = DataProviders._get_client_for_collation()
+                mock_filter.run()
+                self.assertTrue(mock_filter.complete)
+                self.assertEqual(7, len(mock_filter.results))
+
     @data(
         [namedtuple('Config', 'method field')(method='total_by_field', field='summary'), False, 3],
         [namedtuple('Config', 'method field')(method='total_by_field', field='summary'), True, 2],
@@ -144,25 +168,3 @@ class TestFilter(TestCase):
                     )
                 ):
                     self.assertEqual(results, mock_filter.results)
-
-    @patch('releaseessentials.managers.subjects.jira.Jira._client')
-    @patch('releaseessentials.configuration.Configuration._load')
-    def test_results_with_collation_method_that_doesnt_exist(self, mock_load, mock_jira_client):
-        collation = 'iamamethodwhichwillneverexist'
-        distinct = False
-        mock_jira_client.return_value = None
-        with patch('releaseessentials.configuration.Configuration.manager', new_callable=PropertyMock) as mock_manager:
-            with patch('releaseessentials.configuration.Configuration._configuration', new_callable=PropertyMock) as mock_config:
-                mock_config.return_value = DataProviders._get_config_for_test()
-                mock_manager.return_value = 'jira'
-                mock_filter = Filter(
-                    'assignee = "Bob"',
-                    collate=collation,
-                    distinct=distinct,
-                    namespace='releaseessentials'
-                )
-                mock_filter.projectmanager = ProjectManager()
-                mock_filter.projectmanager._client._client = DataProviders._get_client_for_collation()
-                mock_filter.run()
-                self.assertTrue(mock_filter.complete)
-                self.assertEqual(7, len(mock_filter.results))

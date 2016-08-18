@@ -84,8 +84,20 @@ class ThreadManager(list):
             super().append(item)
         self._managed_threads += 1
 
+    def clear(self):
+        """
+        Truncates the managed threads
+        """
+        self._managed_threads = 0
+        self._complete_threads = 0
+        self._querymanager.clear()
+        self._pool.clear()
+        self._complete = False
+        super().clear()
+
     def start(self):
         """ Sorts the list and then triggers execute, setting _complete on execute completion """
+        # make sure the client is loaded
         self.sort(key=lambda x: x.PRIORITY, reverse=True)
         self._complete = self.execute()
 

@@ -4,25 +4,19 @@ import re
 import urllib.parse
 from collections import namedtuple
 from releaseessentials.decorators import accepts
-from releaseessentials.interface import ManagerInterface
-from releaseessentials.configuration import Configuration
+from releaseessentials.abstract import ManagableAbstract
 from releaseessentials.log import Logger
 from releaseessentials.exceptions import InvalidConnectionError
 from releaseessentials.exceptions import InvalidQueryError
 from releaseessentials.resources import ResultList
-from releaseessentials.resources import Issue, Attachment
+from releaseessentials.resources import Issue
+from releaseessentials.resources import Attachment
 
 from jira.client import JIRA
 from jira.exceptions import JIRAError
 
-class Jira(object):
+class Jira(ManagableAbstract):
     """ Jira management and searching class """
-    __implements__ = (ManagerInterface,)
-    _client = None
-    _configuration = None
-    _options = {}
-
-    MAX_RESULTS = 50
 
     def __init__(self):
         """ Initialise Jira """
@@ -79,17 +73,6 @@ class Jira(object):
                     exception.headers
                 )
         return self._client
-
-    @property
-    def configuration(self):
-        """
-        Lazy load the Configuration singleton instance
-
-        @return Configuration
-        """
-        if self._configuration is None:
-            self._configuration = Configuration()
-        return self._configuration
 
     @accepts(search_query=str, max_results=(bool, int), fields=(None, list))
     def search_issues(self, search_query='', max_results=0, fields=None):

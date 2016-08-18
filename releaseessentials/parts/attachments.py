@@ -16,6 +16,7 @@ from releaseessentials.resources  import Replacements
 from releaseessentials.log import Logger
 from releaseessentials.helpers import create_directory
 from releaseessentials.configuration import Configuration
+from releaseessentials.exceptions import InvalidCallbackError
 
 class Attachments(ThreadableDocument):
     """
@@ -56,7 +57,13 @@ class Attachments(ThreadableDocument):
         if len(self._content) == 0:
             Logger().warning('No Attachments to download. Skipping.')
             return
-        self._download_attachments()
+
+        try:
+            self._download_attachments()
+        except InvalidCallbackError as exception:
+            Logger().error(exception)
+            self.failure = exception
+
 
     def _download_attachments(self):
         """
@@ -64,6 +71,9 @@ class Attachments(ThreadableDocument):
         """
         # attachments function is a callback to the project manager
         attachments_function = self.projectmanager.server.attachments
+        if not attachments_function or attachments_function is None:
+            raise InvalidCallbackError('attachments callback function has not been set')
+
         for item in self._content:
             with open(os.path.join(self._output_path, item.filename), 'wb') as output_file:
                 attachment_url = attachments_function(str(item.attachment_id), item.filename)
@@ -74,6 +84,7 @@ class Attachments(ThreadableDocument):
                 curl_instance.setopt(curl_instance.WRITEDATA, output_file)
                 curl_instance.perform()
                 curl_instance.close()
+
 
     @accepts(ReportManager)
     def render(self, document):
