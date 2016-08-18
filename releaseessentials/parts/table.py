@@ -7,6 +7,8 @@ from releaseessentials.abstract import ThreadableDocument
 from releaseessentials.decorators import accepts
 from releaseessentials.filter import Filter
 from releaseessentials.log import Logger
+
+from releaseessentials.resources  import MultiResultList
 from releaseessentials.resources  import Replacements
 from releaseessentials.configuration import Configuration
 
@@ -20,6 +22,7 @@ class Table(ThreadableDocument):
     _rows = []
     _columns = []
     _style = None
+    _report = None
 
     @property
     def rows(self):
@@ -119,25 +122,61 @@ class Table(ThreadableDocument):
 
         @param report ReportManager
         """
+        self._report = report
         Logger().info('Writing table {0}'.format(self.title if self.title is not None else ''))
         if isinstance(self._rows, Filter):
             if len(self._rows.results) == 0:
                 Logger().info('Empty table. Skipping...')
                 return
             results = self._rows.results
+            if isinstance(results, MultiResultList):
+                if not results.combine:
+                    return self._write_multi(results)
+                results = [item for result in results for item in result]
             fields = self._rows.fields
             self._rows = []
             for issue in results:
                 self._rows.append([getattr(issue, field.replace(' ', '_').lower()) for field in fields])
 
         if self.title is not None:
-            report.add_heading(Replacements().replace(self.title), 3)
+            self._write_heading()
+        self._write_table(self._rows)
 
-        data = self._rows if isinstance(self._rows, list) else self._rows.results
+    def _write_heading(self, alternate_title=''):
+        """
+        Writes a heading for the table
+
+        @param alternate_title string An optional title to use in place
+        """
+
+        level = 3 if alternate_title == '' else 4
+        title = self.title if alternate_title == '' else alternate_title
+        self._report.add_heading(Replacements().replace(title), level)
+
+    @accepts(MultiResultList)
+    def _write_multi(self, results):
+        """
+        Writes a set of ResultList items in individual tables
+
+        @param results MultiResultList
+        """
+        fields = self._rows.fields
+        for resultset in results:
+            rows = []
+            for issue in resultset:
+                rows.append([getattr(issue, field.replace(' ', '_').lower()) for field in fields])
+            self._write_heading(resultset.name if hasattr(resultset, 'name') else '')
+            self._write_table(rows)
+
+    def _write_table(self, results):
+        """
+        Write out a set of results as a table
+        """
+        data = results if isinstance(results, list) else results.results
         for index, row in enumerate(data):
             data[index] = [Replacements().replace(cell) if isinstance(cell, str) else cell for cell in row]
 
-        report.add_table(
+        self._report.add_table(
             headings=self._columns,
             data=data,
             style=self._style

@@ -1,14 +1,73 @@
 import os
 import calendar
-from unittest                   import TestCase
-from mock                       import patch, PropertyMock
-from ddt                        import ddt, data, unpack
-from collections                import namedtuple
+from unittest import TestCase
+from mock import patch, PropertyMock
+from ddt import ddt, data, unpack
+from collections import namedtuple
+import pandas as pd
 from releaseessentials.configuration import Configuration
+
+
+from releaseessentials.resources import Issue
+from releaseessentials.resources import BedFileItem
+from releaseessentials.resources import CommandLineResultItem
+from releaseessentials.resources import ResultList
+
 from releaseessentials.resources import Replacements
 from releaseessentials.resources import ReplacementsValidator
 from releaseessentials.resources import Calendar
 from datetime import datetime, date, timedelta
+
+
+class TestIssueTypes(TestCase):
+
+    def test_issue_keys_method(self):
+        issue = Issue()
+        self.assertEquals(20, len(issue.keys()))
+
+    def test_bed_file_keys(self):
+        bed_file = BedFileItem()
+        self.assertEquals(20, len(bed_file.keys()))
+
+    def test_command_line_result_keys(self):
+        command_line = CommandLineResultItem()
+        self.assertEquals(1, len(command_line.keys()))
+
+    def test_update_from_dict(self):
+        dictionary = {'line': 'hello world'}
+        command_line = CommandLineResultItem()
+        command_line.from_dict(dictionary)
+        self.assertEquals('hello world', command_line.line)
+
+    def test_to_series(self):
+        issue = Issue()
+        issue.key = 'ABC-123'
+        issue.summary = 'Hello world'
+        issue.issuetype = 'bug'
+
+        self.assertIsInstance(issue.series, pd.Series)
+
+class TestResultList(TestCase):
+    def test_result_list_from_pandas_dict(self):
+        dictionary = {
+            0: {'line': 'hello'},
+            1: {'line': 'world'}
+        }
+        result_list = ResultList()
+        result_list.dataframe = pd.DataFrame.from_dict(dictionary)
+        self.assertIsInstance(result_list.dataframe, pd.DataFrame)
+
+    def test_result_list_dataframe_returns_pandas_dict_if_called_directly(self):
+        resultset = ResultList(name='test results')
+        result_issue = Issue()
+        result_issue.description = 'This is a test item'
+        resultset.append(result_issue)
+
+        another_result_issue = Issue()
+        another_result_issue.description = 'This is a test item'
+        resultset.append(another_result_issue)
+
+        self.assertIsInstance(resultset.dataframe, pd.DataFrame)
 
 @ddt
 class TestReplacements(TestCase):
@@ -161,7 +220,6 @@ class TestReplacements(TestCase):
         replacements = Replacements(configuration=[config])
 
         self.assertEquals(None, replacements.find('helloworld'))
-
 
 class TestCalendar(TestCase):
 

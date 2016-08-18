@@ -8,36 +8,49 @@ import sys
 import calendar
 import importlib
 import inspect
+import subprocess
 from argparse import Action
 from datetime import datetime
+import pandas as pd
 from releaseessentials.log import Logger
 from releaseessentials.decorators import accepts
 from releaseessentials.interface import ResultListInterface
+from releaseessentials.interface import ResultListItemInterface
 from releaseessentials.exceptions import InvalidModuleError
 
-class Attachment(object):
-    """ Basic storage for a single attachment """
-
-    #pylint: disable=too-few-public-methods
+class ResultListItemAbstract(object):
+    """
+    Abstract base class for ResultListItems
+    """
+    # pylint: disable=too-few-public-methods
     # As a struct, no public methods are required.
     # Instead, all attributes are public
 
-    def __init__(self):
-        """ Store an attachment details as a struct """
-        self.attachment_id = None
-        self.filename = None
-        self.mime_type = None
+    __implements__ = (ResultListItemInterface,)
 
+    @accepts(dict)
+    def from_dict(self, dictionary):
+        """
+        Reloads the object dictionary from another
+        """
+        self.__dict__.update(dictionary)
+        return self
 
+    @property
+    def series(self):
+        """
+        Convert a dictionary to a pandas series
+        """
+        return pd.Series(self.__dict__)
 
-class Issue(object):
+class Issue(ResultListItemAbstract):
     """ Basic storage for a ticket item """
 
-    #pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-instance-attributes
     # This object contains the relevant fields of a Jira ticket item
     # Therefore a large number of attributes are required.
 
-    #pylint: disable=too-few-public-methods
+    # pylint: disable=too-few-public-methods
     # As a struct, no public methods are required.
     # Instead, all attributes are public
 
@@ -65,6 +78,88 @@ class Issue(object):
         self.rollback_instructions = None
         self.pipelines = None
         self.attachments = None
+
+    def keys(self):
+        """ Gets the list of issue keys """
+        return list(self.__dict__.keys())
+
+class CommandLineResultItem(ResultListItemAbstract):
+    """ Basic storage for a command line result item """
+    # pylint: disable=too-few-public-methods
+    # As a struct, no public methods are required.
+    # Instead, all attributes are public
+
+    def __init__(self):
+        """
+        Create a new CommandLineResultItem
+        """
+        self.line = None
+
+    def keys(self):
+        """
+        Gets the object keys
+        """
+        return list(self.__dict__.keys())
+
+class BedFileItem(ResultListItemAbstract):
+    """
+    Basic structure for storing annotated sequence data from Bed files
+    """
+    # pylint: disable=too-many-instance-attributes
+    # This object contains the relevant fields of a Jira ticket item
+    # Therefore a large number of attributes are required.
+
+    # pylint: disable=too-few-public-methods
+    # As a struct, no public methods are required.
+    # Instead, all attributes are public
+
+    DELIMITER = '\t'
+
+    _series_frame = None
+    def __init__(self):
+        """
+        File structure for BED file lines.
+
+        A BED file is a Browser Extensible Data format used in
+        BioInformatics for defining the data lines that are
+        displayed in an annotation track
+        """
+        self.read_count = None
+        self.peak_id = None
+        self.chromasone = None
+        self.start = None
+        self.end = None
+        self.strand = None
+        self.peak_score = None
+        self.focus_ratio = None
+        self.annotation = None
+        self.detailed_annotation = None
+        self.distance_to_tss = None
+        self.nearest_promoter_id = None
+        self.entrez_id = None
+        self.nearest_unigene = None
+        self.nearest_refseq = None
+        self.nearest_ensembl = None
+        self.gene_name = None
+        self.gene_alias = None
+        self.gene_description = None
+        self.gene_type = None
+
+    def keys(self):
+        """
+        Gets the list of fields allowed in this file type
+
+        This list is provided in the same order as the fields in the BED file CSV and is
+        used for mapping the CSV to the object.
+        """
+        # pylint: disable=no-self-use
+        # Yes this should be a method and not a function
+        return [
+            'read_count', 'peak_id', 'chromasone', 'start', 'end', 'strand',
+            'peak_score', 'focus_ratio', 'annotation', 'detailed_annotation', 'distance_to_tss',
+            'nearest_promoter_id', 'entrez_id', 'nearest_unigene', 'nearest_refsec', 'nearest_ensemble',
+            'gene_name', 'gene_alias', 'gene_description', 'gene_type'
+        ]
 
 class ArgumentFlag():
     """
@@ -183,26 +278,39 @@ class Calendar:
             current_date = self.get_last_day_of_month_ahead(release_on, month_from_now=1)
         return current_date
 
-
 class ResultList(list):
     """
     List of results returned by a <project manager>
     """
-    __implements__ = (ResultListInterface,)
+    # pylint: disable=too-many-instance-attributes
+    # This object contains the relevant fields of a Jira ticket item
+    # Therefore a large number of attributes are required.
+
+    __implements__ = (ResultListInterface, ResultListItemInterface)
     _namespace = None
+    _name = None
     _total = 0
     _collate = None
     _distinct = False
     _field = False
+    _dataframe = None
 
-    def __init__(self, collate=None, distinct=False, namespace=None):
+    def __init__(self, name=None, collate=None, distinct=False, namespace=None):
         """
         Create a new ResultList item
         """
         self._namespace = namespace
+        self._name = name
         self.collate = collate
         self.distinct = distinct
         super().__init__()
+
+    @property
+    def name(self):
+        """
+        Get the name assigned to this set
+        """
+        return self._name if self._name is not None else ''
 
     @property
     def field(self):
@@ -270,7 +378,27 @@ class ResultList(list):
         """
         self._total = value
 
-    @accepts(Issue)
+    @property
+    def dataframe(self):
+        """
+        Get the dataframe for this object, creating as necessary
+        """
+        if self._dataframe is not None:
+            return self._dataframe
+        if len(self) > 0:
+            variables = self[0].keys()
+            self._dataframe = pd.DataFrame([[getattr(i, j) for j in variables] for i in self], columns=variables)
+        return self._dataframe
+
+    @dataframe.setter
+    @accepts(pd.DataFrame)
+    def dataframe(self, dataframe):
+        """
+        Sets the dataframe from a Pandas search
+        """
+        self._dataframe = dataframe
+
+    @accepts(ResultListItemInterface)
     def append(self, item):
         """
         Appends an Issue item to the list of results
@@ -300,6 +428,78 @@ class ResultList(list):
             return [function for function in functions if function[0].lower() == name.lower()][0][1]
         except (IndexError, AttributeError, ImportError):
             raise InvalidModuleError(str(name), str(module_name))
+
+class MultiResultList(ResultList):
+    """
+    Holder for the contents of multiple result sets
+    """
+    __implements__ = (ResultListItemInterface,)
+
+    _combine = False
+    @accepts(ResultList)
+    def append(self, item):
+        """ Add a result list item to the list of results """
+        super().append(item)
+
+    @property
+    def combine(self):
+        """
+        If true, will cause the results to be merged to a single set
+
+        Default False
+        """
+        return self._combine
+
+    @combine.setter
+    @accepts(bool)
+    def combine(self, combine):
+        """
+        Set to True to have the result sets combined to a single set
+
+        @param combine bool
+        """
+        self._combine = combine
+
+    @property
+    def collate(self):
+        """
+        Collate the result set by executing the collation method defined in the configuration
+
+        If MultiResultList.combine is true, the collation method will be passed the MultiResultList
+        object for collation.
+
+        If the collation method returns a list of lists (MultiResultList), when MultiResultList.combine is True,
+        it will be flattenned into a single list before being returned.
+
+        If Combine is False, a MultiResultList item is returned.
+
+        @return MultiResultList|ResultList
+        """
+        results = MultiResultList()
+        results.collate = self._collate
+        results.distinct = self.distinct
+        # pylint: disable=protected-access
+        # We're copying values into a new returned class,
+        # this is necessary
+        results._name = self.name
+        results.extend([result.collate for result in self])
+        return results
+
+    @collate.setter
+    def collate(self, collation):
+        self._collate = collation
+        for result in self:
+            result.collate = collation
+
+    @property
+    def distinct(self):
+        return self._distinct
+
+    @distinct.setter
+    def distinct(self, distinct):
+        self._distinct = distinct
+        for result in self:
+            result.distinct = distinct
 
 class ReplacementsValidator(Action):
     """
@@ -509,3 +709,131 @@ class Replacements(list):
             cls._is_loaded = False
             cls._instance = super(Replacements, cls).__new__(cls)
         return cls._instance
+
+class Command(object):
+    """
+    Private struct describing a command
+
+    This class should not be implemented directly. Use ThreadableCommand
+    """
+    def __init__(self):
+        self.command = None
+        self.arguments = []
+        self.redirects = []
+        self.return_code = -1
+
+        self._stdout = None
+        self._stderr = None
+
+    @property
+    def stdout(self):
+        """
+        Get standard output location
+        """
+        for redirect in self.redirects:
+            if isinstance(redirect.redirect_input, list):
+                self._stdout = self._get_redirect(Redirect.STDOUT, redirect.redirect_output)
+                self._stderr = self._stdout
+            elif redirect.redirect_input == Redirect.STDOUT:
+                self._stdout = self._get_redirect(Redirect.STDOUT, redirect.redirect_output)
+        return self._stdout if self._stdout is not None else subprocess.PIPE
+
+    @property
+    def stderr(self):
+        """
+        Get the standard error location
+        """
+        for redirect in self.redirects:
+            if isinstance(redirect.redirect_input, list):
+                self._stderr = self._get_redirect(Redirect.STDERR, redirect.redirect_output)
+                self._stdout = self._stderr
+            elif redirect.redirect_input == Redirect.STDERR:
+                self._stderr = self._get_redirect(Redirect.STDERR, redirect.redirect_output)
+        return self._stderr if self._stderr is not None else subprocess.PIPE
+
+    def _get_redirect(self, redirect_input, redirect_output):
+        """
+        Gets where the redirect is to be sent to (STDOUT | SDTERR | file)
+
+        @param redirect_input  int What is being redirected
+        @param redirect_output int Where to redirect to
+
+        @return mixed
+
+        This method will return None if no redirect can be found, subprocess.STDOUT if
+        stderr is being redirected to stdout or a file handle if a file is requested.
+        """
+        if redirect_input == Redirect.STDOUT:
+            if isinstance(redirect_output, int) and redirect_output == Redirect.STDERR:
+                return self.stderr
+            return Command._get_file_handle(redirect_output)
+
+        if isinstance(redirect_output, int) and redirect_output == Redirect.STDOUT:
+            return subprocess.STDOUT
+        return Command._get_file_handle(redirect_output)
+
+    @staticmethod
+    def _get_file_handle(filename):
+        """
+        Return a file handle opened in append mode
+
+        @param filename string
+        @return Filehandle opened by `open`
+        """
+        return open(filename, mode='a')
+
+class Redirect(object):
+    """
+    Handles Redirects for commands
+
+    This class should not be implemented directly. Use ThreadableCommand instead
+    """
+    # pylint: disable=too-few-public-methods
+    # This class is effectively a private struct for the Command class
+    STDOUT = 1
+    STDERR = 2
+    _redirects = [STDOUT, STDERR]
+
+    redirect_input = None
+    redirect_output = None
+
+    def __init__(self, redirect_input=None, redirect_output=None):
+        """
+        Create a new redirect
+        """
+        if isinstance(redirect_input, int):
+            try:
+                # the left side of a redirect (>) may be &
+                self.redirect_input = self._redirects[(int(redirect_input) - 1)]
+            except IndexError:
+                pass
+        if redirect_input == '&':
+            self.redirect_input = [
+                self._redirects[0],
+                self._redirects[1]
+            ]
+
+        self.redirect_output = redirect_output
+        try:
+            self.redirect_output = int(self.redirect_output)
+        except ValueError:
+            pass
+
+        if isinstance(redirect_output, int):
+            try:
+                self.redirect_output = self._redirects[int(redirect_output) - 1]
+            except IndexError:
+                pass
+
+class Attachment(object):
+    """ Basic storage for a single attachment """
+
+    #pylint: disable=too-few-public-methods
+    # As a struct, no public methods are required.
+    # Instead, all attributes are public
+
+    def __init__(self):
+        """ Store an attachment details as a struct """
+        self.attachment_id = None
+        self.filename = None
+        self.mime_type = None

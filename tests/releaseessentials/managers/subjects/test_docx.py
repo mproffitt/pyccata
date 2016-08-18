@@ -15,7 +15,6 @@ from docx.oxml.table import CT_Tbl
 from docx.oxml.section import CT_SectPr
 from docx.oxml.text.paragraph import CT_P
 
-
 class TestDocx(TestCase):
     _document = None
 

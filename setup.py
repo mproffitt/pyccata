@@ -32,7 +32,11 @@ setup(
         'Pillow',
         'python-docx',
         'pyquery',
-        'pycurl'
+        'pycurl',
+        'pandas',
+        'numpy',
+        'scipy',
+        'matplotlib'
     ],
 
     test_suite='nose.collector',

@@ -69,7 +69,6 @@ class Section(ThreadableDocument):
             for item in self._structure:
                 if isinstance(item, Table) and isinstance(item.rows, Filter):
                     using_tables = using_tables - 1 if len(item.rows.results) == 0 else using_tables
-
             if using_tables == 0:
                 # we probably have nothing to render
                 Logger().info('Empty section. Skipping...')

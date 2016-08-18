@@ -7,7 +7,7 @@ from releaseessentials.abstract import ThreadableDocument
 from releaseessentials.decorators import accepts
 from releaseessentials.exceptions import ArgumentValidationError
 from releaseessentials.filter import Filter
-from releaseessentials.resources import Issue
+from releaseessentials.resources import ResultListItemAbstract
 from releaseessentials.resources  import Replacements
 from releaseessentials.log import Logger
 from releaseessentials.configuration import Configuration
@@ -96,9 +96,13 @@ class List(ThreadableDocument):
             text = None
             if isinstance(item, str):
                 text = item
-            elif isinstance(item, Issue):
-                text = getattr(item, self._field) if hasattr(item, self._field) else item.description
-            elif isinstance(item.results, list) and len(item.results) == 1 and isinstance(item.results[0], Issue):
+            elif isinstance(item, ResultListItemAbstract):
+                text = getattr(item, self._field) if hasattr(item, self._field) else ''
+            elif (
+                    isinstance(item.results, list)
+                    and len(item.results) == 1
+                    and isinstance(item.results[0], ResultListItemAbstract)
+            ):
                 text = getattr(
                     item.results[0],
                     self._field

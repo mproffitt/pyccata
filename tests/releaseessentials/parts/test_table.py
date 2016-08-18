@@ -15,6 +15,10 @@ from releaseessentials.resources import *
 from tests.mocks.dataproviders import DataProviders
 from releaseessentials.filter import Filter
 
+from releaseessentials.resources import MultiResultList
+from releaseessentials.resources import ResultList
+from releaseessentials.resources import Issue
+
 class TestTable(TestCase):
 
     _report_manager = None
@@ -199,3 +203,83 @@ class TestTable(TestCase):
             self.assertEquals(1, mock_table.call_count)
             self.assertEquals(1, mock_heading.call_count)
             mock_heading.assert_called_with('Test Title', 3)
+
+    @patch('releaseessentials.managers.report.ReportManager.add_table')
+    @patch('releaseessentials.managers.report.ReportManager.add_heading')
+    def test_table_renders_filter_results_multi_results_with_combine(self, mock_heading, mock_table):
+        self.tearDown()
+        Config = namedtuple('Config', 'rows columns style')
+
+        with patch('releaseessentials.filter.Filter.results', new_callable=PropertyMock) as mock_results:
+            results_set_one = ResultList(name='test results')
+            result_issue = Issue()
+            result_issue.description = 'This is a test item'
+            results_set_one.append(result_issue)
+
+            results_set_two = ResultList(name='another set of tests')
+            another_result_issue = Issue()
+            another_result_issue.description = 'This is a test item'
+            results_set_two.append(another_result_issue)
+
+
+            multi_results = MultiResultList()
+            multi_results.combine = True
+            multi_results.append(results_set_one)
+            multi_results.append(results_set_two)
+
+            mock_results.return_value = multi_results
+            Filter = namedtuple('Filter', 'query max_results namespace')
+            rows = Filter(query='project=mssportal', max_results=5, namespace='releaseessentials')
+
+            columns = [
+                'Name',
+                'Description'
+            ]
+            config = Config(rows=rows, columns=columns, style='Light heading 1')
+            table = Table(self._thread_manager, config)
+
+            document = ReportManager()
+            table.render(document)
+            self.assertEquals(1, mock_table.call_count)
+            mock_heading.assert_not_called()
+
+    @patch('releaseessentials.managers.report.ReportManager.add_table')
+    @patch('releaseessentials.managers.report.ReportManager.add_heading')
+    def test_table_renders_filter_results_multi_results_without_combine(self, mock_heading, mock_table):
+        self.tearDown()
+        Config = namedtuple('Config', 'rows columns style')
+
+        with patch('releaseessentials.filter.Filter.results', new_callable=PropertyMock) as mock_results:
+            results_set_one = ResultList(name='test results')
+            result_issue = Issue()
+            result_issue.description = 'This is a test item'
+            results_set_one.append(result_issue)
+
+            results_set_two = ResultList(name='another set of tests')
+            another_result_issue = Issue()
+            another_result_issue.description = 'This is a test item'
+            results_set_two.append(another_result_issue)
+
+            multi_results = MultiResultList()
+            multi_results.combine = False
+            multi_results.append(results_set_one)
+            multi_results.append(results_set_two)
+
+            mock_results.return_value = multi_results
+            Filter = namedtuple('Filter', 'query max_results namespace')
+            rows = Filter(query='project=mssportal', max_results=5, namespace='releaseessentials')
+
+            columns = [
+                'Name',
+                'Description'
+            ]
+            config = Config(rows=rows, columns=columns, style='Light heading 1')
+            table = Table(self._thread_manager, config)
+
+            document = ReportManager()
+            table.render(document)
+            self.assertEquals(2, mock_table.call_count)
+            self.assertEquals(2, mock_heading.call_count)
+
+
+

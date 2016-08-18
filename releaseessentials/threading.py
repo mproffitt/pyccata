@@ -2,9 +2,11 @@
 Base classes for any items which need to be run in their own thread.
 """
 
+import inspect
 from abc import abstractmethod
 from threading import Thread
 from releaseessentials.decorators import accepts
+from releaseessentials.exceptions import ArgumentMismatchError
 
 class Threadable(Thread):
     """
@@ -55,6 +57,25 @@ class Threadable(Thread):
         """
         self.setup(*args, **kwargs)
         Thread.__init__(self)
+
+    def validate_setup(self, config):
+        """
+        Validates the object configuration against the method setup
+        """
+        setup_args = inspect.signature(self.setup)
+
+        # pylint: disable=protected-access
+        # protected access to _asdict() is requried
+        # to iterate over namedtuples
+        config_keys = [key for key in config._asdict()]
+        setup_keys = [key for key in setup_args.parameters]
+
+        if sorted(config_keys) != sorted(setup_keys):
+            raise ArgumentMismatchError(
+                self.__class__.__name__ + '.' + self.setup.__name__,
+                config_keys,
+                setup_keys
+            )
 
     @abstractmethod
     def run(self):

@@ -58,6 +58,15 @@ This application can only be executed with Python 3.4 or later and requires the 
 * Pillow
 * python-docx
 * pyquery
+* dateutil
+* numpy
+* scipy
+* matplotlib
+* pandas
+
+Future libraries may also include
+
+* SQLAlchemy
 
 Tests
 -----
@@ -82,6 +91,9 @@ To install this application, the following system libraries are required:
   * openssl-devel
   * gnutls-devel
   * ssl-devel
+* blas-devel
+* atlas-devel
+
 
 Once installed, from the root of the JiraWeeklyReport directory, execute the following:
 
