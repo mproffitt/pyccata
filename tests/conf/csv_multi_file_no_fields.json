@@ -9,13 +9,14 @@
         "port":     "",
         "username": "",
         "password": "",
-        "datapath": "Sequences/",
+        "datapath": "tests/data/Sequences/",
         "input_files":[
-            "GL30_Hd2lox_Hd1.bed",
-            "GL30_Hd2lox_Hd2.bed"
+            "ABC.bed",
+            "DEF.bed"
         ],
         "combine_results": true,
-        "output_directory": "images"
+        "output_directory": "images",
+        "namespace": "bioinformatics"
     },
     "replacements":[],
     "report": {
@@ -24,7 +25,7 @@
         "datapath": "data",
         "title":    "A test report",
         "subtitle": "Generated bio-informatics pipeline",
-        "abstract": "Graphs and tables and shit...",
+        "abstract": "Graphs and tables",
         "board_id": "",
         "sections":[
             {

@@ -1,3 +1,8 @@
+Pyccata
+-------
+
+Python collation and corrolation engine
+
 Configuration Files
 ================
 The configuration files for the Release Essentials package is a JSON structure which contains details of the report to build.
