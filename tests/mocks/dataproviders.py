@@ -2,17 +2,18 @@ import copy
 from time import sleep
 from random import shuffle
 from collections import namedtuple
-from releaseessentials.threading import Threadable
-from releaseessentials.interface import ObservableInterface
-from releaseessentials.log import Logger
-from releaseessentials.exceptions import InvalidQueryError
-from releaseessentials.exceptions import InvalidConnectionError
-from releaseessentials.filter import Filter
-from releaseessentials.manager import Manager
-from releaseessentials.interface import ManagerInterface
-from releaseessentials.interface import ReportingInterface
-from releaseessentials.parts.paragraph import Paragraph
-from releaseessentials.resources import *
+from pyccata.core.threading import Threadable
+from pyccata.core.interface import ObservableInterface
+from pyccata.core.log import Logger
+from pyccata.core.exceptions import InvalidQueryError
+from pyccata.core.exceptions import InvalidConnectionError
+from pyccata.core.filter import Filter
+from pyccata.core.manager import Manager
+from pyccata.core.interface import ManagerInterface
+from pyccata.core.interface import ReportingInterface
+from pyccata.core.parts.paragraph import Paragraph
+from pyccata.core.resources import *
+from pyccata.bioinformatics.resources import *
 import pandas
 
 class TestObservableThread(Threadable):
@@ -307,7 +308,7 @@ class DataProviders(object):
             title='hello world',
             subtitle='sub title test',
             path='/path/to',
-            datapath='tests/releaseessentials/data',
+            datapath='tests/data',
             sections=[None],
             abstract='An abstract block of text.\n\nSpanning two paragraphs...'
         )
@@ -365,7 +366,7 @@ class DataProviders(object):
             title='hello world',
             subtitle='sub title test',
             path='/path/to',
-            datapath='tests/releaseessentials/data',
+            datapath='tests/data',
             template='templates/GreenTemplate.docx',
             sections=[None],
             abstract='An abstract block of text.\n\nSpanning two paragraphs...'
@@ -423,7 +424,7 @@ class DataProviders(object):
             title='hello world',
             subtitle='sub title test',
             path='/path/to',
-            datapath='releaseessentials/data',
+            datapath='tests/data',
             sections=[None],
             abstract='An abstract block of text.\n\nSpanning two paragraphs...'
         )

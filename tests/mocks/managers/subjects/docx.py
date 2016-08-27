@@ -1,4 +1,4 @@
-from releaseessentials.interface import ReportingInterface
+from pyccata.core.interface import ReportingInterface
 
 class Docx(ReportingInterface):
     __implements__ = (ReportingInterface,)

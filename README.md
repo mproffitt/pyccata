@@ -58,11 +58,14 @@ This application can only be executed with Python 3.4 or later and requires the 
 * Pillow
 * python-docx
 * pyquery
-* dateutil
-* numpy
+* pycurl
+* dateutils
 * scipy
 * matplotlib
+* matplotlib-venn
+* mpltools
 * pandas
+* pyupset
 
 Future libraries may also include
 
@@ -73,6 +76,7 @@ Tests
 To execute the tests, you will further require:
 
 * nose
+* coverate
 * pbr
 * mock
 * ddt
@@ -86,14 +90,16 @@ To install this application, the following system libraries are required:
 * libxml2-devel
 * libjpeg-devel
 * libcurl-devel
-* Depending on how libcurl was compiled, you may also require one of:
-  * nss-devel
-  * openssl-devel
-  * gnutls-devel
-  * ssl-devel
 * blas-devel
 * atlas-devel
+* libffi-devel
 
+Depending on how libcurl was compiled, you may also require one of:
+
+* nss-devel
+* openssl-devel
+* gnutls-devel
+* ssl-devel
 
 Once installed, from the root of the JiraWeeklyReport directory, execute the following:
 

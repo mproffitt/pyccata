@@ -8,3 +8,6 @@ build
 *.docx
 */*.bed
 .~lock.*
+images/*
+*.log
+*.csv

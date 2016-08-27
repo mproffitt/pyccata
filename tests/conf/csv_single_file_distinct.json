@@ -9,9 +9,10 @@
         "port":     "",
         "username": "",
         "password": "",
-        "datapath": "Sequences/",
-        "input_files": "GL30_Hd2lox_Hd2.bed",
-        "output_directory": "images"
+        "datapath": "tests/data/Sequences/",
+        "input_files": "ABC.bed",
+        "output_directory": "images",
+        "namespace": "bioinformatics"
     },
     "replacements":[],
     "report": {
@@ -20,7 +21,7 @@
         "datapath": "data",
         "title":    "A test report",
         "subtitle": "Generated bio-informatics pipeline",
-        "abstract": "Graphs and tables and shit...",
+        "abstract": "Graphs and tables",
         "board_id": "",
         "sections":[
             {

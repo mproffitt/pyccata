@@ -3,22 +3,22 @@
 from setuptools import setup
 
 setup(
-    name='ReleaseEssentials',
-    version='1.2',
-    description='Application helper suite for software releases',
+    name='pycatta',
+    version='0.1',
+    description='Collation and correlation of data',
     author='Martin Proffitt',
     author_email='mproffitt@jitsc.co.uk',
-    url='https://bitbucket.org/mproffitt/releaseessentials',
-
+    license='MIT',
+    url='https://bitbucket.org/mproffitt/pyccata',
+    package_dir={
+        'pyccata':'src/pyccata'
+    },
     packages=[
-        'releaseessentials',
-        'releaseessentials.managers',
-        'releaseessentials.managers.subjects',
-        'releaseessentials.parts'
+        'pyccata'
     ],
     scripts=[
-        'bin/releasenote.py',
-        'bin/releaseinstructions.py'
+        'src/bin/releasenote.py',
+        'src/bin/releaseinstructions.py'
     ],
     install_requires=[
         'jira',
@@ -36,9 +36,14 @@ setup(
         'pandas',
         'numpy',
         'scipy',
-        'matplotlib'
+        'matplotlib',
+        'mpltools',
+        'matplotlib',
+        'matplotlib-venn',
+        'pyupset',
+        'dask',
+        'psutil'
     ],
-
     test_suite='nose.collector',
     tests_require=[
         'nose',

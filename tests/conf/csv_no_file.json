@@ -1,0 +1,50 @@
+{
+    "manager": "csv",
+    "reporting": "docx",
+    "modules":[
+        "csv"
+    ],
+    "csv": {
+        "server":   "",
+        "port":     "",
+        "username": "",
+        "password": "",
+        "datapath": "tests/data/Sequences/",
+        "input_files": "idontexist.bed",
+        "output_directory": "images",
+        "namespace": "bioinformatics"
+    },
+    "replacements":[],
+    "report": {
+        "path":     "bioinformatics",
+        "template": "templates/GreenTemplate.docx",
+        "datapath": "data",
+        "title":    "A test report",
+        "subtitle": "Generated bio-informatics pipeline",
+        "abstract": "Graphs and tables",
+        "board_id": "",
+        "sections":[
+            {
+                "title": "Hd2Lox with Hd1",
+                "abstract":"",
+                "level": 1,
+                "structure": [
+                    {
+                        "type": "table",
+                        "title": "some data",
+                        "content": {
+                            "style": "Light Shading Accent 6",
+                            "columns": ["read_count", "start", "end", "chromasone"],
+                            "rows": {
+                                "query": "read count is less than 100 AND (chromasone is equal to 'chr1' or chromasone equals 'gfi1')",
+                                "fields": ["read_count", "start", "end", "chromasone"],
+                                "max_results": false,
+                                "distinct": true
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -1,4 +1,4 @@
-from releaseessentials.interface import ManagerInterface
+from pyccata.core.interface import ManagerInterface
 
 class Agilemanager(object):
     pass
