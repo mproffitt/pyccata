@@ -1,7 +1,7 @@
 """
 Defines the manager used by the application.
 
-* ProjectManager - loads a project manager api from the managers/subjects directory
+* ProjectManager - loads a project manager api from the managers/clients directory
 * QueryManager
 * ThreadManager
 """
@@ -18,16 +18,16 @@ class ProjectManager(Manager):
 
     Drivers loaded by this application must implement the
     ManagerInterface interface and be stored in the
-    pyccata.core.managers.subjects package.
+    pyccata.core.managers.clients package.
     """
     __implements__ = (ManagerInterface,)
 
-    REQUIRED = [
-        'server',
-        'port',
-        'username',
-        'password'
-    ]
+    @property
+    def REQUIRED(self):
+        """ Gets required elements from the client """
+        if not hasattr(self._client, 'REQUIRED'):
+            raise NotImplementedError('Clients of <ProjectManager> must implement a list of REQUIRED config elements')
+        return self.client.REQUIRED
 
     def __init__(self):
         """
@@ -35,6 +35,7 @@ class ProjectManager(Manager):
         """
         namespace = self.configuration.NAMESPACE
         self._load(namespace, self.configuration.manager, must_implement=ManagerInterface)
+        #ProjectManager.REQUIRED = self.client.REQUIRED
 
     @property
     def threadmanager(self):

@@ -119,7 +119,7 @@ class TestSection(TestCase):
         ]
         mock_paragraph.assert_has_calls(calls)
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     def test_render_returns_if_section_contains_empty_table(self, mock_load, mock_jira_client):
         Rows = namedtuple('Row', 'query fields')

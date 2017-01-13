@@ -36,7 +36,7 @@ class TestFilter(TestCase):
         self.assertTrue(mock_filter.failed)
         self.assertIsInstance(mock_filter.failure, AssertionError)
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     def test_run_raises_exception_if_query_fails(self, mock_load, mock_jira_client):
         mock_jira_client.return_value = DataProviders._get_client()
@@ -51,7 +51,7 @@ class TestFilter(TestCase):
                 self.assertTrue(mock_filter.failed)
                 self.assertIsInstance(mock_filter.failure, InvalidQueryError)
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     def test_run_marks_thread_as_complete_on_success(self, mock_load, mock_jira_client):
         mock_jira_client.return_value = None
@@ -66,7 +66,7 @@ class TestFilter(TestCase):
                 self.assertTrue(mock_filter.complete)
                 self.assertEqual(len(mock_filter.results), len(DataProviders._test_data_for_search_results()))
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     def test_run_notifies_observers(self, mock_load, mock_jira_client):
         mock_jira_client.return_value = None
@@ -87,7 +87,7 @@ class TestFilter(TestCase):
                 self.assertEqual(len(mock_filter.results), len(DataProviders._test_data_for_search_results()))
                 self.assertEqual(mock_filter._results, another_filter._results)
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     def test_run_observer_skips_observer_implementation_if_results_have_been_set(self, mock_load, mock_jira_client):
         mock_jira_client.return_value = None
@@ -109,7 +109,7 @@ class TestFilter(TestCase):
                 another_filter.start()
                 self.assertEqual(len(mock_filter.results), len(DataProviders._test_data_for_search_results()))
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     def test_results_with_collation_method_that_doesnt_exist(self, mock_load, mock_jira_client):
         collation = 'iamamethodwhichwillneverexist'
@@ -144,7 +144,7 @@ class TestFilter(TestCase):
         [namedtuple('Config', 'method field')(method='flatten', field='pipelines'), False, ['Foo', 'Bar', 'Bar']],
         [namedtuple('Config', 'method field')(method='flatten', field='pipelines'), True, ['Bar', 'Foo']]
     )
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     @unpack
     def test_results_with_collation(self, collation, distinct, results, mock_load, mock_jira_client):

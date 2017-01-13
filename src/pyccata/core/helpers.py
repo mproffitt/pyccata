@@ -2,6 +2,7 @@
 Helper methods for the pyccata.core package
 """
 import os
+from datetime import date
 import importlib
 import zipfile
 import shutil
@@ -171,3 +172,8 @@ def mkzip(directory, zip_name):
         zip_file.close()
         os.chdir(cur_dir)
         return zip_name
+
+def modified_helper(path):
+    if os.path.exists(path):
+        return date.fromtimestamp(os.path.getmtime(path)).strftime('%Y-%m-%d')
+    raise ValueError('Invalid path provided for modified date')

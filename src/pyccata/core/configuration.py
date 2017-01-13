@@ -29,7 +29,7 @@ class Configuration(object):
     CONFIG_DIRECTORY_NAME = 'pyccata'
     NAMESPACE = 'pyccata.core'
     REPORTING_TYPES = [
-        'pdf', 'docx', 'html', 'latex'
+        'pdf', 'docx', 'html', 'latex', 'null'
     ]
     IMAGE_INDEX = 0
 
@@ -80,7 +80,7 @@ class Configuration(object):
         Example module structure:
             pyccata.core
             |-- managers
-                |-- subjects
+                |-- clients
                     |-- jira.py
                         class Jira(ManagerInterface):
                             ___implements__ = (ManagerInterface,)
@@ -89,8 +89,8 @@ class Configuration(object):
         if not hasattr(self._configuration, manager):
             raise RequiredKeyError('\'<root>/{0}'.format(manager))
 
-        class_path = '{0}.managers.subjects.{1}'.format(self.NAMESPACE, manager.lower())
-        if not class_exists(self.NAMESPACE, 'managers.subjects', manager.title()):
+        class_path = '{0}.managers.clients.{1}'.format(self.NAMESPACE, manager.lower())
+        if not class_exists(self.NAMESPACE, 'managers.clients', manager.title()):
             raise InvalidClassError(manager, class_path)
         self._manager = manager
 
@@ -118,7 +118,7 @@ class Configuration(object):
         Example module structure:
             pyccata.core
             |-- managers
-                |-- subjects
+                |-- clients
                     |-- docx.py
                         class Docx(ReportingInterface):
                             ___implements__ = (ReportingInterface,)
@@ -127,8 +127,8 @@ class Configuration(object):
         if not hasattr(self._configuration, 'report'):
             raise RequiredKeyError('\'<root>/report')
 
-        class_path = '{0}.subjects.{1}'.format(self.NAMESPACE, reporting)
-        if not class_exists(self.NAMESPACE, 'managers.subjects', reporting):
+        class_path = '{0}.clients.{1}'.format(self.NAMESPACE, reporting)
+        if not class_exists(self.NAMESPACE, 'managers.clients', reporting):
             raise InvalidClassError(reporting, class_path)
         self._reporting = reporting
 

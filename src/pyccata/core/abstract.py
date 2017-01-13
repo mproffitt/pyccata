@@ -10,11 +10,91 @@ from abc import abstractproperty
 from collections import namedtuple
 from pyccata.core.decorators import accepts
 from pyccata.core.configuration import Configuration
+from pyccata.core.exceptions import RequiredKeyError
 from pyccata.core.exceptions import InvalidModuleError
 from pyccata.core.exceptions import InvalidClassError
 from pyccata.core.threading import Threadable
 from pyccata.core.managers.thread import ThreadManager
+from pyccata.core.managers.report import ReportManager
 from pyccata.core.interface import ManagerInterface
+from pyccata.core.log import Logger
+
+class ControllerAbstract(object):
+    """
+    Any controller classes must implement this class
+    """
+    _part_factory = None
+    _configuration = None
+    _thread_manager = None
+    _report_manager = None
+    _configuration_file = ''
+
+    def __init__(self, configuration_file='configuration.json'):
+        """ Initialise the document """
+        self._configuration_file = configuration_file
+
+        self._configuration = self.configuration
+        self._thread_manager = self.threadmanager
+        self._report_manager = self.reportmanager
+        self._part_factory = self.partfactory
+        self._sections = []
+
+    def add_callback(self, name, function):
+        """
+        Adds a callback onto the report manager
+
+        @param name string
+        @param function method signature
+        """
+        self._report_manager.add_callback(name, function)
+
+    @property
+    def configuration(self):
+        """ Load the configuration from file """
+        try:
+            if self._configuration is None:
+                return Configuration(filename=self._configuration_file)
+        except (InvalidClassError, InvalidModuleError, RequiredKeyError, AttributeError, IOError) as exception:
+            ControllerAbstract._raise_and_terminate('Configuration object', exception)
+        return self._configuration
+
+    @property
+    def threadmanager(self):
+        """ Load the threadmanager """
+        try:
+            if self._thread_manager is None:
+                return ThreadManager()
+        except (ImportError, AttributeError, NotImplementedError, RequiredKeyError) as exception:
+            ControllerAbstract._raise_and_terminate('ThreadManager', exception)
+        return self._thread_manager
+
+    @property
+    def reportmanager(self):
+        """ load the reportmanager """
+        try:
+            if self._report_manager is None:
+                return ReportManager()
+        except (ImportError, AttributeError, NotImplementedError, RequiredKeyError) as exception:
+            ControllerAbstract._raise_and_terminate('ReportManager', exception)
+        return self._report_manager
+
+    @staticmethod
+    def _raise_and_terminate(what, exception):
+        """ Log any exceptions raised and terminate the application """
+        Logger().fatal('Unable to instantiate the {0}.'.format(what))
+        Logger().fatal('exception message was:')
+        Logger().fatal(str(exception))
+        raise exception
+
+    @abstractmethod
+    def build(self):
+        """ Builds the current controller """
+        raise NotImplementedError('`build` must be implemented by a child class')
+
+    @abstractmethod
+    def save(self, filename):
+        """ saves the current controller """
+        raise NotImplementedError('`save` method must be implemented by a child class')
 
 class ThreadableDocument(Threadable):
     """
@@ -180,7 +260,6 @@ class FactoryAbstract(list):
                 cls = item[1]
                 if (cls.__module__ == module_name and (
                         issubclass(cls, self.allowed_class)
-                        #issubclass(cls, ThreadableDocument)
                         or module in self._allowed)):
                     self.append(part_loader(name=name, cls=cls))
         self._is_loaded = True

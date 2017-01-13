@@ -38,7 +38,6 @@ class Manager(object):
             self._configuration = Configuration()
         return self._configuration
 
-
     @accepts(str, str, must_implement=type)
     def _load(self, namespace, manager, must_implement=None):
         """
@@ -47,7 +46,7 @@ class Manager(object):
         @param namespace string The namespace containing the managers ('pyccata.core')
         @param manager   string The name of the manager to load
         """
-        namespace = namespace + '.managers.subjects.'
+        namespace = namespace + '.managers.clients.'
         try:
             module = importlib.import_module(namespace + manager.lower())
         except ImportError:
@@ -59,8 +58,13 @@ class Manager(object):
 
         if must_implement is not None and not implements(name, must_implement):
             raise ImportError('{0} must implement \'{1}\''.format(manager.capitalize(), must_implement))
-        self.validate_configuration(manager.lower())
-        self._client = name()
+
+        try:
+            self._client = name()
+            self.validate_configuration(manager.lower())
+        except (NotImplementedError, RequiredKeyError, Exception):
+            self._client = None
+            raise
 
     @accepts(str)
     def validate_configuration(self, config_label):

@@ -16,9 +16,18 @@ class Threadable(Thread):
     THREAD_SLEEP = 0.0001
     PRIORITY = 0
 
+    _thread_name = ''
     _complete = False
     _failure = None
     _retrycount = 0
+
+    @property
+    def thread_name(self):
+        return self._thread_name if self._thread_name != '' else self._name
+
+    @thread_name.setter
+    def thread_name(self, name):
+        self._thread_name = name
 
     @property
     def failed(self):

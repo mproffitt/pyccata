@@ -21,7 +21,8 @@ class Null(object):
     _run = None
     _template_file = None
 
-    MAXWIDTH = 5.7
+    REQUIRED = []
+    MAXWIDTH = 0
 
     def __init__(self):
         """ Load the driver and create title page """

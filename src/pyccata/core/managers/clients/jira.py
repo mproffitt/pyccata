@@ -18,6 +18,13 @@ from jira.exceptions import JIRAError
 class Jira(ManagableAbstract):
     """ Jira management and searching class """
 
+    REQUIRED = [
+        'server',
+        'port',
+        'username',
+        'password'
+    ]
+
     def __init__(self):
         """ Initialise Jira """
         Logger().info('Initialising Jira interface')

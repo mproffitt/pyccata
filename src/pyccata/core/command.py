@@ -5,6 +5,7 @@ Create threadable calls to the shell
 @author Martin Proffitt <mproffitt@jitsc.co.uk>
 @link http://
 """
+import os
 import re
 import shlex
 from subprocess import Popen
@@ -19,8 +20,11 @@ from pyccata.core.filter import Filter
 from pyccata.core.exceptions import ThreadFailedError
 from pyccata.core.resources import ResultList
 from pyccata.core.resources import CommandLineResultItem
+from pyccata.core.resources import Replacements
+from pyccata.core.exceptions import InvalidModuleError
+from pyccata.core.helpers import include
 
-class ThreadableCommand(Filter):
+class ThreadableCommand(Threadable):
     """
     This class can be used to process shell commands
     """
@@ -30,7 +34,6 @@ class ThreadableCommand(Filter):
 
     MAX_PRIORITY = 10000
     PRIORITY = 0
-    _title = None
     _redirect_regex = None
     _commands = None
     _redirects = None
@@ -39,12 +42,16 @@ class ThreadableCommand(Filter):
     _results = None
 
     @property
+    def results(self):
+        return self._results
+
+    @property
     def threadmanager(self):
         """ Get the current loaded threadmanager """
         return self._thread_manager
 
-    @accepts(ThreadManager, tuple)
-    def __init__(self, threadmanager, config):
+    @accepts(ThreadManager, tuple, append=bool)
+    def __init__(self, threadmanager, config, append=True):
         """
         Initialise the ThreadableCommand object
         """
@@ -64,20 +71,21 @@ class ThreadableCommand(Filter):
         self.validate_setup(config)
 
         super().__init__(**config._asdict())
-        self.threadmanager.append(self)
+        if append:
+            self.threadmanager.append(self)
 
     @accepts(
-        title=str,
+        name=str,
         command=str,
         input_directory=(None, str),
         output_directory=(None, str),
         wait_for=(None, str, Threadable)
     )
-    def setup(self, title='', command='', input_directory=None, output_directory=None, wait_for=None):
+    def setup(self, name='', command='', input_directory=None, output_directory=None, wait_for=None):
         """
         Sets up the thread and builds the command structure.
 
-        @param title            string
+        @param name            string
         @param command          string
         @param input_directory  string or None
         @param output_directory string or None
@@ -99,15 +107,13 @@ class ThreadableCommand(Filter):
 
         # pylint: disable=too-many-arguments
         # This method requires a larger number of arguments than the standard
-        self._title = title
-        self._input_directory = input_directory
-        self._output_directory = output_directory
+        self.thread_name = name
+        self._input_directory = Replacements().replace(input_directory)
+        self._output_directory = Replacements().replace(
+            output_directory,
+            additional=self.replacements(output_directory)
+        )
 
-        # We can wait for another thread to finish by appending ourself as an observer.
-        # EXTENSION POINT - make wait_for a list so we can watch for many.
-        if wait_for is not None:
-            command_thread = self.threadmanager.find(title) if not isinstance(wait_for, ThreadableCommand) else wait_for
-            command_thread.append(self)
         self._build_command(command)
 
     @accepts(str)
@@ -171,10 +177,11 @@ class ThreadableCommand(Filter):
             )
             command.return_code = processes[-1].poll()
 
-        for line in iter(processes[-1].stdout.readline, b''):
-            item = CommandLineResultItem()
-            item.line = line.decode('utf8').strip()
-            self._results.append(item)
+        if processes[-1].stdout is not None and hasattr(processes[-1].stdout, 'readline'):
+            for line in iter(processes[-1].stdout.readline, b''):
+                item = CommandLineResultItem()
+                item.line = line.decode('utf8').strip()
+                self._results.append(item)
 
         stderr = []
         if processes[-1].stderr is not None:
@@ -183,5 +190,44 @@ class ThreadableCommand(Filter):
         processes[-1].communicate()
         if len(stderr) != 0:
             self.failure = ThreadFailedError(stderr)
-
         self._complete = True
+
+    def replacements(self, string_to_search):
+        """
+        Compiles a list of optional string replacements for command thread strings
+        """
+        replacements = {}
+        function_regex = re.compile(
+            r'.*?[-_.]{1}\{(?P<what>.*?)\.(?P<command>.*?)\}',
+            re.DOTALL
+        )
+        matches = [match.groupdict() for match in function_regex.finditer(string_to_search)]
+        if len(matches) == 0:
+            return None
+
+        for match in matches:
+            string = '{0}.{1}'.format(match['what'], match['command'])
+            what = match['what']
+            if Replacements().find(what.upper()):
+                what = Replacements().replace('{' + what.upper() + '}')
+            command = '{0}_helper'.format(match['command'])
+            try:
+                command = include(command, 'pyccata', 'helpers')
+            except InvalidModuleError:
+                Logger().error(
+                    'Invalid helper method {0} specified for {1}'.format(
+                        match['command'],
+                        string
+                    )
+                )
+                raise
+            replacements[string] = command(what)
+        return replacements
+
+    @staticmethod
+    def logdir():
+        """ Get a log directory for the command output """
+        path = os.path.join(Replacements().replace('{BASE_PATH}'), 'log')
+        if not os.path.exists(path):
+            os.makedirs(path)
+        return path
