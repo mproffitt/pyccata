@@ -24,6 +24,13 @@ class Csv(ManagableAbstract):
     Takes a CSV file and treats it as a manager object, allowing SQL-like queries to be
     executed on the file(s) to return a specific resultset
     """
+
+    REQUIRED = [
+        'datapath',
+        'input_files',
+        'output_directory'
+    ]
+
     def __init__(self):
         """ Initialise CSV File """
         Logger().info('Initialising CSV interface')

@@ -12,7 +12,7 @@ class ReportManager(Manager):
     """
     The ReportManager takes the ``reporting`` property from
     the configuration root and loads the respective interface
-    from the managers/subjects directory
+    from the managers/clients directory
 
     Interfaces loaded by this application must implement the
     ``ReportingInterface`` interface to be recognised as a viable
@@ -22,14 +22,12 @@ class ReportManager(Manager):
     """
     __implements__ = (ReportingInterface,)
 
-    REQUIRED = [
-        'path',
-        'datapath',
-        'title',
-        'subtitle',
-        'abstract',
-        'sections'
-    ]
+    @property
+    def REQUIRED(self):
+        """ Gets required elements from the client """
+        if not hasattr(self._client, 'REQUIRED'):
+            raise NotImplementedError('Clients of <ProjectManager> must implement a list of REQUIRED config elements')
+        return self.client.REQUIRED
 
     _callbacks = []
 

@@ -1,79 +1,20 @@
 """
 Document controller module
 """
-from pyccata.core.exceptions import InvalidClassError
-from pyccata.core.exceptions import InvalidModuleError
-from pyccata.core.exceptions import RequiredKeyError
+from pyccata.core.abstract import ControllerAbstract
 from pyccata.core.exceptions import ThreadFailedError
 from pyccata.core.configuration import Configuration
-from pyccata.core.managers.report import ReportManager
-from pyccata.core.managers.thread import ThreadManager
 from pyccata.core.factory import DocumentPartFactory
 from pyccata.core.log import Logger
 from pyccata.core.decorators import accepts
 
-class DocumentController(object):
+class DocumentController(ControllerAbstract):
     """
     The document controller class brings together
     the configuration of the document with the methods
     for obtaining the information defined as being
     provided in the report.
     """
-    _part_factory = None
-    _configuration = None
-    _thread_manager = None
-    _report_manager = None
-    _configuration_file = ''
-
-    def __init__(self, configuration_file='configuration.json'):
-        """ Initialise the document """
-        self._configuration_file = configuration_file
-
-        self._configuration = self.configuration
-        self._thread_manager = self.threadmanager
-        self._report_manager = self.reportmanager
-        self._part_factory = self.partfactory
-        self._sections = []
-
-    def add_callback(self, name, function):
-        """
-        Adds a callback onto the report manager
-
-        @param name string
-        @param function method signature
-        """
-        self._report_manager.add_callback(name, function)
-
-    @property
-    def configuration(self):
-        """ Load the configuration from file """
-        try:
-            if self._configuration is None:
-                return Configuration(filename=self._configuration_file)
-        except (InvalidClassError, InvalidModuleError, RequiredKeyError, AttributeError, IOError) as exception:
-            self._raise_and_terminate('Configuration object', exception)
-        return self._configuration
-
-    @property
-    def threadmanager(self):
-        """ Load the threadmanager """
-        try:
-            if self._thread_manager is None:
-                return ThreadManager()
-        except (ImportError, AttributeError, NotImplementedError, RequiredKeyError) as exception:
-            self._raise_and_terminate('ThreadManager', exception)
-        return self._thread_manager
-
-    @property
-    def reportmanager(self):
-        """ load the reportmanager """
-        try:
-            if self._report_manager is None:
-                return ReportManager()
-        except (ImportError, AttributeError, NotImplementedError, RequiredKeyError) as exception:
-            self._raise_and_terminate('ReportManager', exception)
-        return self._report_manager
-
     @property
     def partfactory(self):
         """ get the factory used for creating document parts """
@@ -114,10 +55,3 @@ class DocumentController(object):
         self.reportmanager.save(filename)
         Logger().info('Done')
 
-    @staticmethod
-    def _raise_and_terminate(what, exception):
-        """ Log any exceptions raised and terminate the application """
-        Logger().fatal('Unable to instantiate the {0}.'.format(what))
-        Logger().fatal('exception message was:')
-        Logger().fatal(str(exception))
-        raise exception

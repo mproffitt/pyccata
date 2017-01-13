@@ -19,6 +19,15 @@ class Docx(object):
 
     MAXWIDTH = 5.7
 
+    REQUIRED = [
+        'path',
+        'datapath',
+        'title',
+        'subtitle',
+        'abstract',
+        'sections'
+    ]
+
     def __init__(self):
         """ Load the driver and create title page """
         Logger().info('Initialising Microsoft Word format driver')

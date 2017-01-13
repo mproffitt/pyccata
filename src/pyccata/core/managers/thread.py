@@ -147,6 +147,25 @@ class ThreadManager(list):
             return False
         return True
 
+    def find(self, what):
+        """
+        Searches the current threadpool for a given thread
+
+        :param what: string|Threadable
+
+        :return: Threadable
+        """
+        for thread in self:
+            if isinstance(what, Threadable) and thread == what:
+                return thread
+            elif thread.thread_name == what:
+                return thread
+        raise IndexError(
+            'Thread \'{0}\' is not in the thread pool'.format(
+                what.thread_name if isinstance(what, Threadable) else what
+            )
+        )
+
     def monitor(self):
         """
         Monitor pooled threads and remove complete and failed ones

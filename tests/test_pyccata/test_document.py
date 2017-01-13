@@ -209,7 +209,7 @@ class TestDocumentController(TestCase):
         mock_heading.assert_has_calls(heading_calls)
         self.assertEquals(20, mock_paragraph.call_count)
 
-    @patch('pyccata.core.managers.subjects.docx.Docx.format_for_email')
+    @patch('pyccata.core.managers.clients.docx.Docx.format_for_email')
     @patch('pyccata.core.configuration.Configuration._parse_flags')
     @patch('pyccata.core.configuration.Configuration._get_locations')
     def test_report_manager_loads_document_part_factory(self, mock_config, mock_parser, mock_format):

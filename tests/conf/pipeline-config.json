@@ -1,0 +1,75 @@
+{
+    "manager": "csv",
+    "reporting": "null",
+    "modules":[
+        "csv"
+    ],
+    "csv": {
+        "datapath": "/home/mproffitt/Sequences/combined_results",
+        "input_files": [
+            "GL30_CoREST.bed",
+            "GL30_Hd2delta_Hd1.bed",
+            "GL30_Hd2delta_Hd2.bed",
+            "GL30_Hd2lox_Hd2.bed",
+            "GL21_GL25_HDac1.gene"
+        ],
+        "output_directory": "images",
+        "namespace": "bioinformatics"
+    },
+    "replacements":[
+        {
+            "name": "BASE_PATH",
+            "type": "string",
+            "value": "{PWD}/tests/data/pipeline",
+            "overridable": false
+        },
+        {
+            "name": "BOWTIE_INDEX",
+            "type": "string",
+            "value": "{BASE_PATH}/../mouse/mm9",
+            "overridable": false
+        }
+    ],
+    "pipeline": {
+        "commands": [
+            {
+                "type": "move",
+                "config": {
+                    "name": "archive_and_recreate",
+                    "input_name": "{BASE_PATH}",
+                    "output_name": "{BASE_PATH}-{BASE_PATH.modified}",
+                    "recreate": true
+                }
+            },
+            {
+                "type": "fileloop",
+                "config": {
+                    "name": "bowtie",
+                    "input_directory": "{BASE_PATH}/../Sequences",
+                    "output_directory": "{BASE_PATH}/sam",
+                    "input_pattern": "AB*_R*.gz",
+                    "strip": "_R\\d+.*?\\d+.fastq.gz",
+                    "output_extension": "sam",
+                    "command": "bowtie2 -p 16 -q -x {BOWTIE_INDEX} -U {filename} -S {output} &>>{logfile}",
+                    "maxthreads": 1,
+                    "wait_for": "archive_and_recreate"
+                }
+            },
+            {
+                "type": "fileloop",
+                "config": {
+                    "name": "sam_to_bam",
+                    "input_directory": "{BASE_PATH}/sam",
+                    "output_directory": "{BASE_PATH}/bam",
+                    "command": "samtools view -bS -q 10 -F 260 {filename} -o {output} &>>{logfile}",
+                    "input_pattern": "",
+                    "strip": "",
+                    "output_extension": "bam",
+                    "maxthreads": 16,
+                    "wait_for": "bowtie"
+                }
+            }
+        ]
+    },
+    "report": {}
+}

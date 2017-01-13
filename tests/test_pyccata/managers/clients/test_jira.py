@@ -5,7 +5,7 @@ from pyccata.core.configuration import Configuration
 from pyccata.core.managers.project import ProjectManager
 from pyccata.core.exceptions import InvalidConnectionError, InvalidQueryError
 from pyccata.core.interface import ManagerInterface
-from pyccata.core.managers.subjects.jira import Jira
+from pyccata.core.managers.clients.jira import Jira
 from tests.mocks.dataproviders import DataProviders
 from jira.client import JIRA
 from jira.exceptions import JIRAError
@@ -44,7 +44,7 @@ class TestJira(TestCase):
                 self.assertRegexpMatches(str(e), 'Recieved HTTP\/\d+ whilst establishing connection to .*')
 
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     def test_manager_loads_client_on_success(self, mock_load, mock_jira_client):
         key = 'jira'

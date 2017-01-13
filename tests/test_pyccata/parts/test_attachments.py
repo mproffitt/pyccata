@@ -365,7 +365,7 @@ class TestAttachments(TestCase):
     @patch('builtins.open', create=True)
     @patch('jira.client.JIRA.__init__')
     @patch('jira.client.JIRA.search_issues')
-    @patch('pyccata.core.managers.subjects.jira.Jira.server', new_callable=PropertyMock)
+    @patch('pyccata.core.managers.clients.jira.Jira.server', new_callable=PropertyMock)
     @patch('pyccata.core.configuration.Configuration._get_locations')
     @unpack
     def test_run_raises_type_error_if_attachments_callback_function_is_not_set(

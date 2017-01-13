@@ -81,7 +81,6 @@ class InvalidPriority(Paragraph):
     def run(self):
         self._complete = True
 
-
 class DataProviders(object):
 
     @staticmethod
@@ -97,7 +96,6 @@ class DataProviders(object):
         for i in range(5):
             shuffle(threads)
         return threads
-
 
     @staticmethod
     def _get_client():

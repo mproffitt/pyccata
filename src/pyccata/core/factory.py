@@ -45,3 +45,6 @@ class CommandFactory(FactoryAbstract):
             cls._is_loaded = False
             cls._instance = super(CommandFactory, cls).__new__(cls)
         return cls._instance
+
+    def command(self, name):
+        return getattr(self, name)

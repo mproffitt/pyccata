@@ -8,11 +8,13 @@ from pyccata.core.factory import CommandFactory
 from pyccata.core.log import Logger
 from pyccata.core.decorators import accepts
 
-class Pipeline(ControllerAbstract):
+class PipelineController(ControllerAbstract):
     """
     Uses the 'pipeline' segment of the json configuration
     to trigger shell commands in a pipeline .
     """
+    _commands = []
+
     @property
     def partfactory(self):
         """ get the factory used for creating document parts """
@@ -20,10 +22,16 @@ class Pipeline(ControllerAbstract):
             return CommandFactory()
         return self._part_factory
 
+    @property
+    def length(self):
+        return len(self._commands)
+
     def build(self):
         """ Build the report """
-        for commands in self.configuration.pipeline:
-            self._commands.append(self.partfactory.command(self.threadmanager, command))
+        for command in self.configuration.pipeline.commands:
+            self._commands.append(
+                self.partfactory.command(command.type)(self.threadmanager, command.config)
+            )
 
         self.threadmanager.start()
         if not self.threadmanager.completed:

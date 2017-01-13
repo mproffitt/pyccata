@@ -6,7 +6,7 @@ from mock import patch, call, PropertyMock
 from collections import namedtuple
 from pyccata.core.configuration import Configuration
 from pyccata.core.managers.report import ReportManager
-from pyccata.core.managers.subjects.docx import Docx
+from pyccata.core.managers.clients.docx import Docx
 from tests.mocks.dataproviders import DataProviders
 from pyccata.core.log import Logger
 

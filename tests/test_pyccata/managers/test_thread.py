@@ -31,7 +31,7 @@ class TestThreadManager(TestCase):
         if ThreadManager._instance is not None:
             ThreadManager._instance = None
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     def test_we_only_accept_threadable_objects(self, mock_load, mock_jira_client):
         with self.assertRaises(ArgumentValidationError):
@@ -39,7 +39,7 @@ class TestThreadManager(TestCase):
             manager.append(object())
 
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     def test_adding_filter_adds_project_manager(self, mock_load, mock_jira_client):
         mock_jira_client.return_value = DataProviders._get_client()
@@ -55,7 +55,7 @@ class TestThreadManager(TestCase):
                 manager.append(mock_filter)
                 self.assertIsInstance(mock_filter.projectmanager, ProjectManager)
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     @patch('pyccata.core.managers.query.QueryManager.append')
     def test_adding_filter_ignores_argument_validation_error_and_adds_to_self(self, mock_query, mock_load, mock_jira_client):
@@ -69,7 +69,7 @@ class TestThreadManager(TestCase):
                 manager.append(TestObservableThread())
                 self.assertEquals(1, len(manager))
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     @patch('pyccata.core.managers.query.QueryManager.append')
     def test_execute_batches_pool_size_and_fills_on_complete(self, mock_query, mock_load, mock_jira_client):
@@ -86,7 +86,7 @@ class TestThreadManager(TestCase):
                     manager.append(ViableTestThread())
                 manager.start()
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     @patch('pyccata.core.managers.query.QueryManager.append')
     def test_execute_batches_pool_size_and_logs_on_error(self, mock_query, mock_load, mock_jira_client):
@@ -103,7 +103,7 @@ class TestThreadManager(TestCase):
                     manager.append(thread)
                 manager.start()
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     def test_execute_retries_observers_on_error(self, mock_load, mock_jira_client):
         mock_jira_client.return_value = None
@@ -124,7 +124,7 @@ class TestThreadManager(TestCase):
                 self.assertEquals(1, len(manager[0]._observers))
                 manager.start()
 
-    @patch('pyccata.core.managers.subjects.jira.Jira._client')
+    @patch('pyccata.core.managers.clients.jira.Jira._client')
     @patch('pyccata.core.configuration.Configuration._load')
     def test_execute_adds_to_failures_when_all_observers_fail(self, mock_load, mock_jira_client):
         mock_jira_client.return_value = None

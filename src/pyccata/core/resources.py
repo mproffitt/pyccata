@@ -829,8 +829,8 @@ class Replacements(list):
             function=function
         )
 
-    @accepts(str)
-    def replace(self, what):
+    @accepts(str, additional=(None, dict))
+    def replace(self, what, additional=None):
         """
         Swaps out keyword matching {WHAT} in a string of text for a given value
         """
@@ -854,7 +854,12 @@ class Replacements(list):
             elif replacement.upper() == what.upper():
                 what = str(os.environ.get(replacement))
 
-
+        # replace additional
+        if additional is not None:
+            for replacement in additional:
+                match = '{' + replacement + '}'
+                if match in what:
+                    what = what.replace(match, str(additional[replacement]))
         return what
 
     def find(self, what):

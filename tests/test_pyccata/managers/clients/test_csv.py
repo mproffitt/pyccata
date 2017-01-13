@@ -7,9 +7,9 @@ from collections import namedtuple
 from pyccata.core.configuration import Configuration
 from pyccata.core.managers.thread import ThreadManager
 from pyccata.core.managers.report import ReportManager
-from pyccata.core.managers.subjects.csv import Csv
-from pyccata.core.managers.subjects.csv import CSVClient
-from pyccata.core.managers.subjects.csv import CSVFile
+from pyccata.core.managers.clients.csv import Csv
+from pyccata.core.managers.clients.csv import CSVClient
+from pyccata.core.managers.clients.csv import CSVFile
 from tests.mocks.dataproviders import DataProviders
 from pyccata.core.resources import Replacements
 from pyccata.core.log import Logger
@@ -54,7 +54,7 @@ class TestCsvManager(TestCase):
     def test_csv_with_multi_file(self, mock_dataframe, mock_config_locations, mock_parse):
         mock_config_locations.return_value = [self._path]
         mock_dataframe.side_effect = DataProviders.get_csv_results()
-        with patch('pyccata.core.managers.subjects.docx.Docx') as docx:
+        with patch('pyccata.core.managers.clients.docx.Docx') as docx:
             docx.__implements__ = (ReportingInterface,)
             document = DocumentController('csv_multi_file.json')
             document.build()
@@ -76,7 +76,7 @@ class TestCsvManager(TestCase):
         self.tearDown()
         mock_config_locations.return_value = [self._path]
         mock_dataframe.side_effect = DataProviders.get_csv_results()
-        with patch('pyccata.core.managers.subjects.docx.Docx') as docx:
+        with patch('pyccata.core.managers.clients.docx.Docx') as docx:
             docx.__implements__ = (ReportingInterface,)
             document = DocumentController('csv_single_file_distinct.json')
             document.build()
@@ -98,7 +98,7 @@ class TestCsvManager(TestCase):
         self.tearDown()
         mock_config_locations.return_value = [self._path]
         mock_dataframe.side_effect = DataProviders.get_csv_results()
-        with patch('pyccata.core.managers.subjects.docx.Docx') as docx:
+        with patch('pyccata.core.managers.clients.docx.Docx') as docx:
             docx.__implements__ = (ReportingInterface,)
             document = DocumentController('broken_csv.json')
             document.build()
@@ -115,7 +115,7 @@ class TestCsvManager(TestCase):
         self.tearDown()
         mock_config_locations.return_value = [self._path]
         mock_dataframe.side_effect = DataProviders.get_csv_results()
-        with patch('pyccata.core.managers.subjects.docx.Docx') as docx:
+        with patch('pyccata.core.managers.clients.docx.Docx') as docx:
             docx.__implements__ = (ReportingInterface,)
             document = DocumentController('csv_multi_file_no_fields.json')
             document.build()
@@ -134,7 +134,7 @@ class TestCsvManager(TestCase):
         self.tearDown()
         mock_config_locations.return_value = [self._path]
         mock_dataframe.side_effect = DataProviders.get_csv_results()
-        with patch('pyccata.core.managers.subjects.docx.Docx') as docx:
+        with patch('pyccata.core.managers.clients.docx.Docx') as docx:
             docx.__implements__ = (ReportingInterface,)
             document = DocumentController('csv_multi_file_max_results.json')
             document.build()
@@ -152,7 +152,7 @@ class TestCsvManager(TestCase):
     def test_csv_with_no_file(self, mock_config_locations, mock_parse):
         self.tearDown()
         mock_config_locations.return_value = [self._path]
-        with patch('pyccata.core.managers.subjects.docx.Docx') as docx:
+        with patch('pyccata.core.managers.clients.docx.Docx') as docx:
             docx.__implements__ = (ReportingInterface,)
             document = DocumentController('csv_no_file.json')
             document.build()
