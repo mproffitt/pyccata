@@ -227,40 +227,6 @@ def subquery(results, collation):
 
     return return_results
 
-"""
-def _combination_query(results, collation):
-    """
-
-    """
-    sets = []
-    window = 3 # size of merge window
-    index = 0
-
-    while index < len(results):
-        extracted = DataExtraction()
-        extracted.names = [item.name for item in results[index:] + results[:index]][:window]
-        set_results = [item.results for item in results[index:] + results[:index]][:window]
-        merge = _merge(set_results, collation)
-
-        extracted.query = LanguageParser().combination(
-            collation.query.inclusive,
-            extracted.names
-        )
-        sets.append(DataThreader(merge, extracted, collation.join.column))
-        index += 1
-
-    while True:
-        complete = True
-        for resultset in sets:
-            if resultset.complete:
-                complete = False
-                break
-        if complete:
-            break
-        time.sleep(Threadable.THREAD_SLEEP)
-    return DataExtractor.recombine(sets)
-"""
-
 def combinatorics(results, collation):
     """
     Creates combination results between datasets based on the equation:
