@@ -8,6 +8,7 @@ Primary module for generating release notes from Jira
 """
 import os
 import re
+import requests
 import shutil
 from collections import namedtuple
 from datetime import datetime
@@ -32,17 +33,27 @@ class ReleaseInstructions(object):
     _document_controller = None
     _document_ready = False
     _document_title = 'MSS Platform Release Rollout and Rollback'
-    _regex = re.compile('^([0-9]*)?_?(\w+-\d+)_([a-zA-Z-]+)_(\w+)_(UP|DOWN)_([0-9]*)?_?(\w+)(.[a-zA-Z]+)?$', re.IGNORECASE)
+    _configuration = None
+    _regex = re.compile(
+        '^([0-9]*)?_?(\w+-\d+)_([a-zA-Z-]+)_(\w+)_(UP|DOWN)_([0-9]*)?_?(\w+)(.[a-zA-Z]+)?$',
+        re.IGNORECASE
+    )
 
     def __init__(self):
         """ initialise the ReleaseNote object """
         self._document_controller = DocumentController(self.CONFIGURATION)
+        self._configuration = self._document_controller.configuration
         self._document_controller.add_callback('attachments', getattr(ReleaseInstructions, 'file_collator'))
 
     def build_document(self):
         """ Creates the document structure """
         try:
             self._document_controller.build()
+            final = Replacements().find('FINAL').value
+            if final in ['1', 'True', 'TRUE', 'true']:
+                pipelines = self._document_controller.threadmanager.find('Deployment Pipelines')
+                for pipeline in pipelines:
+                    self.pipeline_trigger(pipeline)
             self._document_ready = True
         except:
             self._document_ready = False
@@ -56,6 +67,30 @@ class ReleaseInstructions(object):
         date = datetime.strftime(datetime.now(), '%Y-%m-%d')
         self._document_controller.format_for_email()
         self._document_controller.save(self._document_title + ' ' + date + '.docx')
+
+    def pipeline_trigger(self, pipeline):
+        """
+        Triggers a pipeline on Jenkins
+
+        FUTURE - move out to Jenkins API wrapper
+        """
+        replacements = Replacements()
+        pipeline = replacements.replace(pipeline)
+        matches = re.search(r'(http.*\/).*', pipeline)
+        if matches:
+            pipeline = matches.groups(0)[0].rstrip('/')
+        Logger().info('Triggering pipeline {0}'.format(pipeline))
+        params = {}
+        auth = (self._configuration.jenkins.user, self._configuration.jenkins.password)
+        pipeline = '{0}/{1}'.format(pipeline, replacements.replace('{TRIGGER_URI}'))
+        response = requests.post(pipeline, auth=auth, params=params, verify=False)
+        if response.status_code != 200:
+            Logger().error(
+                'Error whilst triggering pipeline - server returned status {0}'.format(
+                    response.status_code
+                )
+            )
+        Logger().info('Done {0}'.format(pipeline))
 
     @staticmethod
     def file_collator(path, attachments):

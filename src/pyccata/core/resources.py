@@ -880,11 +880,21 @@ class Replacements(list):
     def release_date(value_format):
         """ helper function for getting the release date """
         replacements = Replacements()
+        fix_version = replacements.find('FIX_VERSION').value
 
-        release_date = datetime.strptime(
-            replacements.replace('{FIX_VERSION}'),
-            replacements.find('FIX_VERSION').value
-        )
+        release_date = fix_version
+        date_regex = '(\%[a-z0-9]{1}.*?)+?'
+        if re.match(date_regex, fix_version, re.IGNORECASE) is not None:
+            # probably got a date format string as the value
+            release_date = datetime.strptime(
+                replacements.replace('{FIX_VERSION}'),
+                replacements.find('FIX_VERSION').value
+            )
+        elif replacements.find('VERSION_FORMAT') is not None:
+            release_date = datetime.strptime(
+                fix_version,
+                replacements.find('VERSION_FORMAT').value
+            )
 
         return datetime.strftime(
             release_date,

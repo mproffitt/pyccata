@@ -76,6 +76,8 @@ class Table(ThreadableDocument):
                         Logger().warning('Failed to create filter from config object')
                         Logger().warning('Exception was:')
                         Logger().warning(exception)
+                elif isinstance(cell, str):
+                    rows[row_index][cell_index] = Replacements().replace(cell)
         return rows
 
     @staticmethod
