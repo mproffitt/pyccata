@@ -156,9 +156,10 @@ class ThreadManager(list):
         :return: Threadable
         """
         for thread in self:
+            check = [getattr(thread, name) for name in ['name', 'thread_name', 'title'] if hasattr(thread, name)]
             if isinstance(what, Threadable) and thread == what:
                 return thread
-            elif thread.thread_name == what:
+            elif what in check:
                 return thread
         raise IndexError(
             'Thread \'{0}\' is not in the thread pool'.format(
