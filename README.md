@@ -93,6 +93,8 @@ To install this application, the following system libraries are required:
 * blas-devel
 * atlas-devel
 * libffi-devel
+* blas-devel
+* lapack-devel
 
 Depending on how libcurl was compiled, you may also require one of:
 

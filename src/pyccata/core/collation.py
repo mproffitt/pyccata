@@ -227,6 +227,7 @@ def subquery(results, collation):
 
     return return_results
 
+"""
 def _combination_query(results, collation):
     """
 
@@ -256,8 +257,9 @@ def _combination_query(results, collation):
                 break
         if complete:
             break
-        sleep(Threadable.THREAD_SLEEP)
+        time.sleep(Threadable.THREAD_SLEEP)
     return DataExtractor.recombine(sets)
+"""
 
 def combinatorics(results, collation):
     """

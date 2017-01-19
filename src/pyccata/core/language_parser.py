@@ -112,6 +112,7 @@ class ExtractedResults(ExtractedData):
         while ExtractedResults._lock:
             time.sleep(Threadable.THREAD_SLEEP)
         ExtractedResults._lock = True
+        # pylint: disable=access-member-before-definition
         if self.results is None:
             self.results = pd.DataFrame(results, copy=True)
         else:
