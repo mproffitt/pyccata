@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='pycatta',
-    version='0.1',
+    version='0.1.4',
     description='Collation and correlation of data',
     author='Martin Proffitt',
     author_email='mproffitt@jitsc.co.uk',

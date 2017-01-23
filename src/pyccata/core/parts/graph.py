@@ -10,11 +10,14 @@ from memory_profiler import profile
 # Matplotlib needs to be initialised before pyplot can be
 # imported. Therefore the import order needs to be ignored
 # within this module.
+import matplotlib
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
 import pyupset as pyu
+from pyccata.libraries import venn
+
 from pyccata.core.configuration import Configuration
 from pyccata.core.parts.picture import Picture
 from pyccata.core.exceptions import InvalidGraphError
@@ -47,6 +50,8 @@ class Graph(Picture):
         self._filenames = []
         self._graph = structure
         self._path = self.configuration.csv.output_directory
+        if not os.path.exists(self._path):
+            os.makedirs(self._path)
 
         if not hasattr(self, graphtype):
             if not hasattr(self, graphtype + '_graph'):
@@ -134,26 +139,27 @@ class Graph(Picture):
         Logger().info('Plotting results for graph {0}'.format(filename))
         try:
             plot = getattr(self, self._graph_type)(dataset)
-            figure = plot.get_figure()
-            figure.suptitle(
-                '{name} - {query}'.format(
-                    name=dataset.name,
-                    query=self._content.query
-                ),
-                fontsize=12,
-                fontweight='bold'
-            )
+            figure = plot.get_figure() if not isinstance(plot, matplotlib.figure.Figure) else plot
+            if hasattr(figure, 'suptitle'):
+                figure.suptitle(
+                    '{name} - {query}'.format(
+                        name=dataset.name,
+                        query=self._content.query
+                    ),
+                    fontsize=12,
+                    fontweight='bold'
+                )
             if hasattr(self._graph, 'legend') and self._graph.legend:
                 lgd = plot.legend(loc='upper left', bbox_to_anchor=(0, 4), mode="expand", borderaxespad=0.3)
                 figure.savefig(
-                    os.path.join(self.configuration.csv.output_directory, filename),
+                    os.path.join(self._path, filename),
                     dpi=1200,
                     bbox_extra_artists=(lgd,),
                     bbox_inches='tight'
                 )
             else:
                 figure.savefig(
-                    os.path.join(self.configuration.csv.output_directory, filename)
+                    os.path.join(self._path, filename)
                 )
             figure.clf()
             plt.close(figure)
@@ -193,7 +199,6 @@ class Graph(Picture):
         """
         filter_config = pyu.FilterConfig()
         filter_config.sort_by = pyu.SortMethods.SIZE
-        filter_config.size_bounds = (1, 150000)
 
         if isinstance(dataset, pyu.DataExtractor):
             extractor = dataset
@@ -201,11 +206,22 @@ class Graph(Picture):
             extractor = pyu.DataExtractor(unique_keys=[self._content.group_by], filter_config=filter_config)
             extractor.names = dataset.name
             extractor.merge = dataset.dataframe
+
+        if extractor.primary_set_length < 4:
+            return self.venn(extractor)
+
         upset = pyu.UpSetPlot(extractor)
         results = upset.plot()
+
         for result in extractor.results:
             filename = '_'.join(result.in_sets) + '.csv'
-            result.results.to_csv('images/' + filename, index=False)
+            result.results.to_csv(
+                os.path.join(
+                    self._path,
+                    filename
+                ),
+                index=False
+            )
         return results.intersection_matrix
 
     def scatter(self, dataset):
@@ -236,6 +252,44 @@ class Graph(Picture):
                 )
             colour_index += 1
         return plot
+
+    def venn(self, dataset):
+        """
+        Plot a venn diagram from a data extractor object or dataframe merge table
+        """
+        filter_config = pyu.FilterConfig()
+        filter_config.sort_by = pyu.SortMethods.SIZE
+
+        if isinstance(dataset, pyu.DataExtractor):
+            extractor = dataset
+        else:
+            extractor = pyu.DataExtractor(unique_keys=[self._content.group_by], filter_config=filter_config)
+            extractor.names = dataset.name
+            extractor.merge = dataset.dataframe
+
+        if extractor.primary_set_length > 5:
+            return self.venn(extractor)
+
+        for result in extractor.results:
+            filename = '_'.join(result.in_sets) + '.csv'
+            result.results.to_csv(
+                os.path.join(
+                    self._path,
+                    filename
+                ),
+                index=False
+            )
+
+        method = 'venn{index}'.format(index=extractor.primary_set_length)
+        if not hasattr(venn, method):
+            raise ValueError('Invalid number of items for venn. Use \'upset\' instead')
+
+        data = extractor.as_logic()
+        names = [data[key]['name'] for key in data if data[key]['name'] is not None]
+        values = {}
+        for key in data:
+            values[key] = data[key]['count']
+        return getattr(venn, method)(values, names)[0]
 
     def hexbin(self, dataset):
         """

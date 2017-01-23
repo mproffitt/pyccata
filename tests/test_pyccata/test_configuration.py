@@ -60,13 +60,13 @@ class TestConfiguration(TestCase):
         mock_validate.assert_called_with(['manager'])
 
     @patch('pyccata.core.configuration.Configuration._load')
-    def test_config_locations_returns_five_paths(self, mock_load):
+    def test_config_locations_returns_six_paths(self, mock_load):
         """
         Purely for code coverage...
         """
         mock_load.return_value = None
         config = Configuration(filename='')
-        self.assertEquals(5, len(config._get_locations()))
+        self.assertEquals(6, len(config._get_locations()))
 
     @patch('pyccata.core.configuration.Configuration._get_locations')
     def test_configuration_raises_requried_key_error_if_required_value_is_not_defined(self, mock_config_list):

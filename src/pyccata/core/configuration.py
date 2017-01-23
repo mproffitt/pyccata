@@ -26,6 +26,7 @@ class Configuration(object):
         using the static {{validate}} method.
 
     """
+    # pylint: disable=too-many-instance-attributes
     CONFIG_DIRECTORY_NAME = 'pyccata'
     NAMESPACE = 'pyccata.core'
     REPORTING_TYPES = [
@@ -140,11 +141,20 @@ class Configuration(object):
         return self._replacements
 
 
-    def __init__(self, filename='configuration.json'):
-        """ Initialise the Configuration """
+    def __init__(self, filename='configuration.json', dont_parse=False):
+        """
+        Initialise the Configuration
+
+        :param string: filename The name of the file to load
+        :param bool:   dont_parse [optional] default False
+
+        If dont_parse is set, the Configuration object will skip parsing command line arguments.
+        This is useful when loading the object inside a Jupyter notebook.
+        """
         if self._is_loaded:
             return
         self._filename = filename
+        self._dont_parse = dont_parse
         self._load()
 
     def __getattr__(self, name):
@@ -180,7 +190,8 @@ class Configuration(object):
         self.validate_config(self._required_root_elements)
         if hasattr(self._configuration, 'replacements'):
             self._replacements = Replacements(configuration=self._configuration.replacements)
-        self._parse_flags()
+        if not self._dont_parse:
+            self._parse_flags()
         self._is_loaded = True
 
     def _get_locations(self):
@@ -190,6 +201,7 @@ class Configuration(object):
         @return list
         """
         return [
+            os.getcwd(),
             os.path.join(Configuration._xdg_config_home(), self.CONFIG_DIRECTORY_NAME),
             os.path.join(os.path.expanduser('~'), '.{0}'.format(self.CONFIG_DIRECTORY_NAME)),
             '/etc/{0}'.format(self.CONFIG_DIRECTORY_NAME),
@@ -251,10 +263,13 @@ class Configuration(object):
         self._parser.parse_args()
 
 
-    def __new__(cls, filename='configuration.json'):
+    def __new__(cls, filename='configuration.json', dont_parse=False):
         """
         Override for __new__ to check if Configuration has already been loaded.
         """
+        # pylint: disable=unused-argument
+        # dont_parse is passed straight through to the init call.
+        # We don't need it in this method
         if cls._instance is None:
             Logger().debug('Loading singleton configuration with filename {0}'.format(filename))
             cls._is_loaded = False

@@ -12,6 +12,7 @@ This would then be parsed and become:
 """
 import re
 import time
+from collections import namedtuple
 from itertools import chain
 from itertools import combinations
 from itertools import permutations
@@ -102,7 +103,8 @@ class ExtractedResults(ExtractedData):
             '_out_sets': None,
             '_results': None,
             '_filter_config': None,
-            '_query': None
+            '_query': None,
+            '_logic': None
         }
 
     def append_results(self, results):
@@ -115,10 +117,27 @@ class ExtractedResults(ExtractedData):
         # pylint: disable=access-member-before-definition,attribute-defined-outside-init
         # self.results is identified on the parent __getattr__ method
         if self.results is None:
-            self.results = pd.DataFrame(results, copy=True)
+            self.results = pd.DataFrame(results, copy=True).drop_duplicates()
         else:
             self._options['_results'] = self.results.append(results, ignore_index=True).drop_duplicates()
         ExtractedResults._lock = False
+
+    def flatten_results(self, unique_keys):
+        """ Takes a multi-frame dataset and flattens it into a single dataframe """
+        if not isinstance(unique_keys, list):
+            unique_keys = [unique_keys]
+        dataframe = None
+        for frame in self.in_sets:
+            columns = [column for column in self.results.columns if column.endswith(frame)]
+
+            interim = pd.DataFrame(self.results[unique_keys + columns], copy=True)
+            interim.columns = unique_keys + [column[:-len('_{0}'.format(frame))] for column in columns]
+
+            if dataframe is None:
+                dataframe = pd.DataFrame(interim, copy=True).reset_index(drop=True)
+            else:
+                dataframe = dataframe.append(interim, ignore_index=True)
+        return dataframe.drop_duplicates()
 
 class LanguageParser(object):
     """
@@ -322,14 +341,13 @@ class LanguageParser(object):
         )
         sets = [tuple(frozenset(inset)) for inset in name_combinations]
         queries = []
+        query = namedtuple('Query', 'inclusive exclusive')
+
         for in_sets in sets:
             out_sets = list(set(names) - set(in_sets))
 
             inclusive_queries = []
             exclusive_queries = []
-
-            if len(in_sets) < 2:
-                continue
 
             start_frame_permutations = [p for p in permutations(list(in_sets))]
             end_frame_permutations = [p for p in permutations(list(out_sets)) if p]
@@ -354,12 +372,14 @@ class LanguageParser(object):
             extracted = ExtractedResults()
             extracted.in_sets = in_sets
             extracted.out_sets = out_sets
-            extracted.query = (
-                '(' + ' and '.join(inclusive_queries) + ') and (' + ' and '.join(exclusive_queries) + ')'
-                if exclusive_queries and exclusive_queries[0] != ''
-                else ' and '.join(inclusive_queries)
+            extracted.query = query(
+                inclusive='(' + ' and '.join(inclusive_queries) + ')',
+                exclusive=(
+                    '~(' + ' and '.join(exclusive_queries) + ')'
+                    if exclusive_queries and exclusive_queries[0] != ''
+                    else None
+                )
             )
-
             queries.append(extracted)
         return queries
 
@@ -370,6 +390,8 @@ class LanguageParser(object):
         """
         queries = []
         sections = []
+        if query == '' or query is None:
+            return ''
 
         left_name = sets[0] if left_name is None  else left_name
 
@@ -379,6 +401,7 @@ class LanguageParser(object):
             if left_name.lower().startswith(limit.lower()) or left_name.lower().endswith(limit.lower())
         ][0]
 
+        left_limit = 250
         for right_name in sets:
             if left_name != right_name:
                 right_limit = [
@@ -386,19 +409,20 @@ class LanguageParser(object):
                     for limit in limits
                     if right_name.lower().startswith(limit.lower()) or right_name.lower().endswith(limit.lower())
                 ][0]
+                right_limit = left_limit
 
                 copy = query.replace('_x', '_{0}'.format(left_name))
                 copy = copy.replace('_y', '_{0}'.format(right_name))
                 reversed_copy = query.replace('_x', '_{0}'.format(right_name))
                 reversed_copy = reversed_copy.replace('_y', '_{0}'.format(left_name))
 
-                new_query = '(' + copy + ' | ' + reversed_copy + ')'
-                new_query = new_query.replace('{left_limit}', str(limits[left_limit]))
-                new_query = new_query.replace('{right_limit}', str(limits[right_limit]))
+                new_query = '(' + copy + ' or ' + reversed_copy + ')'
+                new_query = new_query.replace('{left_limit}', str(left_limit))
+                new_query = new_query.replace('{right_limit}', str(right_limit))
                 sections.append(new_query)
 
-        queries.append('(' + ' & '.join(sections) + ')')
-        return '(' + ' & '.join(queries) + ')'
+        queries.append('(' + ' and '.join(sections) + ')')
+        return '(' + ' and '.join(queries) + ')'
 
     @accepts(_Query)
     def append(self, query):
