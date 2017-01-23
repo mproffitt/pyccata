@@ -12,7 +12,7 @@ from pyccata.core.resources import ResultList
 from pyccata.core.resources import MultiResultList
 from pyccata.core.threading import Threadable
 from pyccata.core.exceptions import ThreadNotStartedError
-from pyccata.core.language_parser import LanguageParser
+from pyccata.core.parser import LanguageParser
 from pyccata.core.helpers import resource
 
 class Csv(ManagableAbstract):
@@ -307,7 +307,8 @@ class CSVClient(list):
                 name=os.path.basename(item.filename).split('.')[0].split('/')[-1]
             )
             results.dataframe = (frame, self._get_item(os.path.basename(item.filename)))
-            frames.append(results)
+            if len(results) > 0:
+                frames.append(results)
 
         return frames
 

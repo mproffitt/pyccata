@@ -17,8 +17,8 @@ from memory_profiler import profile
 from pyccata.core.interface import ResultListInterface
 from pyccata.core.decorators import accepts
 from pyccata.core.helpers import implements
-from pyccata.core.language_parser import LanguageParser
-from pyccata.core.collation_classes import DataExtraction
+from pyccata.core.parser import LanguageParser
+from pyccata.core.extractor import DataExtraction
 from pyccata.core.log import Logger
 from pyccata.core.threading import Threadable
 
@@ -283,7 +283,7 @@ def combinatorics(results, collation):
     extractor.search(queries, results, collation.join.column)
     while not extractor.complete:
         time.sleep(Threadable.THREAD_SLEEP)
-    extractor.set_results(queries)
+    extractor.set_results(queries, collation.join.column)
 
     Logger().info('Collation completed in {0} seconds'.format((time.clock() - method_start)))
     results.dataframe = (extractor, None)

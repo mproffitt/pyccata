@@ -13,7 +13,7 @@ class Threadable(Thread):
     Base class for threadable objects
     """
 
-    THREAD_SLEEP = 0.0001
+    THREAD_SLEEP = 0.000001
     PRIORITY = 0
 
     _thread_name = ''
