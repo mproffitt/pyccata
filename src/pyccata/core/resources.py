@@ -364,8 +364,10 @@ class Calendar:
             # five week month
             current_date = self.get_calendar_day(5, day_number, month_from_now)
         except IndexError:
-            # Normal month
-            current_date = self.get_calendar_day(4, day_number, month_from_now)
+            try:
+                current_date = self.get_calendar_day(4, day_number, month_from_now)
+            except IndexError:
+                return self.get_last_day_of_month_ahead(day_name, month_from_now=month_from_now+1)
         return current_date
 
     def get_release_day(self, release_on='Wednesday'):
