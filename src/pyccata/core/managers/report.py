@@ -22,13 +22,6 @@ class ReportManager(Manager):
     """
     __implements__ = (ReportingInterface,)
 
-    @property
-    def REQUIRED(self):
-        """ Gets required elements from the client """
-        if not hasattr(self._client, 'REQUIRED'):
-            raise NotImplementedError('Clients of <ProjectManager> must implement a list of REQUIRED config elements')
-        return self.client.REQUIRED
-
     _callbacks = []
 
     def __init__(self):

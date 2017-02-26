@@ -9,10 +9,7 @@ into ones recognised by the report
 
 import os
 import re
-import sys
 import calendar
-import importlib
-import inspect
 import copy
 import subprocess
 from argparse import Action
@@ -106,10 +103,16 @@ class Join(object):
 
     @property
     def method(self):
+        """
+        Get the joining method
+        """
         return self._method
 
     @property
     def column(self):
+        """
+        Get the joining column
+        """
         return self._column
 
 class Collation(object):
@@ -118,6 +121,7 @@ class Collation(object):
     data inside collation methods utilised by datasets extending
     the ResultList class
     """
+    # pylint: disable=too-many-instance-attributes
     _method = None
     _field = None
     _columns = None
@@ -127,6 +131,7 @@ class Collation(object):
     _limits = None
     _split_results = False
 
+    # pylint: disable=too-many-arguments
     @accepts(
         str,
         field=(str, list),
@@ -158,6 +163,7 @@ class Collation(object):
         self._join = join
         self._limits = limits
         self.method = method
+        self._split_results = split_results
 
     def __call__(self, results):
         try:
@@ -167,15 +173,21 @@ class Collation(object):
 
     @property
     def method(self):
+        """
+        Get the collation method
+        """
         return self._method
 
     @method.setter
     @accepts(str)
-    def method(self, collation):
+    def method(self, collate):
+        """
+        Set the collation method
+        """
         try:
-            function = self._import(collation)
+            function = self._import(collate)
         except InvalidModuleError as exception:
-            if collation is not None:
+            if collate is not None:
                 Logger().error('Failed to set collation method')
                 Logger().error(exception)
                 raise exception
@@ -183,30 +195,51 @@ class Collation(object):
 
     @property
     def columns(self):
+        """
+        Get the columns on which to do the collation
+        """
         return self._columns
 
     @property
     def field(self):
+        """
+        Get the joining field for collation
+        """
         return self._field
 
     @property
     def query(self):
+        """
+        Get the query to execute
+        """
         return self._query
 
     @property
     def group_by(self):
+        """
+        Get the fields to group by
+        """
         return self._group_by
 
     @property
     def join(self):
+        """
+        Get the join
+        """
         return self._join
 
     @property
     def limits(self):
+        """
+        Get how to limit the collation
+        """
         return self._limits
 
     @property
     def split_results(self):
+        """
+        Are we splitting the result set?
+        """
         return self._split_results
 
     def _import(self, name):
@@ -223,26 +256,32 @@ class Collation(object):
         return collation(name, self._namespace)
 
     @staticmethod
-    def get(collation, namespace):
-        if isinstance(collation, str):
-            return Collation(collation, namespace=namespace)
+    def get(collate, namespace):
+        """
+        Determine the collation method and retrieve it from namespace
+
+        :param string: name - The name of the collation method to use
+        :param string: namespace - The folder to look in for it - defaults to `pyccata`
+        """
+        if isinstance(collate, str):
+            return Collation(collate, namespace=namespace)
 
         join = None
-        if hasattr(collation, 'join'):
-            method = collation.join.method if hasattr(collation.join, 'method') else None
-            column = collation.join.column if hasattr(collation.join, 'column') else None
+        if hasattr(collate, 'join'):
+            method = collate.join.method if hasattr(collate.join, 'method') else None
+            column = collate.join.column if hasattr(collate.join, 'column') else None
             if method is not None:
                 join = Join(method, column)
 
         return Collation(
-            collation.method,
-            field=collation.field if hasattr(collation, 'field') else '',
-            columns=collation.columns if hasattr(collation, 'columns') else None,
-            query=collation.query if hasattr(collation, 'query') else '',
-            group_by=collation.group_by if hasattr(collation, 'group_by') else '',
+            collate.method,
+            field=collate.field if hasattr(collate, 'field') else '',
+            columns=collate.columns if hasattr(collate, 'columns') else None,
+            query=collate.query if hasattr(collate, 'query') else '',
+            group_by=collate.group_by if hasattr(collate, 'group_by') else '',
             join=join,
-            split_results=collation.split_results if hasattr(collation, 'split_results') else False,
-            limits=collation.limits if hasattr(collation, 'limits') else None,
+            split_results=collate.split_results if hasattr(collate, 'split_results') else False,
+            limits=collate.limits if hasattr(collate, 'limits') else None,
             namespace=namespace
         )
 
@@ -461,6 +500,13 @@ class ResultList(list):
         """
         return self._name if self._name is not None else ''
 
+    @name.setter
+    def name(self, name):
+        """
+        Sets the name of the current set of results
+        """
+        self._name = name
+
     @property
     def group_by(self):
         """ Group the results """
@@ -505,11 +551,11 @@ class ResultList(list):
 
     @collate.setter
     @accepts((None, Collation))
-    def collate(self, collation):
+    def collate(self, collate):
         """
         Set the collation method of this ResultList
         """
-        self._collate = collation
+        self._collate = collate
 
     @property
     def distinct(self):
@@ -651,6 +697,8 @@ class ResultList(list):
         due to issues with copying the dataframe and loading back.
         Use this method to generate a deepcopy of the set instead
         """
+        # pylint: disable=protected-access
+        # Copying objects - need to ignore the fact a lot of the properties are protected.
         return_item = type(self)()
         return_item[:] = list(self[:])
         return_item._namespace = copy.deepcopy(self._namespace)
@@ -885,7 +933,7 @@ class Replacements(list):
         fix_version = replacements.find('FIX_VERSION').value
 
         release_date = fix_version
-        date_regex = '(\%[a-z0-9]{1}.*?)+?'
+        date_regex = r'(\%[a-z0-9]{1}.*?)+?'
         if re.match(date_regex, fix_version, re.IGNORECASE) is not None:
             # probably got a date format string as the value
             release_date = datetime.strptime(

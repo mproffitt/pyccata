@@ -174,6 +174,13 @@ def mkzip(directory, zip_name):
         return zip_name
 
 def modified_helper(path):
+    """
+    Get the date a path was modified
+
+    :param string: path
+    :returns: string YYYY-mm-dd
+    :raises ValueError: if path does not exist
+    """
     if os.path.exists(path):
         return date.fromtimestamp(os.path.getmtime(path)).strftime('%Y-%m-%d')
     raise ValueError('Invalid path provided for modified date')

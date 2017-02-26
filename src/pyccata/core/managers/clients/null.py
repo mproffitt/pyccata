@@ -3,11 +3,9 @@ Null Report client
 
 This client is for executions which require no structured output.
 """
-import os
 from pyccata.core.interface import ReportingInterface
 from pyccata.core.decorators import accepts
 from pyccata.core.log import Logger
-from pyccata.core.parts.list import List
 from pyccata.core.configuration import Configuration
 
 
@@ -16,10 +14,10 @@ class Null(object):
     Null report class
     """
     __implements__ = (ReportingInterface,)
-    _client = None
     _configuration = None
-    _run = None
+    _client = None
     _template_file = None
+    _run = None
 
     REQUIRED = []
     MAXWIDTH = 0

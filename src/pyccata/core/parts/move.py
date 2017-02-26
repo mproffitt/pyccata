@@ -2,15 +2,11 @@
 Command for moving a directory
 """
 import os
-import re
 import shutil
 
 from pyccata.core.decorators import accepts
 from pyccata.core.command import ThreadableCommand
 from pyccata.core.resources import Replacements
-from pyccata.core.helpers import include
-from pyccata.core.exceptions import InvalidModuleError
-from pyccata.core.log import Logger
 
 class Move(ThreadableCommand):
     """
@@ -27,6 +23,15 @@ class Move(ThreadableCommand):
         recreate=bool
     )
     def setup(self, name, input_name, output_name, recreate=False):
+        """
+        Set up the Move command
+
+        :param string: name        Name for the thread
+        :param string: input_name  Name of the file or directory to move
+        :param string: output_name Name of the location to move the file or directory to
+        :param bool:   recreate    If true will recreate an empty copy of the file or directory
+        """
+        # pylint: disable=arguments-differ
         self.thread_name = name
         self._input_name = Replacements().replace(input_name, additional=self.replacements(input_name))
         self._output_name = Replacements().replace(output_name, additional=self.replacements(output_name))
@@ -43,4 +48,3 @@ class Move(ThreadableCommand):
             elif os.path.isfile(self._output_name):
                 open(self._input_name, 'a').close()
         self._complete = True
-

@@ -13,10 +13,15 @@ class Manager(object):
     """
     Abstract base class for manager objects offering common load functionality
     """
-    # pylint: disable=no-member
-    # no-member is disabled to force child classes to implement
-    # the REQUIRED attribute describing a list of required
-    # configuration keys
+    @property
+    def REQUIRED(self):
+        """ Gets required elements from the client """
+        # pylint: disable=invalid-name
+        # One of those rare occasions where a property name is actually referencing
+        # a constant and thus needs to be in uppercase.
+        if not hasattr(self._client, 'REQUIRED'):
+            raise NotImplementedError('Clients of <Manager> must implement a list of REQUIRED config elements')
+        return self.client.REQUIRED
 
     _client = None
     _configuration = None
@@ -71,9 +76,7 @@ class Manager(object):
         """
         Validates the configuration against the list of required attributes
         """
-        if not hasattr(self, 'REQUIRED'):
-            raise NotImplementedError('Objects inheriting <Manager> must implement a list of REQUIRED config elements')
-
+        assert self.REQUIRED is not None
         if config_label in Configuration.REPORTING_TYPES:
             config_label = 'report'
         configuration = getattr(Configuration(), config_label)

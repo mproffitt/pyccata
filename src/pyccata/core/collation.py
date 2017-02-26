@@ -19,7 +19,6 @@ from pyccata.core.decorators import accepts
 from pyccata.core.helpers import implements
 from pyccata.core.language_parser import LanguageParser
 from pyccata.core.collation_classes import DataExtraction
-from pyccata.core.collation_classes import DataThreader
 from pyccata.core.log import Logger
 from pyccata.core.threading import Threadable
 
@@ -221,12 +220,14 @@ def subquery(results, collation):
         )
     ) + ')'
 
-    return_results._name = names
+    return_results.name = names
     return_results.dataframe = _merge(results, collation).query(compiled_query)
     return_results.dataframe.to_csv(os.path.join(collation.output_dir, 'overlaps.csv'), index=False)
 
     return return_results
 
+# pylint: disable=anomalous-backslash-in-string
+# Docblock contains a TeX equation.
 def combinatorics(results, collation):
     """
     Creates combination results between datasets based on the equation:
