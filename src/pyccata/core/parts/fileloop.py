@@ -2,7 +2,6 @@
 Loops over all files in a directory and performs a command over each
 """
 import os
-import sys
 import re
 import fnmatch
 import time
@@ -14,10 +13,13 @@ from pyccata.core.command import ThreadableCommand
 
 class Fileloop(ThreadableCommand):
     """
+    Creates a loop running the same command or set of commands over each item in a given location
     """
+    # pylint: disable=too-many-instance-attributes
     _input_directory = ''
     _output_directory = ''
     _input_pattern = ''
+    _output_extension = ''
     _strip = ''
 
     _maxthreads = 1
@@ -34,6 +36,8 @@ class Fileloop(ThreadableCommand):
             maxthreads=1,
             wait_for=None
     ):
+        """ Set up the fileloop object """
+        # pylint: disable=arguments-differ,too-many-arguments
         self.thread_name = name
         self._command = command
         self._input_directory = Replacements().replace(input_directory)
@@ -57,19 +61,19 @@ class Fileloop(ThreadableCommand):
             os.path.join(self._input_directory, filename)
             for filename in os.listdir(self._input_directory)
             if os.path.isfile(os.path.join(self._input_directory, filename))
-                and fnmatch.fnmatch(filename, self._input_pattern)
+            and fnmatch.fnmatch(filename, self._input_pattern)
         ]
 
         config = namedtuple('config', 'name command input_directory output_directory wait_for')
         for index, filename in enumerate(files):
-            additional={}
+            additional = {}
             additional['filename'] = filename
             output_file, current_extension = os.path.splitext(filename)
 
             if self._strip != '' and self._output_extension == '':
-                self._output_extension = self._current_extension
+                self._output_extension = current_extension
             if self._strip == '' and self._output_extension != '':
-                self._strip = '.' + self._current_extension
+                self._strip = '.' + current_extension
 
             if self._strip != '':
                 output_file = os.path.basename(filename)

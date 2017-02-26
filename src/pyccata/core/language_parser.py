@@ -19,8 +19,8 @@ import pandas as pd
 import numpy as np
 
 from pyccata.core.decorators import accepts
-from pyupset.resources import ExtractedData
 from pyccata.core.threading import Threadable
+from pyupset.resources import ExtractedData
 
 class _Query(object):
     """
@@ -112,7 +112,8 @@ class ExtractedResults(ExtractedData):
         while ExtractedResults._lock:
             time.sleep(Threadable.THREAD_SLEEP)
         ExtractedResults._lock = True
-        # pylint: disable=access-member-before-definition
+        # pylint: disable=access-member-before-definition,attribute-defined-outside-init
+        # self.results is identified on the parent __getattr__ method
         if self.results is None:
             self.results = pd.DataFrame(results, copy=True)
         else:
@@ -311,6 +312,9 @@ class LanguageParser(object):
         Combinations containing a single dataframe as the inclusion are excluded from the results when calculating
         combinations in this manner as the values they would contain count as non-overlapping data.
         """
+        # pylint: disable=too-many-locals
+        # This method is prime for refactoring, however it's complexity means
+        # that for now, it's not straight forward. We live with having overcrowding.
 
         limits = limits._asdict() if limits is not None else {}
         name_combinations = chain.from_iterable(

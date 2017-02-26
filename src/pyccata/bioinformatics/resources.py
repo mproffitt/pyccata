@@ -64,7 +64,12 @@ class BedFileItem(ResultListItemAbstract):
         ]
 
 class BayesFileItem(ResultListItemAbstract):
+    """
+    Class for a type of item discovered after carrying out a Bayes transform
 
+    Filename for this type must end with .bayes
+    """
+    # pylint: disable=too-many-instance-attributes
     DELIMITER = '\t'
 
     _series_frame = None
@@ -103,7 +108,10 @@ class BayesFileItem(ResultListItemAbstract):
         ]
 
 class GeneFileItem(ResultListItemAbstract):
-
+    """
+    Class for files generated from R. Must have a .gene extension
+    """
+    # pylint: disable=too-many-instance-attributes
     DELIMITER = '\t'
 
     _series_frame = None
@@ -140,5 +148,3 @@ class GeneFileItem(ResultListItemAbstract):
             'annotation', 'distance_to_tss', 'gene_name',
             'read_count', 'input_count', 'link'
         ]
-
-

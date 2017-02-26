@@ -3,7 +3,6 @@ Document controller module
 """
 from pyccata.core.abstract import ControllerAbstract
 from pyccata.core.exceptions import ThreadFailedError
-from pyccata.core.configuration import Configuration
 from pyccata.core.factory import DocumentPartFactory
 from pyccata.core.log import Logger
 from pyccata.core.decorators import accepts
@@ -54,4 +53,3 @@ class DocumentController(ControllerAbstract):
         Logger().info('Saving document to file')
         self.reportmanager.save(filename)
         Logger().info('Done')
-

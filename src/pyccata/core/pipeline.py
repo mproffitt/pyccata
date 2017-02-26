@@ -3,9 +3,7 @@ Set up command pipelines for shell execution
 """
 from pyccata.core.abstract import ControllerAbstract
 from pyccata.core.exceptions import ThreadFailedError
-from pyccata.core.configuration import Configuration
 from pyccata.core.factory import CommandFactory
-from pyccata.core.log import Logger
 from pyccata.core.decorators import accepts
 
 class PipelineController(ControllerAbstract):
@@ -24,6 +22,9 @@ class PipelineController(ControllerAbstract):
 
     @property
     def length(self):
+        """
+        Get the length of the pipeline
+        """
         return len(self._commands)
 
     def build(self):

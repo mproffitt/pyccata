@@ -4,9 +4,7 @@ Contains helper classes for working within the collation / correlation engine
 """
 import math
 import time
-import pandas as pd
 from pyupset import DataExtractor
-from pyccata.core.interface import ObservableInterface
 from pyccata.core.interface import ResultListItemInterface
 from pyccata.core.threading import Threadable
 from pyccata.core.managers.thread import ThreadManager
@@ -14,6 +12,10 @@ from pyccata.core.exceptions import ThreadFailedError
 from pyccata.core.log import Logger
 
 class Partition(object):
+    """
+    Given a pandas dataframe, will split the index into n parts of size x
+    where x is defined by |df| / n
+    """
     _name = None
     _partitions = None
     _partition_length = 0
@@ -25,24 +27,41 @@ class Partition(object):
         self._dataframe = dataframe
         self._partitions = [0]
         self._partition_length = math.ceil(len(dataframe.index) / PartitionRunner.PARTITION_SIZE)
-        for i in range(PartitionRunner.PARTITION_SIZE):
+        for _ in range(PartitionRunner.PARTITION_SIZE):
             self._partitions.append(self._partitions[-1] + self._partition_length)
 
     @property
     def name(self):
+        """
+        Gets the name of the partition
+        """
         return self._name
 
     def next(self):
+        """
+        Gets the next partition in the list
+        """
         partition_start = self._partitions[self._current_index]
         partition_end = partition_start + self._partition_length
         self._current_index += 1
         return self._dataframe[partition_start:partition_end]
 
     def reset(self):
+        """
+        Resets the partition index back to 0
+        """
         self._current_index = 0
 
 class PartitionRunner(Threadable):
-    PRIORITY=1200
+    """
+    Runs a set of queries over a partition
+
+    When a merge is carried out, to avoid differences in cartesian products
+    whereby AxB is not always the same as BxA, this class re-arranges the merge
+    for each set in results as primary
+    """
+    # pylint: disable=too-many-instance-attributes
+    PRIORITY = 1200
     PARTITION_SIZE = 30
 
     _index = 0
@@ -56,6 +75,10 @@ class PartitionRunner(Threadable):
     _extractor = None
 
     def setup(self, extractor, index, queries, results, primary_dataset, unique_columns):
+        """
+        Set up the partition runner
+        """
+        # pylint: disable=arguments-differ,too-many-arguments
         self._extractor = extractor
         self._index = index
         self._queries = queries
@@ -71,8 +94,11 @@ class PartitionRunner(Threadable):
         ThreadManager().append(self)
 
     def merge(self, sets):
+        """
+        Generate an outer join between two dataframes
+        """
         merge = None
-        for index, item in enumerate([item['data'] for item in sets]):
+        for _, item in enumerate([item['data'] for item in sets]):
             if merge is None:
                 merge = item
             else:
@@ -84,6 +110,10 @@ class PartitionRunner(Threadable):
         return merge
 
     def run(self):
+        """
+        Run the quries over the merge table inside a thread
+        """
+        # pylint: disable=too-many-locals
         loop_start = time.clock()
         partitions = []
         for item in self._results:
@@ -111,8 +141,8 @@ class PartitionRunner(Threadable):
                 )
             )
 
-            for x in range(self.PARTITION_SIZE):
-                if not self._extractor.add_combination(index, x, combination):
+            for size in range(self.PARTITION_SIZE):
+                if not self._extractor.add_combination(index, size, combination):
                     continue
 
                 self._running = []
@@ -135,14 +165,16 @@ class PartitionRunner(Threadable):
 
                 self.monitor()
                 times = [item.duration for item in self._running]
+                message = '{4}\n    Combination {0}, Index {5}/{1}'
+                message += ', merge_table size: {2}.\n    Average time per query {3}'
                 Logger().debug(
-                    '{4}\n    Combination {0}, Index {5}/{1}, merge_table size: {2}.\n    Average time per query {3}'.format(
+                    message.format(
                         ''.join(combination),
                         index,
                         len(merge_table.index),
                         times,
                         [len(query.results.index) for query in self._queries],
-                        x
+                        size
                     )
                 )
                 del times
@@ -167,6 +199,9 @@ class PartitionRunner(Threadable):
         self._complete = True
 
     def monitor(self):
+        """
+        Wait for all child threads to complete
+        """
         while True:
             complete = True
             for thread in self._running:
@@ -197,14 +232,23 @@ class DataThreader(Threadable):
 
     @property
     def start_time(self):
+        """
+        Get the start time of the data threader
+        """
         return self._start_time
 
     @property
     def end_time(self):
+        """
+        Get the end time of the data threader run
+        """
         return self._end_time
 
     @property
     def duration(self):
+        """
+        Get the duration of the datathreader as a 2 decimal float
+        """
         return float('{0:.2f}'.format(self.end_time - self.start_time))
 
     def setup(self, merge_table, query, unique_columns):
@@ -214,6 +258,8 @@ class DataThreader(Threadable):
         :param merge_table: pandas.DataFrame object
         :param query: string
         """
+        # pylint: disable=arguments-differ
+
         self._data = merge_table
         self._query = query
         self._unique_columns = unique_columns
@@ -253,9 +299,15 @@ class DataExtraction(DataExtractor):
 
     @property
     def name(self):
+        """
+        Get the name to use for the graph
+        """
         return 'data_extraction_for_' + '_'.join(self.names).lower()
 
     def add_combination(self, index, secondary, combination):
+        """
+        Add a combination to the extraction
+        """
         while self._lock:
             time.sleep(Threadable.THREAD_SLEEP)
         self._lock = True
@@ -296,10 +348,19 @@ class DataExtraction(DataExtractor):
         return True
 
     def set_results(self, results):
+        """
+        Set the results of the extraction
+        """
         self._results = results
 
     def set_sizes(self, sizes):
+        """
+        Set the sizes of each set
+        """
         self._sizes = sizes
 
     def keys(self):
+        """
+        Get the keys used for data extraction
+        """
         return self.__dict__.keys()

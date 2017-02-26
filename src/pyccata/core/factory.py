@@ -47,4 +47,11 @@ class CommandFactory(FactoryAbstract):
         return cls._instance
 
     def command(self, name):
+        """
+        Get a command from the factory
+
+        :param string: name
+        :returns: Command
+
+        """
         return getattr(self, name)

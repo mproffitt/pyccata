@@ -23,10 +23,12 @@ class Threadable(Thread):
 
     @property
     def thread_name(self):
+        """ Get the name of the current thread """
         return self._thread_name if self._thread_name != '' else self._name
 
     @thread_name.setter
     def thread_name(self, name):
+        """ Set the name of the current thread """
         self._thread_name = name
 
     @property

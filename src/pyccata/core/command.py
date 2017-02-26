@@ -16,7 +16,6 @@ from pyccata.core.resources import Command
 from pyccata.core.resources import Redirect
 from pyccata.core.configuration import Configuration
 from pyccata.core.managers.thread import ThreadManager
-from pyccata.core.filter import Filter
 from pyccata.core.exceptions import ThreadFailedError
 from pyccata.core.resources import ResultList
 from pyccata.core.resources import CommandLineResultItem
@@ -40,9 +39,13 @@ class ThreadableCommand(Threadable):
 
     PRIORITY = 1000
     _results = None
+    _block = None
 
     @property
     def results(self):
+        """
+        Get the results of command
+        """
         return self._results
 
     @property
@@ -111,10 +114,11 @@ class ThreadableCommand(Threadable):
         self._input_directory = Replacements().replace(input_directory)
         self._output_directory = Replacements().replace(
             output_directory,
-            additional=self.replacements(output_directory)
+            additional=ThreadableCommand.replacements(output_directory)
         )
 
         self._build_command(command)
+        self._block = wait_for
 
     @accepts(str)
     def _build_command(self, command_string):
@@ -192,7 +196,8 @@ class ThreadableCommand(Threadable):
             self.failure = ThreadFailedError(stderr)
         self._complete = True
 
-    def replacements(self, string_to_search):
+    @staticmethod
+    def replacements(string_to_search):
         """
         Compiles a list of optional string replacements for command thread strings
         """

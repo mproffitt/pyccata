@@ -22,13 +22,6 @@ class ProjectManager(Manager):
     """
     __implements__ = (ManagerInterface,)
 
-    @property
-    def REQUIRED(self):
-        """ Gets required elements from the client """
-        if not hasattr(self._client, 'REQUIRED'):
-            raise NotImplementedError('Clients of <ProjectManager> must implement a list of REQUIRED config elements')
-        return self.client.REQUIRED
-
     def __init__(self):
         """
         Initialise the object and call _load
