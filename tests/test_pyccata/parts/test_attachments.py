@@ -105,12 +105,19 @@ class TestAttachments(TestCase):
             with patch('pycurl.Curl.setopt') as mock_setopt:
                 with patch('pycurl.Curl.perform') as mock_perform:
                     with patch('pycurl.Curl.close') as mock_close:
-                        Curl = namedtuple('Curl', 'URL WRITEDATA setopt perform close')
-                        mock_curl.return_value = Curl(URL=None, WRITEDATA=None, setopt=mock_setopt, perform=mock_perform, close=mock_close)
+                        Curl = namedtuple('Curl', 'URL WRITEDATA setopt perform close getinfo')
+                        mock_curl.return_value = Curl(
+                            URL=None,
+                            WRITEDATA=None,
+                            setopt=mock_setopt,
+                            perform=mock_perform,
+                            close=mock_close,
+                            getinfo=lambda x: 200
+                        )
                         self._thread_manager.execute()
 
                         self.assertEquals(result_count, len(attachments._content))
-                        self.assertEquals((2 * result_count), mock_setopt.call_count)
+                        self.assertEquals((3 * result_count), mock_setopt.call_count)
                         self.assertEquals((1 * result_count), mock_perform.call_count)
                         self.assertEquals((1 * result_count), mock_close.call_count)
                         self.assertEquals((1 * result_count), mock_open.call_count)
@@ -180,12 +187,19 @@ class TestAttachments(TestCase):
             with patch('pycurl.Curl.setopt') as mock_setopt:
                 with patch('pycurl.Curl.perform') as mock_perform:
                     with patch('pycurl.Curl.close') as mock_close:
-                        Curl = namedtuple('Curl', 'URL WRITEDATA setopt perform close')
-                        mock_curl.return_value = Curl(URL=None, WRITEDATA=None, setopt=mock_setopt, perform=mock_perform, close=mock_close)
+                        Curl = namedtuple('Curl', 'URL WRITEDATA setopt perform close getinfo')
+                        mock_curl.return_value = Curl(
+                            URL=None,
+                            WRITEDATA=None,
+                            setopt=mock_setopt,
+                            perform=mock_perform,
+                            close=mock_close,
+                            getinfo=lambda x: 200
+                        )
                         self._thread_manager.execute()
 
                         self.assertEquals(result_count, len(attachments._content))
-                        self.assertEquals((2 * result_count), mock_setopt.call_count)
+                        self.assertEquals((3 * result_count), mock_setopt.call_count)
                         self.assertEquals((1 * result_count), mock_perform.call_count)
                         self.assertEquals((1 * result_count), mock_close.call_count)
                         self.assertEquals((1 * result_count), mock_open.call_count)
@@ -255,12 +269,19 @@ class TestAttachments(TestCase):
             with patch('pycurl.Curl.setopt') as mock_setopt:
                 with patch('pycurl.Curl.perform') as mock_perform:
                     with patch('pycurl.Curl.close') as mock_close:
-                        Curl = namedtuple('Curl', 'URL WRITEDATA setopt perform close')
-                        mock_curl.return_value = Curl(URL=None, WRITEDATA=None, setopt=mock_setopt, perform=mock_perform, close=mock_close)
+                        Curl = namedtuple('Curl', 'URL WRITEDATA setopt perform close getinfo')
+                        mock_curl.return_value = Curl(
+                            URL=None,
+                            WRITEDATA=None,
+                            setopt=mock_setopt,
+                            perform=mock_perform,
+                            close=mock_close,
+                            getinfo=lambda x: 200
+                        )
                         self._thread_manager.execute()
 
                         self.assertEquals(result_count, len(attachments._content))
-                        self.assertEquals((2 * result_count), mock_setopt.call_count)
+                        self.assertEquals((3 * result_count), mock_setopt.call_count)
                         self.assertEquals((1 * result_count), mock_perform.call_count)
                         self.assertEquals((1 * result_count), mock_close.call_count)
                         self.assertEquals((1 * result_count), mock_open.call_count)
@@ -411,8 +432,15 @@ class TestAttachments(TestCase):
             with patch('pycurl.Curl.setopt') as mock_setopt:
                 with patch('pycurl.Curl.perform') as mock_perform:
                     with patch('pycurl.Curl.close') as mock_close:
-                        Curl = namedtuple('Curl', 'URL WRITEDATA setopt perform close')
-                        mock_curl.return_value = Curl(URL=None, WRITEDATA=None, setopt=mock_setopt, perform=mock_perform, close=mock_close)
+                        Curl = namedtuple('Curl', 'URL WRITEDATA setopt perform close getinfo')
+                        mock_curl.return_value = Curl(
+                            URL=None,
+                            WRITEDATA=None,
+                            setopt=mock_setopt,
+                            perform=mock_perform,
+                            close=mock_close,
+                            getinfo=lambda x: 200
+                        )
                         with self.assertRaises(InvalidCallbackError):
                             self._thread_manager.execute()
                         self.assertIsInstance(attachments.failure, InvalidCallbackError)

@@ -44,32 +44,32 @@ class TestList(TestCase):
 
     def test_get_item_raises_error_if_content_is_filter_and_filter_results_is_empty(self):
         list_contents = Filter('project=mssportal', max_results=5, fields=['id', 'description' ,'priority'])
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
         unordered = List(self._thread_manager, config)
         with self.assertRaises(IndexError):
             item = unordered[0]
 
     def test_get_item_raises_error_if_content_is_list_and_results_is_none(self):
         list_contents = []
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
         unordered = List(self._thread_manager, config)
         with self.assertRaises(IndexError):
             item = unordered[0]
 
     def test_set_item_raises_error_if_content_is_filter_and_filter_results_is_none(self):
         list_contents = Filter('project=mssportal', max_results=5, fields=['id', 'description' ,'priority'])
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
         unordered = List(self._thread_manager, config)
         with self.assertRaises(IndexError):
             unordered[0] = 'hello world'
 
     def test_set_item_raises_error_if_content_is_list_and_results_is_none(self):
         list_contents = []
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
         unordered = List(self._thread_manager, config)
         with self.assertRaises(IndexError):
             unordered[0] = 'hello world'
@@ -81,8 +81,8 @@ class TestList(TestCase):
             'test 3'
         ]
 
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
         unordered = List(self._thread_manager, config)
         self.assertEqual(3, len(unordered))
 
@@ -93,8 +93,8 @@ class TestList(TestCase):
         list_contents = Filter('project=msportal', max_results=5, fields=['id', 'description' ,'priority'])
 
         mock_manager.return_value = result_list
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         unordered = List(self._thread_manager, config)
         self._thread_manager.execute()
@@ -108,8 +108,8 @@ class TestList(TestCase):
             'test 3'
         ]
 
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
         unordered = List(self._thread_manager, config)
 
         del unordered[2]
@@ -121,8 +121,8 @@ class TestList(TestCase):
 
         list_contents = Filter('project=msportal', max_results=5, fields=['id', 'description' ,'priority'])
         mock_manager.return_value = result_list
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         unordered = List(self._thread_manager, config)
         self._thread_manager.execute()
@@ -138,8 +138,8 @@ class TestList(TestCase):
             'test 3'
         ]
 
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
         unordered = List(self._thread_manager, config)
 
         unordered = list(reversed(unordered))
@@ -153,8 +153,8 @@ class TestList(TestCase):
 
         list_contents = Filter('project=msportal', max_results=5, fields=['id', 'description' ,'priority'])
         mock_manager.return_value = result_list
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         unordered = List(self._thread_manager, config)
         self._thread_manager.execute()
@@ -173,8 +173,8 @@ class TestList(TestCase):
             'test 3'
         ]
 
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
         unordered = List(self._thread_manager, config)
 
         self.assertTrue(('test 1' in unordered))
@@ -185,8 +185,8 @@ class TestList(TestCase):
 
         list_contents = Filter('project=msportal', max_results=5, fields=['id', 'description' ,'priority'])
         mock_manager.return_value = result_list
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         unordered = List(self._thread_manager, config)
         self._thread_manager.execute()
@@ -194,8 +194,8 @@ class TestList(TestCase):
         self.assertTrue((result_list[3] in unordered))
 
     def test_setup_raises_argument_validation_error_if_style_is_invalid(self):
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=[], style='IAmInvalid', field='')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=[], style='IAmInvalid', field='', prepend=None)
         with self.assertRaises(ArgumentValidationError):
             unordered = List(self._thread_manager, config)
 
@@ -206,8 +206,8 @@ class TestList(TestCase):
             'test item 2',
             'test item 3'
         ]
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='', prepend=None)
 
         calls = [call(item, style='ListBullet') for item in list_contents]
         unordered = List(self._thread_manager, config)
@@ -228,8 +228,8 @@ class TestList(TestCase):
         ]
 
         mock_manager.side_effect = result_list
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         calls = [call(item[0].description, style='ListBullet') for item in result_list]
 
@@ -256,8 +256,8 @@ class TestList(TestCase):
         effect = [item for item in result_list if isinstance(item, ResultList)]
 
         mock_manager.side_effect = effect
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         calls = [call(item[0].description if isinstance(item, list) else item, style='ListBullet') for item in result_list]
 
@@ -276,8 +276,8 @@ class TestList(TestCase):
         list_contents = Filter('project=msportal', max_results=5, fields=['id', 'description' ,'priority'])
 
         mock_manager.return_value = result_list
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         calls = [call(item.description, style='ListBullet') for item in result_list]
 
@@ -305,8 +305,8 @@ class TestList(TestCase):
         effect[1] = InvalidQueryError('The query you have provided is invalid')
 
         mock_manager.side_effect = effect
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         calls = [call(item[0].description if isinstance(item, list) else item, style='ListBullet') for item in result_list]
         del calls[2]
@@ -323,8 +323,8 @@ class TestList(TestCase):
         ListContents = namedtuple('ListContents', 'query fields')
         list_contents = ListContents('project=msportal', fields=['id', 'description' ,'priority'])
         mock_manager.return_value = result_list
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         unordered = List(self._thread_manager, config)
         self._thread_manager.execute()
@@ -338,8 +338,8 @@ class TestList(TestCase):
         Filter = namedtuple('Filter', 'bob fields')
         list_contents = Filter('project=msportal', fields=['id', 'description' ,'priority'])
         mock_manager.return_value = result_list
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         with self.assertRaises(ArgumentValidationError):
             unordered = List(self._thread_manager, config)
@@ -347,8 +347,8 @@ class TestList(TestCase):
     def test_run_completes_if_filter_delays_in_completing(self):
         ListContents = namedtuple('ListContents', 'query fields')
         list_contents = ListContents('project=msportal', fields=['id', 'description' ,'priority'])
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         with patch('pyccata.core.filter.Filter.complete', new_callable=PropertyMock) as mock_thread_complete:
             unordered = List(self._thread_manager, config)
@@ -359,8 +359,8 @@ class TestList(TestCase):
     def test_run_completes_if_thread_fails(self):
         ListContents = namedtuple('ListContents', 'query fields')
         list_contents = ListContents('project=msportal', fields=['id', 'description' ,'priority'])
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         with patch('pyccata.core.threading.Threadable.complete', new_callable=PropertyMock) as mock_thread_complete:
             unordered = List(self._thread_manager, config)
@@ -383,8 +383,8 @@ class TestList(TestCase):
         effect[1] = InvalidQueryError('The query you have provided is invalid')
 
         mock_manager.side_effect = effect
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         with patch('pyccata.core.filter.Filter.complete', new_callable=PropertyMock) as mock_thread_complete:
             mock_thread_complete.side_effect = [False, False, True]
@@ -408,8 +408,8 @@ class TestList(TestCase):
         resultset.pipelines = results
 
         list_contents = Filter('project=msportal', max_results=5, fields=['id', 'description' ,'priority'])
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='pipelines')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='pipelines', prepend=None)
 
         calls = [call(item, style='ListBullet') for item in results]
         with patch('pyccata.core.filter.Filter.complete', new_callable=PropertyMock):
@@ -426,12 +426,10 @@ class TestList(TestCase):
 
         list_contents = Filter('project=msportal', max_results=5, fields=['id', 'description' ,'priority'])
         mock_manager.return_value = result_list
-        Config = namedtuple('Config', 'content style field')
-        config = Config(content=list_contents, style='unordered', field='description')
+        Config = namedtuple('Config', 'content style field prepend')
+        config = Config(content=list_contents, style='unordered', field='description', prepend=None)
 
         unordered = List(self._thread_manager, config)
         with patch('pyccata.core.filter.Filter.failure', new_callable=PropertyMock) as mock_failure:
             mock_failure.return_value = RuntimeError('I blew up')
             self._thread_manager.execute()
-
-

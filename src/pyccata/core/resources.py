@@ -403,6 +403,7 @@ class Calendar:
             # five week month
             current_date = self.get_calendar_day(5, day_number, month_from_now)
         except IndexError:
+            # Normal month
             try:
                 current_date = self.get_calendar_day(4, day_number, month_from_now)
             except IndexError:

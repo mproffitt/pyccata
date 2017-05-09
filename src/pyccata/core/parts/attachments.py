@@ -76,15 +76,30 @@ class Attachments(ThreadableDocument):
 
         for item in self._content:
             with open(os.path.join(self._output_path, item.filename), 'wb') as output_file:
-                attachment_url = attachments_function(str(item.attachment_id), item.filename)
-                Logger().info('Downloading file \'' + item.filename + '\' from \'' + attachment_url + '\'')
-                curl_instance = pycurl.Curl()
-                curl_instance.setopt(curl_instance.URL, attachment_url)
+                try:
+                    attachment_url = attachments_function(str(item.attachment_id), item.filename)
+                    Logger().info('Downloading file \'' + item.filename + '\' from \'' + attachment_url + '\'')
+                    curl_instance = pycurl.Curl()
+                    curl_instance.setopt(curl_instance.URL, attachment_url)
+                    curl_instance.setopt(
+                        pycurl.USERPWD,
+                        '{username}:{password}'.format(
+                            username=Configuration().jira.username,
+                            password=Configuration().jira.password
+                        )
+                    )
 
-                curl_instance.setopt(curl_instance.WRITEDATA, output_file)
-                curl_instance.perform()
+                    curl_instance.setopt(curl_instance.WRITEDATA, output_file)
+                    curl_instance.perform()
+                    if curl_instance.getinfo(pycurl.RESPONSE_CODE) != 200:
+                        Logger().error(
+                            'Error in downloading attachments. Got response code {0}'.format(
+                                curl_instance.getinfo(pycurl.RESPONSE_CODE)
+                            )
+                        )
+                except pycurl.error as exception:
+                    Logger().error(exception)
                 curl_instance.close()
-
 
     @accepts(ReportManager)
     def render(self, document):
