@@ -2,6 +2,7 @@
 Loops over all files in a directory and performs a command over each
 """
 import os
+import sys
 import re
 import fnmatch
 import time

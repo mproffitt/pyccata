@@ -23,15 +23,17 @@ class List(ThreadableDocument):
     _content = None
 
     _field = ''
+    _prepend = ''
 
-    @accepts(content=(Filter, list, tuple), style=str, field=str)
-    def setup(self, content=None, style='unordered', field='description'):
+    @accepts(content=(Filter, list, tuple), style=str, field=str, prepend=(str, None))
+    def setup(self, content=None, style='unordered', field='description', prepend=''):
         """ Set up the list object """
         # pylint: disable=arguments-differ
         if not style.lower() in List.STYLE_MAPPINGS.keys():
             raise ArgumentValidationError('style', '__init__', self.STYLE_MAPPINGS.keys(), style)
         self._style = style.lower()
         self._field = field
+        self._prepend = prepend
 
         if isinstance(content, tuple):
             try:
@@ -114,10 +116,13 @@ class List(ThreadableDocument):
         """ Write text into the document """
         if isinstance(text, list):
             for item in text:
-                document.add_list(Replacements().replace(
-                    getattr(item, 'value') if isinstance(item, object) and hasattr(item, 'value') else item
-                ), style=List.STYLE_MAPPINGS[self._style])
+                value = getattr(item, 'value') if isinstance(item, object) and hasattr(item, 'value') else item
+                if self._prepend is not None and self._prepend != '':
+                    value = '{0} {1}'.format(self._prepend, value)
+                document.add_list(Replacements().replace(value), style=List.STYLE_MAPPINGS[self._style])
         elif text is not None:
+            if self._prepend is not None and self._prepend != '':
+                text = '{0} {1}'.format(self._prepend, text)
             document.add_list(Replacements().replace(text), style=List.STYLE_MAPPINGS[self._style])
 
     @staticmethod

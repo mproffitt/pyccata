@@ -169,7 +169,7 @@ class TestDocumentController(TestCase):
             call('Test document structure for WeeklyReport/Helicopter view', 0),
             call('Week 41', 1),
             call('hello world', 1),
-            call('Test title', 3),
+            #call('Test title', 3),
             call('This has sub-sections', 1),
             call('this is sub section 1', 2),
             call('this is sub section 2', 2),
@@ -177,7 +177,7 @@ class TestDocumentController(TestCase):
         ]
         self.assertEquals(mock_heading.call_count, len(heading_calls))
         mock_heading.assert_has_calls(heading_calls)
-        self.assertEquals(20, mock_paragraph.call_count)
+        self.assertEquals(17, mock_paragraph.call_count)
         mock_save.assert_called_with('demo.docx')
 
     @patch('pyccata.core.configuration.Configuration._parse_flags')
@@ -199,7 +199,7 @@ class TestDocumentController(TestCase):
             call('Test document structure for WeeklyReport/Helicopter view', 0),
             call('Week 41', 1),
             call('hello world', 1),
-            call('Test title', 3),
+            #call('Test title', 3),
             call('This has sub-sections', 1),
             call('this is sub section 1', 2),
             call('this is sub section 2', 2),
@@ -207,7 +207,7 @@ class TestDocumentController(TestCase):
         ]
         self.assertEquals(mock_heading.call_count, len(heading_calls))
         mock_heading.assert_has_calls(heading_calls)
-        self.assertEquals(20, mock_paragraph.call_count)
+        self.assertEquals(17, mock_paragraph.call_count)
 
     @patch('pyccata.core.managers.clients.docx.Docx.format_for_email')
     @patch('pyccata.core.configuration.Configuration._parse_flags')
