@@ -25,10 +25,12 @@ class PartitionSet(object):
 
     @property
     def left(self):
+        """ Get the data partition on the left hand side of the join """
         return self._left
 
     @property
     def right(self):
+        """ Get the data partition on the right hand side of the join """
         return self._right
 
     def __init__(self, left_frame, right_frame):
@@ -184,8 +186,8 @@ class PartitionRunner(Threadable):
 
         :returns: bool
         """
-        rows = PartitionRunner.merge_size(left, right, key, how)
-        cols = len(right.columns) + (len(right.columns) - 1)
+        rows = PartitionRunner.merge_size(left, right, key, how=how)
+        cols = len(right.columns) + (len(right.columns) - (len(key) if isinstance(key, list) else 1))
         required_memory = (rows * cols) * np.dtype(np.float64).itemsize
         return required_memory <= psutil.virtual_memory().available
 
@@ -201,13 +203,14 @@ class PartitionRunner(Threadable):
 
         :return int:
         """
-        threshold = (((psutil.virtual_memory().available / 1024 ) / 1024) / 1024) // self.MAX_THRESHOLD
+        threshold = (((psutil.virtual_memory().available / 1024) / 1024) / 1024) // PartitionRunner.MAX_THRESHOLD
         slices = 1
         memory = 0
         while True:
-            q1_slice = q1[:len(q1.index) // slices]
-            q2_slice = q2[:len(q2.index) // slices]
-            rows = PartitionRunner.merge_size(q1_slice, q2_slice, 'chromosome', how='outer')
+            left_slice = left[:len(left.index) // slices]
+            right_slice = right[:len(right.index) // slices]
+            rows = PartitionRunner.merge_size(left_slice, right_slice, 'chromosome', how=how)
+            cols = len(left.columns) + len(right.columns) - (len(key) if isinstance(key, list) else 1)
             memory = ((((rows * cols * np.dtype(np.float64).itemsize) / 1024) / 1024) / 1024)
             if memory < threshold:
                 break

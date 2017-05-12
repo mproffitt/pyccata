@@ -106,6 +106,7 @@ class Attachments(ThreadableDocument):
         """
         Saves all attachments to the output path
         """
+        # pylint: disable=arguments-differ
         callback = document.get_callback('attachments')
         filenames = None
         if callback is not None:

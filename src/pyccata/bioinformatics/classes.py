@@ -7,7 +7,7 @@ class Dataframe(pd.Dataframe):
     """
     An extension of pandas dataframes for re-combining multiple dataframes into one.
     """
-
+    #pylint: disable=too-few-public-methods
     def recombine(self, sets):
         """
         Given sets A,B,C,D,E in the order of:

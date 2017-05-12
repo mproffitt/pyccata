@@ -31,7 +31,7 @@ class _Query(object):
     # Struct type object require only a few methods
 
     _original = None
-    _real = None,
+    _real = None
     _fields = None
 
     @accepts(str, list)

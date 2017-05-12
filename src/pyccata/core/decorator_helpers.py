@@ -12,9 +12,8 @@ def ordinal(num):
     """
     if 10 <= num % 100 < 20:
         return '{0}th'.format(num)
-    else:
-        ord_num = {1 : 'st', 2 : 'nd', 3 : 'rd'}.get(num % 10, 'th')
-        return '{0}{1}'.format(num, ord_num)
+    ord_num = {1 : 'st', 2 : 'nd', 3 : 'rd'}.get(num % 10, 'th')
+    return '{0}{1}'.format(num, ord_num)
 
 def validate_against_tuple(argument, inheritance):
     """
