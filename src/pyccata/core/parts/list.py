@@ -29,7 +29,7 @@ class List(ThreadableDocument):
     def setup(self, content=None, style='unordered', field='description', prepend=''):
         """ Set up the list object """
         # pylint: disable=arguments-differ
-        if not style.lower() in List.STYLE_MAPPINGS.keys():
+        if style.lower() not in List.STYLE_MAPPINGS.keys():
             raise ArgumentValidationError('style', '__init__', self.STYLE_MAPPINGS.keys(), style)
         self._style = style.lower()
         self._field = field
@@ -88,6 +88,7 @@ class List(ThreadableDocument):
     @accepts(ReportManager)
     def render(self, document):
         """ Render the paragraph text """
+        # pylint: disable=arguments-differ
         Logger().info('Writing list {0}'.format(self.title if self.title is not None else ''))
         if self.title is not None:
             document.add_heading(Replacements().replace(self.title), 3)

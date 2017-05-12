@@ -3,9 +3,6 @@ Module for using CSV files as a manager
 """
 
 import os
-import sys
-import importlib
-import inspect
 from time import sleep
 import pandas as pd
 from pyccata.core.abstract import ManagableAbstract
@@ -13,7 +10,6 @@ from pyccata.core.decorators import accepts
 from pyccata.core.log import Logger
 from pyccata.core.resources import ResultList
 from pyccata.core.resources import MultiResultList
-from pyccata.core.exceptions import InvalidModuleError
 from pyccata.core.threading import Threadable
 from pyccata.core.exceptions import ThreadNotStartedError
 from pyccata.core.parser import LanguageParser

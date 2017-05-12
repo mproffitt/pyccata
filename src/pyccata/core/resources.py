@@ -523,8 +523,7 @@ class ResultList(list):
         """ Gets the column headings """
         if self._dataframe is not None:
             return self._dataframe.columns
-        else:
-            return self._columns
+        return self._columns
 
     @property
     def field(self):

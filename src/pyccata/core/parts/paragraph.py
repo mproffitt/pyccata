@@ -23,6 +23,7 @@ class Paragraph(ThreadableDocument):
     @accepts(ReportManager)
     def render(self, document):
         """ Render the paragraph text """
+        # pylint: disable=arguments-differ
         Logger().info('Writing paragraph')
         if isinstance(self._content, str):
             document.add_paragraph(Replacements().replace(self._content))
