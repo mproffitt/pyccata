@@ -52,8 +52,9 @@ class ReleaseInstructions(object):
             final = Replacements().find('FINAL').value
             if final in ['1', 'True', 'TRUE', 'true']:
                 pipelines = self._document_controller.threadmanager.find('Deployment Pipelines')
-                for pipeline in pipelines:
-                    self.pipeline_trigger(pipeline)
+                if pipelines is not None or len(pipelines) > 0:
+                    for pipeline in pipelines:
+                        self.pipeline_trigger(pipeline)
             self._document_ready = True
         except:
             self._document_ready = False

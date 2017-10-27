@@ -56,6 +56,7 @@ class Attachments(ThreadableDocument):
         self._content = [item for content in contents for item in content]
         if len(self._content) == 0:
             Logger().warning('No Attachments to download. Skipping.')
+            self._complete = True
             return
 
         try:

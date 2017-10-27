@@ -186,7 +186,7 @@ class PartitionRunner(Threadable):
 
         :returns: bool
         """
-        rows = PartitionRunner.merge_size(left, right, key, how)
+        rows = PartitionRunner.merge_size(left, right, key, how=how)
         cols = len(right.columns) + (len(right.columns) - (len(key) if isinstance(key, list) else 1))
         required_memory = (rows * cols) * np.dtype(np.float64).itemsize
         return required_memory <= psutil.virtual_memory().available
@@ -209,7 +209,7 @@ class PartitionRunner(Threadable):
         while True:
             left_slice = left[:len(left.index) // slices]
             right_slice = right[:len(right.index) // slices]
-            rows = PartitionRunner.merge_size(left_slice, right_slice, 'chromosome', how='outer')
+            rows = PartitionRunner.merge_size(left_slice, right_slice, 'chromosome', how=how)
             cols = len(left.columns) + len(right.columns) - (len(key) if isinstance(key, list) else 1)
             memory = ((((rows * cols * np.dtype(np.float64).itemsize) / 1024) / 1024) / 1024)
             if memory < threshold:

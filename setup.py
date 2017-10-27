@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from setuptools import setup
+from setuptools import find_packages
 
 setup(
     name='pycatta',
@@ -13,9 +14,7 @@ setup(
     package_dir={
         'pyccata':'src/pyccata'
     },
-    packages=[
-        'pyccata'
-    ],
+    packages=find_packages('src', exclude=['tests']),
     scripts=[
         'src/bin/releasenote.py',
         'src/bin/releaseinstructions.py'
