@@ -14,7 +14,9 @@ setup(
     package_dir={
         'pyccata':'src/pyccata'
     },
-    packages=find_packages('src', exclude=['tests']),
+    packages=[
+        'pyccata'
+    ],
     scripts=[
         'src/bin/releasenote.py',
         'src/bin/releaseinstructions.py'
@@ -43,6 +45,7 @@ setup(
         'dask',
         'psutil'
     ],
+
     test_suite='nose.collector',
     tests_require=[
         'nose',

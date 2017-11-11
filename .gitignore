@@ -11,3 +11,4 @@ build
 images/*
 *.log
 *.csv
+src/packages
