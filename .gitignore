@@ -11,4 +11,5 @@ build
 images/*
 *.log
 *.csv
+__pycache__
 src/packages

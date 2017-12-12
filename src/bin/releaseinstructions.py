@@ -10,6 +10,8 @@ import os
 import re
 import requests
 import shutil
+import json
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from collections import namedtuple
 from datetime import datetime
 from pyccata.core.document import DocumentController
@@ -19,6 +21,8 @@ from pyccata.core.helpers import create_directory
 from pyccata.core.resources import Replacements
 from pyccata.core.log import Logger
 from pyccata.core.exceptions import InvalidFilenameError
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 class ReleaseInstructions(object):
     """
@@ -34,6 +38,8 @@ class ReleaseInstructions(object):
     _document_ready = False
     _document_title = 'MSS Platform Release Rollout and Rollback'
     _configuration = None
+    _crumb = None
+
     _regex = re.compile(
         '^([0-9]*)?_?(\w+-\d+)_([a-zA-Z-]+)_(\w+)_(UP|DOWN)_([0-9]*)?_?(\w+)(.[a-zA-Z]+)?$',
         re.IGNORECASE
@@ -51,8 +57,8 @@ class ReleaseInstructions(object):
             self._document_controller.build()
             final = Replacements().find('FINAL').value
             if final in ['1', 'True', 'TRUE', 'true']:
-                pipelines = self._document_controller.threadmanager.find('Deployment Pipelines')
-                if pipelines is not None or len(pipelines) > 0:
+                pipelines = self._document_controller.threadmanager.find('MSS Deployment Pipelines')
+                if pipelines is not None and len(pipelines) > 0:
                     for pipeline in pipelines:
                         self.pipeline_trigger(pipeline)
             self._document_ready = True
@@ -80,11 +86,35 @@ class ReleaseInstructions(object):
         matches = re.search(r'(http.*\/).*', pipeline)
         if matches:
             pipeline = matches.groups(0)[0].rstrip('/')
+
+        authentication = HTTPBasicAuth(
+            self._configuration.jenkins.user,
+            self._configuration.jenkins.password
+        )
+
+        if not self._crumb:
+            endpoint = '{server}/crumbIssuer/api/json'.format(
+                server=self._configuration.jenkins.server.strip('/')
+            )
+
+            response = requests.get(
+                endpoint,
+                auth=authentication,
+                verify=False
+            )
+            self._crumb = json.loads(response.text)['crumb']
+
         Logger().info('Triggering pipeline {0}'.format(pipeline))
         params = {}
         auth = (self._configuration.jenkins.user, self._configuration.jenkins.password)
         pipeline = '{0}/{1}'.format(pipeline, replacements.replace('{TRIGGER_URI}'))
-        response = requests.post(pipeline, auth=auth, params=params, verify=False)
+        response = requests.post(
+            pipeline,
+            auth=auth,
+            params=params,
+            verify=False,
+            headers={"Jenkins-Crumb": self._crumb},
+        )
         if response.status_code != 200:
             Logger().error(
                 'Error whilst triggering pipeline - server returned status {0}'.format(
@@ -176,6 +206,7 @@ class ReleaseInstructions(object):
                     ) + sql_file.operation + '.sql'
                 )
             )
+
         # pylint: disable=broad-except
         # We are not bothering to handle invalidly named SQL files - these will be
         # ignored from the instruction sent to SysOps.
