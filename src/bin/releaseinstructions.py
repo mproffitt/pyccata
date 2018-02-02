@@ -197,15 +197,16 @@ class ReleaseInstructions(object):
                 sql_file.database
             )
             create_directory(output_directory)
-            os.rename(
-                filepath,
-                os.path.join(
-                    output_directory,
-                    (
-                        sql_file.operation_order + '_' if sql_file.operation_order is not None else ''
-                    ) + sql_file.operation + '.sql'
-                )
+            outputpath = os.path.join(
+                output_directory,
+                (
+                    sql_file.operation_order + '_' if sql_file.operation_order is not None else ''
+                ) + sql_file.operation + '.sql'
             )
+
+            if os.path.exists(outputpath):
+                raise ValueError('File already exists')
+            os.rename(filepath, outputpath)
 
         # pylint: disable=broad-except
         # We are not bothering to handle invalidly named SQL files - these will be
