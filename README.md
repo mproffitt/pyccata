@@ -81,6 +81,12 @@ To execute the tests, you will further require:
 * mock
 * ddt
 
+Single install command for ubuntu:
+
+```
+sudo -H pip3 install jira lxml cairosvg tinycss cssselect pygal numpy Pillow python-docx pyquery pycurl dateutils scipy matplotlib matplotlib-venn mpltools pandas pyupset nose coverage pbr mock ddt
+```
+
 Installation
 ------------
 To install this application, the following system libraries are required:
@@ -102,6 +108,12 @@ Depending on how libcurl was compiled, you may also require one of:
 * openssl-devel
 * gnutls-devel
 * ssl-devel
+
+Single install command for ubuntu
+
+```
+sudo apt install xz-utils libxml2 libxml2-dev libjpeg-dev libcurl4-nss-dev libblas-dev libatlas-base-dev libffi-dev liblapack-dev
+```
 
 Once installed, from the root of the JiraWeeklyReport directory, execute the following:
 
