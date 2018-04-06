@@ -106,6 +106,8 @@ class ReleaseInstructions(object):
 
         Logger().info('Triggering pipeline {0}'.format(pipeline))
         params = {}
+        hotfix = replacements.find('HOTFIX_RELEASE').value.lower()
+        params['HOTFIX_RELEASE'] = 'true' if hotfix in ['1', 'true'] else 'false'
         auth = (self._configuration.jenkins.user, self._configuration.jenkins.password)
         pipeline = '{0}/{1}'.format(pipeline, replacements.replace('{TRIGGER_URI}'))
         response = requests.post(
