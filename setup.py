@@ -5,7 +5,7 @@ from setuptools import find_packages
 
 setup(
     name='pycatta',
-    version='0.1.9',
+    version='0.1.10',
     description='Collation and correlation of data',
     author='Martin Proffitt',
     author_email='mproffitt@jitsc.co.uk',

@@ -11,6 +11,7 @@ import re
 import requests
 import shutil
 import json
+from requests.auth import HTTPBasicAuth
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from collections import namedtuple
 from datetime import datetime
@@ -106,8 +107,8 @@ class ReleaseInstructions(object):
 
         Logger().info('Triggering pipeline {0}'.format(pipeline))
         params = {}
-        hotfix = replacements.find('HOTFIX_RELEASE').value.lower()
-        params['HOTFIX_RELEASE'] = 'true' if hotfix in ['1', 'true'] else 'false'
+        #hotfix = replacements.find('HOTFIX_RELEASE').value.lower()
+        #params['HOTFIX_RELEASE'] = 'true' if hotfix in ['1', 'true'] else 'false'
         auth = (self._configuration.jenkins.user, self._configuration.jenkins.password)
         pipeline = '{0}/{1}'.format(pipeline, replacements.replace('{TRIGGER_URI}'))
         response = requests.post(
